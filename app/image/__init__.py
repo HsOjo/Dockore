@@ -14,11 +14,11 @@ class Image(UserAPIController):
 
     def list(self):
         docker = common.get_docker_cli()
-        images = [{
+        items = [{
             'id': img.attrs['Id'],
             'author': img.attrs['Author'],
             'create_time': img.attrs['Created'],
             'size': img.attrs['Size'],
             'comment': img.attrs['Comment'],
         } for img in docker.images.list()]
-        return self.make_response(images=images)
+        return self.make_response(items=items)

@@ -1,3 +1,4 @@
+import sys
 import traceback
 
 from flask import jsonify
@@ -22,12 +23,15 @@ class APIController(Controller):
             self.hook_after_view()
             return resp
         except APIErrorException as e:
-            return jsonify(error=e.code, msg=e.msg, exc=traceback.format_exc())
+            tb_msg = traceback.format_exc()
+            return jsonify(code=e.code, msg=e.msg or tb_msg)
         except:
-            return jsonify(error=APIErrorException.code, exc=traceback.format_exc())
+            tb_msg = traceback.format_exc()
+            print(tb_msg, file=sys.stderr)
+            return jsonify(code=APIErrorException.code, msg=tb_msg)
 
-    def make_response(self, error=0, **data):
-        return jsonify(dict(error=error, data=data))
+    def make_response(self, code=0, msg='', **data):
+        return jsonify(dict(code=code, msg=msg, data=data))
 
     def hook_before_view(self):
         pass

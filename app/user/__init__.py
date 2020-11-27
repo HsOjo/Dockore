@@ -6,7 +6,7 @@ from .service import UserService
 
 class User(APIController):
     import_name = __name__
-    url_prefix = '/user'
+    url_prefix = '/api/user'
 
     class LoginFailedException(APIErrorException):
         code = 1001
@@ -31,5 +31,6 @@ class User(APIController):
             raise self.LoginFailedException
 
         return self.make_response(
+            msg='登录成功',
             token=token.content,
         )

@@ -1,9 +1,11 @@
 import os
 
+import docker
 from flask import Flask
+from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-import docker
+
 from app import common
 
 
@@ -14,11 +16,14 @@ class Application(Flask):
         common.current_app = self
 
         program_path = os.path.join(self.root_path, '..')
-        self.config.from_pyfile(os.path.join(program_path, 'config.py'))
+        config_path = os.path.join(program_path, 'config.py')
+        if not os.path.exists(config_path):
+            config_path = os.path.join(program_path, 'config.example.py')
+        self.config.from_pyfile(config_path)
         os.makedirs(common.get_data_path(), exist_ok=True)
 
-
         db.init_app(self)
+        cors.init_app(self)
 
         self.register_controllers()
 
@@ -33,5 +38,6 @@ class Application(Flask):
 
 
 db = SQLAlchemy()
+cors = CORS(supports_credentials=True)
 app = Application()
 migrate = Migrate(app, db)

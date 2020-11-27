@@ -13,12 +13,11 @@ class Container(UserAPIController):
         self.add_route('/list', self.list, methods=['POST'])
 
     def list(self):
-        
         docker = common.get_docker_cli()
-        images = [{
+        items = [{
             'id': container.attrs['Id'],
             'name': container.attrs['Name'],
             'image_id': container.attrs['Image'],
             'create_time': container.attrs['Created'],
         } for container in docker.containers.list()]
-        return self.make_response(images=images)
+        return self.make_response(items=items)
