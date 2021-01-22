@@ -3,7 +3,7 @@ import hashlib
 import time
 
 from app import db
-from .models import User, UserToken
+from .model import User, UserToken
 
 
 def pw_hash(x: str):

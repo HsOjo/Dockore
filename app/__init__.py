@@ -1,6 +1,5 @@
 import os
 
-import docker
 from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -12,7 +11,6 @@ from app import common
 class Application(Flask):
     def __init__(self):
         super().__init__(__name__)
-        self.docker = docker.from_env()
         common.current_app = self
 
         program_path = os.path.join(self.root_path, '..')

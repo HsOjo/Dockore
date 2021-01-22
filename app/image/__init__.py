@@ -1,40 +1,28 @@
-from flask import request
-
 from app import common
-from app.base.user_api_controller import UserAPIController
+from app.base.api import request_check
+from app.base.controller.decorator import *
+from app.image.request import ListRequest
+from app.image.service import ImageService
+from app.user.controller import UserAPIController
 
 
 class Image(UserAPIController):
     import_name = __name__
     url_prefix = '/api/image'
 
-    def __init__(self, app):
-        super().__init__(app)
-
-    def callback_add_routes(self):
-        self.add_route('/list', self.list, methods=['POST'])
-        self.add_route('/item/<string:id>', self.item, methods=['POST'])
-
+    @post
+    @mapping_rule('/list')
+    @request_check(ListRequest)
     def list(self):
-        try:
-            data = request.get_json()  # type: dict
-            is_all = data.get('is_all', False)
-        except:
-            raise self.ParamsNotMatchException
+        data = common.get_req_data()
 
-        docker = common.get_docker_cli()
-        items = [{
-            'id': img.attrs['Id'],
-            'author': img.attrs['Author'],
-            'create_time': img.attrs['Created'],
-            'size': img.attrs['Size'],
-            'comment': img.attrs['Comment'],
-        } for img in docker.images.list(
-            all=is_all
-        )]
-        return self.make_response(items=items)
+        return self.make_response(
+            items=ImageService.list(data.get('is_all', False))
+        )
 
-    def item(self, id: str):
-        docker = common.get_docker_cli()
-        item = docker.images.get(id)
-        return self.make_response(item=item.attrs)
+    @post
+    @mapping_rule('/item/<string:id>')
+    def item(self, id_):
+        return self.make_response(
+            item=ImageService.item(id_)
+        )

@@ -1,6 +1,7 @@
 import os
-import docker
-from flask import Config, Flask
+
+from docker import DockerClient
+from flask import Config, Flask, request
 
 current_app: Flask
 
@@ -21,5 +22,9 @@ def get_data_path():
 
 
 def get_docker_cli():
-    docker = getattr(current_app, 'docker', None)  # type: docker.client.DockerClient
+    docker = DockerClient(get_config('DOCKER_URL'))
     return docker
+
+
+def get_req_data() -> dict:
+    return request.get_json()

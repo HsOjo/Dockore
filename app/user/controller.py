@@ -1,12 +1,8 @@
 from flask import request
 
+from app.base.api import APIController, APIErrorException
+from app.user.enum import TOKEN_INVALID
 from app.user.service import UserService
-from .api_controller import APIController, APIErrorException
-
-
-class TokenInvalidException(APIErrorException):
-    code = -3
-    msg = 'Token无效，请重新登录。'
 
 
 class UserAPIController(APIController):
@@ -15,4 +11,4 @@ class UserAPIController(APIController):
         token = data.get('token')
         user = UserService.get_user(token)
         if user is None:
-            raise TokenInvalidException
+            raise APIErrorException(*TOKEN_INVALID)

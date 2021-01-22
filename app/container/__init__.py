@@ -1,39 +1,49 @@
-from flask import request
-
 from app import common
-from app.base.user_api_controller import UserAPIController
+from app.base.api import request_check
+from app.container.request import ListRequest, DeleteRequest
+from app.container.service import ContainerService
+from app.user.controller import UserAPIController
+from app.base.controller.decorator import *
 
 
 class Container(UserAPIController):
     import_name = __name__
     url_prefix = '/api/container'
 
-    def __init__(self, app):
-        super().__init__(app)
-
-    def callback_add_routes(self):
-        self.add_route('/list', self.list, methods=['POST'])
-        self.add_route('/item/<string:id>', self.item, methods=['POST'])
-
+    @post
+    @mapping_rule('/list')
+    @request_check(ListRequest)
     def list(self):
-        try:
-            data = request.get_json()  # type: dict
-            is_all = data.get('is_all', True)
-        except:
-            raise self.ParamsNotMatchException
+        data = common.get_req_data()
+        return self.make_response(
+            items=ContainerService.list(data.get('is_all', True))
+        )
 
-        docker = common.get_docker_cli()
-        items = [{
-            'id': container.attrs['Id'],
-            'name': container.attrs['Name'],
-            'image_id': container.attrs['Image'],
-            'create_time': container.attrs['Created'],
-        } for container in docker.containers.list(
-            all=is_all
-        )]
-        return self.make_response(items=items)
+    @post
+    @mapping_rule('/item/<string:id_>')
+    def item(self, id_: str):
+        return self.make_response(
+            item=ContainerService.item(id_)
+        )
 
-    def item(self, id: str):
-        docker = common.get_docker_cli()
-        item = docker.containers.get(id)
-        return self.make_response(item=item.attrs)
+    @post
+    @mapping_rule('/delete')
+    @request_check(DeleteRequest)
+    def delete(self):
+        data = common.get_req_data()
+
+        success = []
+        error = []
+
+        for id_ in data.get('ids'):
+            if ContainerService.delete(id_):
+                success.append(id_)
+            else:
+                error.append(id_)
+
+        return self.make_response(
+            result=dict(
+                success=success,
+                error=error,
+            )
+        )

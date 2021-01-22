@@ -1,36 +1,25 @@
-from flask import request
-
-from app.base.api_controller import APIController, APIErrorException
+from app.base.api import request_check, APIController
+from app.base.controller.decorator import *
+from .enum import *
+from .request import LoginRequest
 from .service import UserService
+from .. import common
 
 
 class User(APIController):
     import_name = __name__
     url_prefix = '/api/user'
 
-    class LoginFailedException(APIErrorException):
-        code = 1001
-        msg = '登录失败，用户名或密码错误。'
-
-    def __init__(self, app):
-        super().__init__(app)
-
-    def callback_add_routes(self):
-        self.add_route('/login', self.login, methods=['POST'])
-
+    @post
+    @mapping_rule('/login')
+    @request_check(LoginRequest)
     def login(self):
-        try:
-            data = request.get_json()  # type: dict
-            username = data['username']
-            password = data['password']
-        except:
-            raise self.ParamsNotMatchException
+        data = common.get_req_data()
 
-        token = UserService.login(username, password)
+        token = UserService.login(data['username'], data['password'])
         if not token:
-            raise self.LoginFailedException
+            return self.make_response(*LOGIN_FAILED)
 
         return self.make_response(
-            msg='登录成功',
-            token=token.content,
+            *LOGIN_SUCCESS, token=token.content,
         )
