@@ -15,7 +15,7 @@ class MetaTable:
             data = _meta[i]  # type: dict
             if k not in data and d is not None:
                 data[k] = d
-            return data[k]
+            return data.get(k, d)
 
     @staticmethod
     def all(i):

@@ -21,7 +21,7 @@ class Image(UserAPIController):
         )
 
     @post
-    @mapping_rule('/item/<string:id>')
+    @mapping_rule('/item/<string:id_>')
     def item(self, id_):
         return self.make_response(
             item=ImageService.item(id_)
