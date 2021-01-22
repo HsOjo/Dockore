@@ -1,9 +1,9 @@
-from app import common
 from app.base.api import request_check
-from app.container.request import ListRequest, DeleteRequest
-from app.container.service import ContainerService
-from app.user.controller import UserAPIController
 from app.base.controller.decorator import *
+from app.user.controller import UserAPIController
+from .enum import *
+from .request import *
+from .service import *
 
 
 class Container(UserAPIController):
@@ -42,6 +42,7 @@ class Container(UserAPIController):
                 error.append(id_)
 
         return self.make_response(
+            *(DELETE_SUCCESS if len(error) == 0 else DELETE_FAILED),
             result=dict(
                 success=success,
                 error=error,

@@ -1,9 +1,9 @@
-from app import common
 from app.base.api import request_check
 from app.base.controller.decorator import *
-from app.image.request import ListRequest
-from app.image.service import ImageService
 from app.user.controller import UserAPIController
+from .enum import *
+from .request import *
+from .service import *
 
 
 class Image(UserAPIController):
@@ -25,4 +25,27 @@ class Image(UserAPIController):
     def item(self, id_):
         return self.make_response(
             item=ImageService.item(id_)
+        )
+
+    @post
+    @mapping_rule('/delete')
+    @request_check(DeleteRequest)
+    def delete(self):
+        data = common.get_req_data()
+
+        success = []
+        error = []
+
+        for id_ in data.get('ids'):
+            if ImageService.delete(id_):
+                success.append(id_)
+            else:
+                error.append(id_)
+
+        return self.make_response(
+            *(DELETE_SUCCESS if len(error) == 0 else DELETE_FAILED),
+            result=dict(
+                success=success,
+                error=error,
+            )
         )
