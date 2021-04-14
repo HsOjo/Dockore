@@ -24,7 +24,7 @@ class UserAPIController(APIController):
             return
 
         f = Context.view_function()
-        if MetaTable.get(f, MK_PUBLIC):
+        if f is None or MetaTable.get(f, MK_PUBLIC):
             return
 
         token = self.request.headers.get(HK_TOKEN)

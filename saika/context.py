@@ -16,7 +16,7 @@ class Context:
 
     @staticmethod
     def view_function():
-        f = current_app.view_functions[request.endpoint]
+        f = current_app.view_functions.get(request.endpoint)
         if hasattr(f, '__func__'):
             f = f.__func__
 
