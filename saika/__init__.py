@@ -1,4 +1,3 @@
-from . import common
 from .app import SaikaApp
 from .config import Config
 from .const import Const

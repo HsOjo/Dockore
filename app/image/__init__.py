@@ -5,9 +5,9 @@ from .forms import *
 from .service import *
 
 
-@controller('/api/image')
+@register_controller('/api/image')
 class Image(UserAPIController):
-    @post
+    @get
     @rule('/list')
     @form(ListForm)
     def list(self):
@@ -17,7 +17,7 @@ class Image(UserAPIController):
             items=ImageService.list(is_all)
         )
 
-    @post
+    @get
     @rule('/item/<string:id>')
     def item(self, id):
         self.success(

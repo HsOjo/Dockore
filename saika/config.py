@@ -14,8 +14,8 @@ class Config:
             _config = json.load(io)
 
     @staticmethod
-    def get(section, default=None):
-        return _config.get(section, default)
+    def section(key) -> dict:
+        return _config.get(key)
 
     @staticmethod
     def merge():

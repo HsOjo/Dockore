@@ -13,3 +13,11 @@ class Context:
     @staticmethod
     def g_get(k, default=None):
         return getattr(g, k, default)
+
+    @staticmethod
+    def view_function():
+        f = current_app.view_functions[request.endpoint]
+        if hasattr(f, '__func__'):
+            f = f.__func__
+
+        return f

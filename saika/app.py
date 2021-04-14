@@ -35,6 +35,8 @@ class SaikaApp(Flask):
         if Environ.app is not None:
             raise Exception('SaikaApp was created.')
 
+        print('# --===========================--\n# * Initializing Saika Framework...\n# --===========================--')
+
         Environ.app = self
         Environ.program_path = os.path.join(self.root_path, '..')
         Environ.config_path = os.path.join(Environ.program_path, Const.config_file)

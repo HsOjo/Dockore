@@ -1,3 +1,5 @@
+from functools import wraps
+
 from . import hard_code
 from .meta_table import MetaTable
 
@@ -10,7 +12,7 @@ def rule(rule_str):
     return wrapper
 
 
-def controller(url_prefix, **options):
+def register_controller(url_prefix, **options):
     opts = locals().copy()
     opts.update(opts.pop('options'))
 
@@ -23,7 +25,9 @@ def controller(url_prefix, **options):
     return wrapper
 
 
-def form(form_cls, **kwargs):
+def form(form_cls, validate=True, **kwargs):
+    kwargs['validate'] = validate
+
     def wrapper(f):
         MetaTable.set(f, hard_code.MK_FORM_CLASS, form_cls)
         MetaTable.set(f, hard_code.MK_FORM_ARGS, kwargs)

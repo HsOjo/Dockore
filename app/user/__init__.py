@@ -1,12 +1,13 @@
-from saika.api import APIController
 from saika.decorator import *
+from .controller import UserAPIController, ignore_auth
 from .enum import *
 from .forms import LoginForm
 from .service import UserService
 
 
-@controller('/api/user')
-class User(APIController):
+@register_controller('/api/user')
+class User(UserAPIController):
+    @ignore_auth
     @post
     @rule('/login')
     @form(LoginForm)
@@ -19,3 +20,12 @@ class User(APIController):
             self.error(*LOGIN_FAILED)
 
         self.success(*LOGIN_SUCCESS, token=token)
+
+    @get
+    @rule('/info')
+    def info(self):
+        user = self.current_user
+        self.success(
+            username=user.username,
+            password=user.password,
+        )

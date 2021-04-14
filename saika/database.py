@@ -18,7 +18,7 @@ class Database(SQLAlchemy):
 
 @Config.process
 def merge_uri(config):
-    db = Config.get(hard_code.CK_DATABASE)
+    db = Config.section(hard_code.CK_DATABASE)
     driver = db['driver'].lower()
     if 'mysql' in driver or 'postgresql' in driver:
         uri = '%(driver)s://%(user)s:%(password)s@%(host)s:%(port)d/%(database)s?charset=%(charset)s' % db

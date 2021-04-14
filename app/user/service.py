@@ -1,6 +1,6 @@
 import hashlib
 
-from saika import db, common
+from saika import db, common, Config
 from .models import User
 
 
@@ -30,7 +30,8 @@ class UserService:
         if item is None:
             return False
         else:
-            return common.obj_encrypt(dict(id=item.id))
+            expires = Config.section('user').get('login_expires', 86400)
+            return common.obj_encrypt(dict(id=item.id), expires)
 
     @staticmethod
     def get_user(token: str):
@@ -38,7 +39,7 @@ class UserService:
         if obj is not None:
             id = obj.get('id')
             if id is not None:
-                item = User.query.get(id)
+                item = User.query.get(id)  # type: User
                 if item is not None:
                     return item
 

@@ -5,9 +5,9 @@ from .forms import *
 from .service import *
 
 
-@controller('/api/container')
+@register_controller('/api/container')
 class Container(UserAPIController):
-    @post
+    @get
     @rule('/list')
     @form(ListForm)
     def list(self):
@@ -16,7 +16,7 @@ class Container(UserAPIController):
             items=ContainerService.list(is_all)
         )
 
-    @post
+    @get
     @rule('/item/<string:id>')
     def item(self, id: str):
         self.success(
@@ -42,3 +42,14 @@ class Container(UserAPIController):
             self.error(*DELETE_FAILED, error)
         else:
             self.success(*DELETE_SUCCESS)
+
+    @post
+    @rule('/create')
+    @form(CreateForm)
+    def create(self):
+        docker = common.get_docker_cli()
+        docker.containers.create(
+            image=self.form.image.data,
+            command=self.form.image.command
+        )
+        self.success()
