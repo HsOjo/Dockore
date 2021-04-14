@@ -1,25 +1,21 @@
-from app.base.api import request_check, APIController
-from app.base.controller.decorator import *
+from saika.api import APIController
+from saika.decorator import *
 from .enum import *
-from .request import LoginRequest
+from .forms import LoginForm
 from .service import UserService
-from .. import common
 
 
+@controller('/api/user')
 class User(APIController):
-    import_name = __name__
-    url_prefix = '/api/user'
-
     @post
-    @mapping_rule('/login')
-    @request_check(LoginRequest)
+    @rule('/login')
+    @form(LoginForm)
     def login(self):
-        data = common.get_req_data()
+        username = self.form.username.data
+        password = self.form.password.data
 
-        token = UserService.login(data['username'], data['password'])
+        token = UserService.login(username, password)
         if not token:
-            return self.make_response(*LOGIN_FAILED)
+            self.error(*LOGIN_FAILED)
 
-        return self.make_response(
-            *LOGIN_SUCCESS, token=token.content,
-        )
+        self.success(*LOGIN_SUCCESS, token=token)

@@ -1,9 +1,7 @@
-import datetime
 import hashlib
-import time
 
-from app import db
-from .model import User, UserToken
+from saika import db, common
+from .models import User
 
 
 def pw_hash(x: str):
@@ -32,18 +30,16 @@ class UserService:
         if item is None:
             return False
         else:
-            token = UserToken(
-                user_id=item.id,
-                content=pw_hash('%s,%s' % (item.id, time.time())),
-                create_time=datetime.datetime.now()
-            )
-            db.session.add(token)
-            db.session.commit()
-            return token
+            return common.obj_encrypt(dict(id=item.id))
 
     @staticmethod
     def get_user(token: str):
-        item = UserToken.query.filter_by(content=token).first()  # type: UserToken
-        if item is not None:
-            return item.user
-        return False
+        obj = common.obj_decrypt(token)  # type: dict
+        if obj is not None:
+            id = obj.get('id')
+            if id is not None:
+                item = User.query.get(id)
+                if item is not None:
+                    return item
+
+        return None

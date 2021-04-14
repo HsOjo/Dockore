@@ -17,9 +17,9 @@ class ImageService:
         return items
 
     @staticmethod
-    def item(id_):
+    def item(id):
         docker = common.get_docker_cli()
-        item = docker.images.get(id_)
+        item = docker.images.get(id)
         return item.attrs
 
     @staticmethod

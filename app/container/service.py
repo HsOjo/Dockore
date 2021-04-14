@@ -16,9 +16,9 @@ class ContainerService:
         return items
 
     @staticmethod
-    def item(id_):
+    def item(id):
         docker = common.get_docker_cli()
-        item = docker.containers.get(id_)
+        item = docker.containers.get(id)
         return item.attrs
 
     @staticmethod

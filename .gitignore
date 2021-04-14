@@ -141,6 +141,6 @@ dmypy.json
 cython_debug/
 
 test.py
-config.py
+config.json
 data
 migrations
