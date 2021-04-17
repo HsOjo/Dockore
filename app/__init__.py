@@ -5,8 +5,7 @@ from saika import SaikaApp, db
 
 
 class Application(SaikaApp):
-    def __init__(self):
-        super().__init__()
+    def callback_init_app(self):
         cors.init_app(self)
 
 

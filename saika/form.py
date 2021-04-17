@@ -24,7 +24,7 @@ def process_form():
         args = MetaTable.get(f, hard_code.MK_FORM_ARGS)
         form = cls(**args)  # type: BaseForm
         Context.g_set(hard_code.MK_FORM, form)
-        if args.get('validate'):
+        if args.get(hard_code.AK_VALIDATE):
             if not form.validate():
                 raise FormException(*PARAMS_MISMATCH)
 

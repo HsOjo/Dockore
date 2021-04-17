@@ -17,7 +17,7 @@ def register_controller(url_prefix, **options):
     opts.update(opts.pop('options'))
 
     def wrapper(cls):
-        controllers = MetaTable.get(hard_code.MI_GLOBAL, hard_code.MK_CONTROLLERS, [])  # type: list
+        controllers = MetaTable.get(hard_code.MI_GLOBAL, hard_code.MK_CONTROLLER_CLASSES, [])  # type: list
         controllers.append(cls)
         MetaTable.set(cls, hard_code.MK_OPTIONS, opts)
         return cls

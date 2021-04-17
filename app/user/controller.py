@@ -17,22 +17,23 @@ def ignore_auth(f):
 
 class UserAPIController(APIController):
     def callback_before_register(self):
-        self.blueprint.before_request(self.callback_before_request)
+        super(UserAPIController, self).callback_before_register()
 
-    def callback_before_request(self):
-        if self.request.method == 'OPTIONS':
-            return
+        @self.blueprint.before_request
+        def authentication():
+            if self.request.method == 'OPTIONS':
+                return
 
-        f = Context.view_function()
-        if f is None or MetaTable.get(f, MK_PUBLIC):
-            return
+            f = Context.view_function()
+            if f is None or MetaTable.get(f, MK_PUBLIC):
+                return
 
-        token = self.request.headers.get(HK_TOKEN)
-        user = UserService.get_user(token)
-        if user is None:
-            self.error(*TOKEN_INVALID)
+            token = self.request.headers.get(HK_TOKEN)
+            user = UserService.get_user(token)
+            if user is None:
+                self.error(*TOKEN_INVALID)
 
-        self.context.g_set(GK_USER, user)
+            self.context.g_set(GK_USER, user)
 
     @property
     def current_user(self):

@@ -2,7 +2,7 @@
 MI_GLOBAL = 'global'
 
 # Meta Key
-MK_CONTROLLERS = 'controllers'
+MK_CONTROLLER_CLASSES = 'controller_classes'
 MK_RULE_STR = 'rule_str'
 MK_METHODS = 'methods'
 MK_OPTIONS = 'options'
@@ -14,3 +14,6 @@ MK_FORM = 'form'
 # Config Key
 CK_CORE = 'core'
 CK_DATABASE = 'database'
+
+# Arg Key
+AK_VALIDATE = 'validate'

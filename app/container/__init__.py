@@ -47,9 +47,11 @@ class Container(UserAPIController):
     @rule('/create')
     @form(CreateForm)
     def create(self):
-        docker = common.get_docker_cli()
-        docker.containers.create(
-            image=self.form.image.data,
-            command=self.form.image.command
-        )
-        self.success()
+        try:
+            self.success(*CREATE_SUCCESS, item=ContainerService.create(
+                self.form.name.data,
+                self.form.image.data,
+                self.form.command.data,
+            ))
+        except Exception as e:
+            self.error(*CREATE_FAILED)

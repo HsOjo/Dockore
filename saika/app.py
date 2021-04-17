@@ -16,34 +16,35 @@ class SaikaApp(Flask):
     def __init__(self):
         super().__init__(self.__class__.__module__)
         self._init_env()
-        self._import_modules()
-
-        Config.load(Environ.config_path)
-        cfg = Config.merge()
-        self.config.from_mapping(cfg)
+        self._init_config()
         self._init_app()
 
-        self.controllers = []
+        self._import_modules()
 
-        controllers = MetaTable.get(hard_code.MI_GLOBAL, hard_code.MK_CONTROLLERS, [])
-        for controller in controllers:
-            c = controller()
-            c.register(self)
-            self.controllers.append(c)
+        controller_classes = MetaTable.get(hard_code.MI_GLOBAL, hard_code.MK_CONTROLLER_CLASSES, [])
+        self.controllers = [cls(self) for cls in controller_classes]
 
     def _init_env(self):
         if Environ.app is not None:
             raise Exception('SaikaApp was created.')
 
-        print('# --===========================--\n# * Initializing Saika Framework...\n# --===========================--')
+        print('# --=============================--\n'
+              '# * Initializing Saika Framework...\n'
+              '# --=============================--')
 
         Environ.app = self
         Environ.program_path = os.path.join(self.root_path, '..')
         Environ.config_path = os.path.join(Environ.program_path, Const.config_file)
         Environ.data_path = os.path.join(Environ.program_path, Const.data_dir)
 
+    def _init_config(self):
+        Config.load(Environ.config_path)
+        cfg = Config.merge()
+        self.config.from_mapping(cfg)
+
     def _init_app(self):
         db.init_app(self)
+        self.callback_init_app()
 
     def _import_modules(self):
         module = self.__class__.__module__
@@ -51,3 +52,6 @@ class SaikaApp(Flask):
         sub_modules = [i.name for i in sub_modules if i.ispkg]
         for i in sub_modules:
             importlib.import_module(i)
+
+    def callback_init_app(self):
+        pass

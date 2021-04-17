@@ -1,32 +1,19 @@
-from app import common
+from app.libs.docker import Docker
 
 
 class ImageService:
     @staticmethod
     def list(is_all):
-        docker = common.get_docker_cli()
-        items = [{
-            'id': img.attrs['Id'],
-            'tags': img.attrs['RepoTags'],
-            'author': img.attrs['Author'],
-            'create_time': img.attrs['Created'],
-            'size': img.attrs['Size'],
-        } for img in docker.images.list(
-            all=is_all
-        )]
-        return items
+        return Docker().image.list(all=is_all)
 
     @staticmethod
     def item(id):
-        docker = common.get_docker_cli()
-        item = docker.images.get(id)
-        return item.attrs
+        return Docker().image.item(id)
 
     @staticmethod
     def delete(id):
-        docker = common.get_docker_cli()
         try:
-            docker.images.get(id).remove()
+            Docker().image.remove(id)
         except:
             return False
 

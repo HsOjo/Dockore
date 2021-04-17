@@ -1,32 +1,24 @@
-from app import common
+from app.libs.docker import Docker
 
 
 class ContainerService:
     @staticmethod
-    def list(is_all):
-        docker = common.get_docker_cli()
-        items = [{
-            'id': container.attrs['Id'],
-            'name': container.attrs['Name'],
-            'image_id': container.attrs['Image'],
-            'create_time': container.attrs['Created'],
-        } for container in docker.containers.list(
-            all=is_all
-        )]
-        return items
+    def list(is_all: bool):
+        return Docker().container.list(all=is_all)
 
     @staticmethod
     def item(id):
-        docker = common.get_docker_cli()
-        item = docker.containers.get(id)
-        return item.attrs
+        return Docker().container.item(id)
 
     @staticmethod
     def delete(id):
-        docker = common.get_docker_cli()
         try:
-            docker.containers.get(id).remove()
+            Docker().container.remove(id)
         except:
             return False
 
         return True
+
+    @staticmethod
+    def create(name, image, command):
+        return Docker().container.create(name, image, command)

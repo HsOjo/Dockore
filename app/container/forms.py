@@ -15,3 +15,4 @@ class DeleteForm(JSONForm):
 class CreateForm(JSONForm):
     image = StringField('镜像', validators=[DataRequired()])
     command = StringField('命令', validators=[DataRequired()])
+    name = StringField('名称')

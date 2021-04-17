@@ -26,6 +26,6 @@ class User(UserAPIController):
     def info(self):
         user = self.current_user
         self.success(
+            id=user.id,
             username=user.username,
-            password=user.password,
         )

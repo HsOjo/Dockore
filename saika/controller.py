@@ -8,12 +8,13 @@ from .meta_table import MetaTable
 
 
 class Controller:
-    def __init__(self):
+    def __init__(self, app):
         name = self.__class__.__name__.replace('Controller', '')
         name = re.sub('[A-Z]', lambda x: '_' + x.group().lower(), name).lstrip('_')
         import_name = self.__class__.__module__
 
         self._blueprint = Blueprint(name, import_name)
+        self._register(app)
 
     @property
     def blueprint(self):
@@ -32,6 +33,10 @@ class Controller:
         form = Context.g_get(hard_code.MK_FORM)
         return form
 
+    @property
+    def options(self):
+        return MetaTable.get(self.__class__, hard_code.MK_OPTIONS, {})
+
     def _register_methods(self):
         keeps = dir(Controller)
         for k in dir(self):
@@ -46,20 +51,18 @@ class Controller:
             if callable(f) and hasattr(f, '__func__'):
                 meta = MetaTable.all(f.__func__)
                 if meta is not None:
-                    print('Register method: %s (%a)' % (f, meta))
+                    print('  - %s %a' % (f.__func__, meta))
                     self._blueprint.add_url_rule(
                         rule=meta[hard_code.MK_RULE_STR],
                         methods=meta[hard_code.MK_METHODS],
                         view_func=f
                     )
 
-    def register(self, app):
-        options = MetaTable.get(self.__class__, hard_code.MK_OPTIONS, {})
-        print('Register controller: %s (%a)' % (self.__class__, options))
-
+    def _register(self, app):
         self.callback_before_register()
+        print('* Register Controller: %s %a' % (self.__class__, self.options))
         self._register_methods()
-        app.register_blueprint(self._blueprint, **options)
+        app.register_blueprint(self._blueprint, **self.options)
 
     def callback_before_register(self):
         pass
