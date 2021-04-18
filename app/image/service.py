@@ -1,4 +1,4 @@
-from app.libs.docker import Docker
+from app.libs.docker_ import Docker
 
 
 class ImageService:

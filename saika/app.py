@@ -1,6 +1,8 @@
 import importlib
 import os
 import pkgutil
+import sys
+import traceback
 
 from flask import Flask
 
@@ -15,14 +17,17 @@ from .meta_table import MetaTable
 class SaikaApp(Flask):
     def __init__(self):
         super().__init__(self.__class__.__module__)
-        self._init_env()
-        self._init_config()
-        self._init_app()
+        try:
+            self._init_env()
+            self._init_config()
+            self._init_app()
 
-        self._import_modules()
+            self._import_modules()
 
-        controller_classes = MetaTable.get(hard_code.MI_GLOBAL, hard_code.MK_CONTROLLER_CLASSES, [])
-        self.controllers = [cls(self) for cls in controller_classes]
+            controller_classes = MetaTable.get(hard_code.MI_GLOBAL, hard_code.MK_CONTROLLER_CLASSES, [])
+            self.controllers = [cls(self) for cls in controller_classes]
+        except:
+            traceback.print_exc(file=sys.stderr)
 
     def _init_env(self):
         if Environ.app is not None:
@@ -51,6 +56,7 @@ class SaikaApp(Flask):
         sub_modules = list(pkgutil.iter_modules([module], '%s.' % module))
         sub_modules = [i.name for i in sub_modules if i.ispkg]
         for i in sub_modules:
+            print('* Import Module: %s' % i)
             importlib.import_module(i)
 
     def callback_init_app(self):

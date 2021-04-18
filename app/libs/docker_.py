@@ -73,7 +73,15 @@ class ContainerAdapter(CollectionAdapter):
 
 
 class Docker:
-    def __init__(self):
-        self._cli = DockerClient(Config.section('docker').get('url'))
+    def __init__(self, url=None):
+        if url is None:
+            url = Config.section('docker').get('url')
+        self._cli = DockerClient(url)
         self.image = ImageAdapter(self._cli.images)
         self.container = ContainerAdapter(self._cli.containers)
+
+
+if __name__ == '__main__':
+    d = Docker('tcp://127.0.0.1:2375')
+    print(d.image.list())
+    print(d.container.list())
