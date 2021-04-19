@@ -52,13 +52,16 @@ class ContainerAdapter(CollectionAdapter):
 
     def _convert(self, obj, verbose=False):
         item = dict(
-            id=obj.attrs['Id'],
-            name=obj.attrs['Name'],
-            image_id=obj.attrs['Image'],
+            id=obj.attrs['Id'][:12],
+            name=obj.attrs['Name'][1:],
+            image_id=obj.attrs['Image'][7:19],
             create_time=obj.attrs['Created'],
+            status=obj.attrs['State']['Status'],
         )
         if verbose:
-            pass
+            item.update(
+                command=' '.join(obj.attrs['Config']['Cmd'])
+            )
         return item
 
     def remove(self, id):

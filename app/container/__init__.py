@@ -39,7 +39,7 @@ class Container(UserAPIController):
                 error.append(id)
 
         if len(error):
-            self.error(*DELETE_FAILED, error)
+            self.error(*DELETE_FAILED, data=error)
         else:
             self.success(*DELETE_SUCCESS)
 
@@ -47,11 +47,8 @@ class Container(UserAPIController):
     @rule('/create')
     @form(CreateForm)
     def create(self):
-        try:
-            self.success(*CREATE_SUCCESS, item=ContainerService.create(
-                self.form.name.data,
-                self.form.image.data,
-                self.form.command.data,
-            ))
-        except Exception as e:
-            self.error(*CREATE_FAILED)
+        self.success(*CREATE_SUCCESS, item=ContainerService.create(
+            self.form.name.data,
+            self.form.image.data,
+            self.form.command.data,
+        ))

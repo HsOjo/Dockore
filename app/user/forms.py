@@ -1,9 +1,9 @@
 from wtforms import StringField
 from wtforms.validators import DataRequired
 
-from saika.form import JSONForm
+from saika.form import Form
 
 
-class LoginForm(JSONForm):
+class LoginForm(Form):
     username = StringField('用户名', validators=[DataRequired()])
     password = StringField('密码', validators=[DataRequired()])

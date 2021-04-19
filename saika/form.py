@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from werkzeug.datastructures import MultiDict
+from wtforms import Field
 
 from . import hard_code
 from .context import Context
@@ -22,31 +23,24 @@ def process_form():
     cls = MetaTable.get(f, hard_code.MK_FORM_CLASS)
     if cls is not None:
         args = MetaTable.get(f, hard_code.MK_FORM_ARGS)
-        form = cls(**args)  # type: BaseForm
+        form = cls(**args)  # type: Form
         Context.g_set(hard_code.MK_FORM, form)
         if args.get(hard_code.AK_VALIDATE):
             if not form.validate():
                 raise FormException(*PARAMS_MISMATCH)
 
 
-class BaseForm(FlaskForm):
+class DataField(Field):
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = valuelist
+
+
+class Form(FlaskForm):
     data: dict
     errors: dict
 
-    def __init__(self, formdata: dict, **kwargs):
-        super().__init__(MultiDict(formdata), **kwargs)
 
-
-class ArgsForm(BaseForm):
+class ArgsForm(Form):
     def __init__(self, **kwargs):
-        super().__init__(Context.request.args, **kwargs)
-
-
-class DataForm(BaseForm):
-    def __init__(self, **kwargs):
-        super().__init__(Context.request.form, **kwargs)
-
-
-class JSONForm(BaseForm):
-    def __init__(self, **kwargs):
-        super().__init__(Context.request.get_json(), **kwargs)
+        super().__init__(MultiDict(Context.request.args), **kwargs)

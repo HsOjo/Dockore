@@ -1,11 +1,11 @@
-from wtforms import BooleanField, SelectMultipleField
+from wtforms import BooleanField
 
-from saika.form import JSONForm
+from saika.form import Form, ArgsForm, DataField
 
 
-class ListForm(JSONForm):
+class ListForm(ArgsForm):
     is_all = BooleanField('显示所有', default=False)
 
 
-class DeleteForm(JSONForm):
-    ids = SelectMultipleField('被删除项')
+class DeleteForm(Form):
+    ids = DataField('被删除项')

@@ -40,6 +40,6 @@ class Image(UserAPIController):
                 error.append(id)
 
         if len(error):
-            self.error(*DELETE_FAILED, error)
+            self.error(*DELETE_FAILED, data=error)
         else:
             self.success(*DELETE_SUCCESS)
