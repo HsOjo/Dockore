@@ -1,4 +1,4 @@
-from wtforms import BooleanField, StringField, IntegerField
+from wtforms import BooleanField, StringField, IntegerField, DateTimeField
 from wtforms.validators import DataRequired
 
 from saika.form import Form, ArgsForm, DataField
@@ -13,7 +13,7 @@ class OperationForm(Form):
 
 
 class StopForm(OperationForm):
-    timeout = IntegerField('超时时间')
+    timeout = IntegerField('超时时间', default=10)
 
 
 class CreateForm(Form):
@@ -22,3 +22,14 @@ class CreateForm(Form):
     name = StringField('容器名称')
     interactive = BooleanField('交互模式')
     tty = BooleanField('虚拟终端')
+
+
+class RenameForm(Form):
+    id = StringField('容器', validators=[DataRequired()])
+    name = StringField('新容器名称', validators=[DataRequired()])
+
+
+class LogsForm(Form):
+    id = StringField('容器', validators=[DataRequired()])
+    since = DateTimeField('起始时间')
+    until = DateTimeField('终止时间')

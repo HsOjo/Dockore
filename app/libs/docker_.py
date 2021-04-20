@@ -1,5 +1,5 @@
 from docker import DockerClient
-from docker.models.containers import ContainerCollection, Container
+from docker.models.containers import ContainerCollection, Container, ExecResult
 from docker.models.images import ImageCollection, Image
 from docker.models.resource import Collection
 
@@ -41,10 +41,11 @@ class ImageAdapter(CollectionAdapter):
             size=obj.attrs['Size'],
         )
         if verbose:
+            cfg = obj.attrs['Config']
             item.update(
-                command=' '.join(obj.attrs['Config']['Cmd']),
-                tty=obj.attrs['Config']['Tty'],
-                interactive=obj.attrs['Config']['OpenStdin'],
+                command=' '.join(cfg['Cmd']),
+                tty=cfg['Tty'],
+                interactive=cfg['OpenStdin'],
                 architecture=obj.attrs['Architecture'],
                 os=obj.attrs['Os'],
             )
@@ -64,6 +65,9 @@ class ImageAdapter(CollectionAdapter):
         item = self._c.pull(name, tag)
         return self._convert(item, True)
 
+    def tag(self, id, name, tag):
+        return self._c.get(id).tag(name, tag)
+
 
 class ContainerAdapter(CollectionAdapter):
     _c: ContainerCollection
@@ -81,16 +85,18 @@ class ContainerAdapter(CollectionAdapter):
             status=obj.status,
         )
         if verbose:
+            ns = obj.attrs['NetworkSettings']
+            cfg = obj.attrs['Config']
             item.update(
-                command=' '.join(obj.attrs['Config']['Cmd']),
-                tty=obj.attrs['Config']['Tty'],
-                interactive=obj.attrs['Config']['OpenStdin'],
+                command=' '.join(cfg['Cmd']),
+                tty=cfg['Tty'],
+                interactive=cfg['OpenStdin'],
                 network=dict(
-                    ip=obj.attrs['NetworkSettings']['IPAddress'],
-                    prefix=obj.attrs['NetworkSettings']['IPPrefixLen'],
-                    gateway=obj.attrs['NetworkSettings']['Gateway'],
-                    mac_address=obj.attrs['NetworkSettings']['MacAddress'],
-                    ports=obj.attrs['NetworkSettings']['Ports'],
+                    ip=ns['IPAddress'],
+                    prefix=ns['IPPrefixLen'],
+                    gateway=ns['Gateway'],
+                    mac_address=ns['MacAddress'],
+                    ports=obj.ports,
                 )
             )
         return item
@@ -112,6 +118,30 @@ class ContainerAdapter(CollectionAdapter):
 
     def restart(self, id, timeout=None):
         self._item(id).restart(timeout=timeout)
+
+    def rename(self, id, name):
+        self._item(id).rename(name)
+
+    def exec(self, id, command, interactive=False, tty=False, privileged=False):
+        result = self._item(id).exec_run(
+            command, stdin=interactive, tty=tty, privileged=privileged
+        )  # type: ExecResult
+        return dict(
+            exit_code=result.exit_code,
+            output=result.output.decode(errors='ignore'),
+        )
+
+    def logs(self, id, since, until):
+        logs_data = self._item(id).logs(since=since, until=until)  # type: bytes
+        return logs_data.decode(errors='ignore')
+
+    def diff(self, id):
+        result = dict(add=[], change=[], delete=[], other=[])
+        ds = {0: result['change'], 1: result['add'], 2: result['delete']}
+        for i in self._item(id).diff():
+            ds.get(i['Kind'], result['other']).append(i['Path'])
+
+        return result
 
 
 class Docker:

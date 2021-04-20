@@ -106,3 +106,27 @@ class Container(DockerAPIController):
             self.error(*RESTART_FAILED, excs=excs)
 
         self.success(*RESTART_SUCCESS)
+
+    @post
+    @rule('/rename')
+    @form(RenameForm)
+    def rename(self):
+        try:
+            return self.response(*RENAME_SUCCESS, item=self.docker.container.rename(
+                **self.form.data
+            ))
+        except Exception as e:
+            self.error(*RENAME_FAILED, exc=str(e))
+
+    @post
+    @rule('/logs')
+    @form(LogsForm)
+    def logs(self):
+        self.success(content=self.docker.container.logs(
+            **self.form.data
+        ))
+
+    @get
+    @rule('/diff/<string:id>')
+    def diff(self, id):
+        self.success(files=self.docker.container.diff(id))

@@ -16,3 +16,9 @@ class PullForm(Form):
     name = StringField('镜像名称', validators=[DataRequired()])
     tag = StringField('版本标签')
 
+
+class TagForm(Form):
+    id = StringField('镜像', validators=[DataRequired()])
+    name = StringField('镜像名称', validators=[DataRequired()])
+    tag = StringField('版本标签')
+

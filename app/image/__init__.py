@@ -54,8 +54,16 @@ class Image(DockerAPIController):
         try:
             return self.response(
                 *PULL_SUCCESS, item=self.docker.image.pull(
-                    self.form.name.data,
-                    self.form.tag.data,
+                    **self.form.data
                 ))
         except Exception as e:
             self.error(*PULL_FAILED, exc=str(e))
+
+    @post
+    @rule('/tag')
+    @form(TagForm)
+    def tag(self):
+        if self.docker.image.tag(**self.form.data):
+            self.success(*TAG_SUCCESS)
+        else:
+            self.error(*TAG_FAILED)

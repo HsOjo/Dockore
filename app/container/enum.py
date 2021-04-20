@@ -9,3 +9,6 @@ STOP_SUCCESS = (0, '停止容器成功。')
 STOP_FAILED = (3003, '停止容器失败。')
 RESTART_SUCCESS = (0, '重启容器成功。')
 RESTART_FAILED = (3004, '重启容器失败。')
+
+RENAME_SUCCESS = (0, '容器更名成功。')
+RENAME_FAILED = (3005, '容器更名失败。')
