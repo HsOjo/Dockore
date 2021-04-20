@@ -2,6 +2,8 @@ import json
 import sys
 import traceback
 
+from flask import jsonify
+
 from .controller import Controller
 from .exception import AppException
 
@@ -36,6 +38,9 @@ class APIController(Controller):
         def catch(e: Exception):
             traceback.print_exc(file=sys.stderr)
             return APIException(-1, str(e))
+
+    def response(self, code=0, msg=None, **data):
+        return jsonify(code=code, msg=msg, data=data)
 
     def success(self, code=0, msg=None, **data):
         raise APIException(code, msg, data)

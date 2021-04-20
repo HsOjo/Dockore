@@ -12,9 +12,16 @@ class ImageService:
 
     @staticmethod
     def delete(id):
-        try:
-            Docker().image.remove(id)
-        except:
-            return False
+        Docker().image.remove(id)
 
-        return True
+    @staticmethod
+    def search(keyword):
+        return Docker().image.search(keyword)
+
+    @staticmethod
+    def pull(name, tag):
+        if not tag:
+            tag = 'latest'
+        if tag == '*':
+            tag = None
+        return Docker().image.pull(name, tag)

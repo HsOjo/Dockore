@@ -31,8 +31,8 @@ class ImageAdapter(CollectionAdapter):
 
     def _convert(self, obj, verbose=False):
         item = dict(
-            id=obj.attrs['Id'],
-            tags=obj.attrs['RepoTags'],
+            id=obj.short_id,
+            tags=obj.tags,
             author=obj.attrs['Author'],
             create_time=obj.attrs['Created'],
             size=obj.attrs['Size'],
@@ -43,8 +43,15 @@ class ImageAdapter(CollectionAdapter):
             )
         return item
 
+    def search(self, keyword):
+        return self._c.search(keyword)
+
     def remove(self, id):
         self._c.remove(id)
+
+    def pull(self, name, tag):
+        item = self._c.pull(name, tag)
+        return self._convert(item, True)
 
 
 class ContainerAdapter(CollectionAdapter):
@@ -52,11 +59,11 @@ class ContainerAdapter(CollectionAdapter):
 
     def _convert(self, obj, verbose=False):
         item = dict(
-            id=obj.attrs['Id'][:12],
-            name=obj.attrs['Name'][1:],
-            image_id=obj.attrs['Image'][7:19],
+            id=obj.short_id,
+            name=obj.name,
+            image_id=obj.image.short_id,
             create_time=obj.attrs['Created'],
-            status=obj.attrs['State']['Status'],
+            status=obj.status,
         )
         if verbose:
             item.update(
@@ -66,13 +73,11 @@ class ContainerAdapter(CollectionAdapter):
 
     def remove(self, id):
         item = self.item(id, raw=True)  # type: Container
-        item.remove()
+        return item.remove()
 
-    def create(self, name, image, command, raw=False):
+    def create(self, name, image, command):
         item = self._c.create(image, command, name=name)
-        if not raw:
-            self._convert(item, verbose=True)
-        return item
+        return self._convert(item, verbose=True)
 
 
 class Docker:

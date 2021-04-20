@@ -9,10 +9,10 @@ class ListForm(ArgsForm):
 
 
 class DeleteForm(Form):
-    ids = DataField('被删除项')
+    ids = DataField('被删除项', validators=[DataRequired()])
 
 
 class CreateForm(Form):
     image = StringField('镜像', validators=[DataRequired()])
     command = StringField('命令', validators=[DataRequired()])
-    name = StringField('名称')
+    name = StringField('容器名称')

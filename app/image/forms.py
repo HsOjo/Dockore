@@ -1,4 +1,5 @@
-from wtforms import BooleanField
+from wtforms import BooleanField, StringField
+from wtforms.validators import DataRequired
 
 from saika.form import Form, ArgsForm, DataField
 
@@ -8,4 +9,10 @@ class ListForm(ArgsForm):
 
 
 class DeleteForm(Form):
-    ids = DataField('被删除项')
+    ids = DataField('被删除项', validators=[DataRequired()])
+
+
+class PullForm(Form):
+    name = StringField('镜像名称', validators=[DataRequired()])
+    tag = StringField('版本标签')
+

@@ -31,15 +31,36 @@ class Image(UserAPIController):
         ids = self.form.ids.data
 
         success = []
-        error = []
+        error = {}
 
         for id in ids:
-            if ImageService.delete(id):
+            try:
+                ImageService.delete(id)
                 success.append(id)
-            else:
-                error.append(id)
+            except Exception as e:
+                error[id] = str(e)
 
         if len(error):
-            self.error(*DELETE_FAILED, data=error)
+            self.error(*DELETE_FAILED, excs=error)
         else:
             self.success(*DELETE_SUCCESS)
+
+    @get
+    @rule('/search/<string:keyword>')
+    def search(self, keyword):
+        self.success(
+            items=ImageService.search(keyword)
+        )
+
+    @post
+    @rule('/pull')
+    @form(PullForm)
+    def pull(self):
+        try:
+            return self.response(
+                *PULL_SUCCESS, item=ImageService.pull(
+                    self.form.name.data,
+                    self.form.tag.data,
+                ))
+        except Exception as e:
+            self.error(*PULL_FAILED, exc=str(e))

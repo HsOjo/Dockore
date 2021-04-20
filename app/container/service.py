@@ -12,12 +12,7 @@ class ContainerService:
 
     @staticmethod
     def delete(id):
-        try:
-            Docker().container.remove(id)
-        except:
-            return False
-
-        return True
+        return Docker().container.remove(id)
 
     @staticmethod
     def create(name, image, command):
