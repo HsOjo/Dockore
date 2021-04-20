@@ -1,9 +1,7 @@
 from docker import DockerClient
 from docker.models.containers import ContainerCollection, Container
-from docker.models.images import ImageCollection
+from docker.models.images import ImageCollection, Image
 from docker.models.resource import Collection
-
-from saika import Config
 
 
 class CollectionAdapter:
@@ -11,7 +9,7 @@ class CollectionAdapter:
         self._c = c
 
     def item(self, id):
-        item = self._c.get(id)
+        item = self._item(id)
         item = self._convert(item, verbose=True)
         return item
 
@@ -23,9 +21,16 @@ class CollectionAdapter:
     def _convert(self, obj, verbose=False):
         pass
 
+    def _item(self, id):
+        pass
+
 
 class ImageAdapter(CollectionAdapter):
     _c: ImageCollection
+
+    def _item(self, id):
+        item = self._c.get(id)  # type: Image
+        return item
 
     def _convert(self, obj, verbose=False):
         item = dict(
@@ -38,6 +43,10 @@ class ImageAdapter(CollectionAdapter):
         if verbose:
             item.update(
                 command=' '.join(obj.attrs['Config']['Cmd']),
+                tty=obj.attrs['Config']['Tty'],
+                interactive=obj.attrs['Config']['OpenStdin'],
+                architecture=obj.attrs['Architecture'],
+                os=obj.attrs['Os'],
             )
         return item
 
@@ -48,12 +57,20 @@ class ImageAdapter(CollectionAdapter):
         self._c.remove(id)
 
     def pull(self, name, tag):
+        if not tag:
+            tag = 'latest'
+        if tag == '*':
+            tag = None
         item = self._c.pull(name, tag)
         return self._convert(item, True)
 
 
 class ContainerAdapter(CollectionAdapter):
     _c: ContainerCollection
+
+    def _item(self, id):
+        item = self._c.get(id)  # type: Container
+        return item
 
     def _convert(self, obj, verbose=False):
         item = dict(
@@ -65,35 +82,40 @@ class ContainerAdapter(CollectionAdapter):
         )
         if verbose:
             item.update(
-                command=' '.join(obj.attrs['Config']['Cmd'])
+                command=' '.join(obj.attrs['Config']['Cmd']),
+                tty=obj.attrs['Config']['Tty'],
+                interactive=obj.attrs['Config']['OpenStdin'],
+                network=dict(
+                    ip=obj.attrs['NetworkSettings']['IPAddress'],
+                    prefix=obj.attrs['NetworkSettings']['IPPrefixLen'],
+                    gateway=obj.attrs['NetworkSettings']['Gateway'],
+                    mac_address=obj.attrs['NetworkSettings']['MacAddress'],
+                    ports=obj.attrs['NetworkSettings']['Ports'],
+                )
             )
         return item
 
     def remove(self, id):
-        item = self._c.get(id)  # type: Container
-        item.remove()
+        self._item(id).remove()
 
-    def create(self, name, image, command):
-        item = self._c.create(image, command, name=name)
+    def create(self, name, image, command, interactive=False, tty=False):
+        item = self._c.create(
+            image, command, name=name, stdin_open=interactive, tty=tty,
+        )
         return self._convert(item, verbose=True)
 
     def start(self, id):
-        item = self._c.get(id)  # type: Container
-        item.start()
+        self._item(id).start()
 
-    def stop(self, id):
-        item = self._c.get(id)  # type: Container
-        item.stop()
+    def stop(self, id, timeout=None):
+        self._item(id).stop(timeout=timeout)
 
-    def restart(self, id):
-        item = self._c.get(id)  # type: Container
-        item.restart()
+    def restart(self, id, timeout=None):
+        self._item(id).restart(timeout=timeout)
 
 
 class Docker:
-    def __init__(self, url=None):
-        if url is None:
-            url = Config.section('docker').get('url')
+    def __init__(self, url):
         self._cli = DockerClient(url)
         self.image = ImageAdapter(self._cli.images)
         self.container = ContainerAdapter(self._cli.containers)

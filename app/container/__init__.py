@@ -1,26 +1,24 @@
-from app.user.controller import UserAPIController
+from app.base.controller import DockerAPIController
 from saika.decorator import *
 from .enum import *
 from .forms import *
-from .service import *
 
 
 @register_controller('/api/container')
-class Container(UserAPIController):
+class Container(DockerAPIController):
     @get
     @rule('/list')
     @form(ListForm)
     def list(self):
-        is_all = self.form.is_all.data
         self.success(
-            items=ContainerService.list(is_all)
+            items=self.docker.container.list(all=self.form.is_all.data)
         )
 
     @get
     @rule('/item/<string:id>')
     def item(self, id: str):
         self.success(
-            item=ContainerService.item(id)
+            item=self.docker.container.item(id)
         )
 
     @post
@@ -33,7 +31,7 @@ class Container(UserAPIController):
 
         for id in ids:
             try:
-                ContainerService.delete(id)
+                self.docker.container.remove(id)
             except Exception as e:
                 excs[id] = str(e)
 
@@ -47,10 +45,8 @@ class Container(UserAPIController):
     @form(CreateForm)
     def create(self):
         try:
-            return self.response(*CREATE_SUCCESS, item=ContainerService.create(
-                self.form.name.data,
-                self.form.image.data,
-                self.form.command.data,
+            return self.response(*CREATE_SUCCESS, item=self.docker.container.create(
+                **self.form.data
             ))
         except Exception as e:
             self.error(*CREATE_FAILED, exc=str(e))
@@ -64,7 +60,7 @@ class Container(UserAPIController):
         excs = {}
         for id in ids:
             try:
-                ContainerService.start(id)
+                self.docker.container.start(id)
             except Exception as e:
                 excs[id] = str(e)
 
@@ -75,14 +71,15 @@ class Container(UserAPIController):
 
     @post
     @rule('/stop')
-    @form(OperationForm)
+    @form(StopForm)
     def stop(self):
         ids = self.form.ids.data
+        timeout = int(self.form.timeout.data / len(ids))
 
         excs = {}
         for id in ids:
             try:
-                ContainerService.stop(id)
+                self.docker.container.stop(id, timeout)
             except Exception as e:
                 excs[id] = str(e)
 
@@ -93,14 +90,15 @@ class Container(UserAPIController):
 
     @post
     @rule('/restart')
-    @form(OperationForm)
+    @form(StopForm)
     def restart(self):
         ids = self.form.ids.data
+        timeout = int(self.form.timeout.data / len(ids))
 
         excs = {}
         for id in ids:
             try:
-                ContainerService.restart(id)
+                self.docker.container.restart(id, timeout)
             except Exception as e:
                 excs[id] = str(e)
 

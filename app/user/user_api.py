@@ -1,9 +1,9 @@
-from app.user.enum import TOKEN_INVALID
-from app.user.models import User
-from app.user.service import UserService
 from saika import MetaTable
 from saika.api import APIController
 from saika.context import Context
+from .enum import TOKEN_INVALID
+from .models import User
+from .service import UserService
 
 GK_USER = 'user'
 HK_TOKEN = 'Token'
@@ -34,6 +34,10 @@ class UserAPIController(APIController):
                 self.error(*TOKEN_INVALID)
 
             self.context.g_set(GK_USER, user)
+            self.callback_auth_success()
+
+    def callback_auth_success(self):
+        pass
 
     @property
     def current_user(self):

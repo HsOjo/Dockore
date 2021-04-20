@@ -1,4 +1,4 @@
-from wtforms import BooleanField, StringField
+from wtforms import BooleanField, StringField, IntegerField
 from wtforms.validators import DataRequired
 
 from saika.form import Form, ArgsForm, DataField
@@ -12,7 +12,13 @@ class OperationForm(Form):
     ids = DataField('被操作项', validators=[DataRequired()])
 
 
+class StopForm(OperationForm):
+    timeout = IntegerField('超时时间')
+
+
 class CreateForm(Form):
     image = StringField('镜像', validators=[DataRequired()])
     command = StringField('命令', validators=[DataRequired()])
     name = StringField('容器名称')
+    interactive = BooleanField('交互模式')
+    tty = BooleanField('虚拟终端')

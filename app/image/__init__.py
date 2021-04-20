@@ -1,27 +1,24 @@
-from app.user.controller import UserAPIController
+from app.base.controller import DockerAPIController
 from saika.decorator import *
 from .enum import *
 from .forms import *
-from .service import *
 
 
 @register_controller('/api/image')
-class Image(UserAPIController):
+class Image(DockerAPIController):
     @get
     @rule('/list')
     @form(ListForm)
     def list(self):
-        is_all = self.form.is_all.data
-
         self.success(
-            items=ImageService.list(is_all)
+            items=self.docker.image.list(all=self.form.is_all.data)
         )
 
     @get
     @rule('/item/<string:id>')
     def item(self, id):
         self.success(
-            item=ImageService.item(id)
+            item=self.docker.image.item(id)
         )
 
     @post
@@ -34,7 +31,7 @@ class Image(UserAPIController):
 
         for id in ids:
             try:
-                ImageService.delete(id)
+                self.docker.image.remove(id)
             except Exception as e:
                 excs[id] = str(e)
 
@@ -47,7 +44,7 @@ class Image(UserAPIController):
     @rule('/search/<string:keyword>')
     def search(self, keyword):
         self.success(
-            items=ImageService.search(keyword)
+            items=self.docker.image.search(keyword)
         )
 
     @post
@@ -56,7 +53,7 @@ class Image(UserAPIController):
     def pull(self):
         try:
             return self.response(
-                *PULL_SUCCESS, item=ImageService.pull(
+                *PULL_SUCCESS, item=self.docker.image.pull(
                     self.form.name.data,
                     self.form.tag.data,
                 ))

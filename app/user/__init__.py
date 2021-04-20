@@ -1,8 +1,8 @@
 from saika.decorator import *
-from .controller import UserAPIController, ignore_auth
 from .enum import *
 from .forms import LoginForm
 from .service import UserService
+from .user_api import UserAPIController, ignore_auth
 
 
 @register_controller('/api/user')
