@@ -47,7 +47,7 @@ class Controller:
             if isinstance(t, property):
                 continue
 
-            f = getattr(self, k)
+            _f = f = getattr(self, k)
             if callable(f):
                 if hasattr(f, '__func__'):
                     f = f.__func__
@@ -57,7 +57,7 @@ class Controller:
                     self._blueprint.add_url_rule(
                         rule=meta[hard_code.MK_RULE_STR],
                         methods=meta[hard_code.MK_METHODS],
-                        view_func=f
+                        view_func=_f
                     )
 
     def _register(self, app):
