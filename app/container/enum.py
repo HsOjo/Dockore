@@ -1,5 +1,11 @@
 DELETE_SUCCESS = (0, '删除容器成功。')
 DELETE_FAILED = (3001, '删除容器失败。')
-
 CREATE_SUCCESS = (0, '创建容器成功。')
 CREATE_FAILED = (3002, '创建容器失败。')
+
+START_SUCCESS = (0, '启动容器成功。')
+START_FAILED = (3003, '启动容器失败。')
+STOP_SUCCESS = (0, '停止容器成功。')
+STOP_FAILED = (3003, '停止容器失败。')
+RESTART_SUCCESS = (0, '重启容器成功。')
+RESTART_FAILED = (3004, '重启容器失败。')

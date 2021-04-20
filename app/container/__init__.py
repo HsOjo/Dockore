@@ -25,26 +25,22 @@ class Container(UserAPIController):
 
     @post
     @rule('/delete')
-    @form(DeleteForm)
+    @form(OperationForm)
     def delete(self):
         ids = self.form.ids.data
 
-        success = []
-        error = {}
+        excs = {}
 
         for id in ids:
             try:
-                if ContainerService.delete(id):
-                    success.append(id)
-                else:
-                    error[id] = None
+                ContainerService.delete(id)
             except Exception as e:
-                error[id] = str(e)
+                excs[id] = str(e)
 
-        if len(error):
-            self.error(*DELETE_FAILED, excs=error)
-        else:
-            self.success(*DELETE_SUCCESS)
+        if len(excs):
+            self.error(*DELETE_FAILED, excs=excs)
+
+        self.success(*DELETE_SUCCESS)
 
     @post
     @rule('/create')
@@ -58,3 +54,57 @@ class Container(UserAPIController):
             ))
         except Exception as e:
             self.error(*CREATE_FAILED, exc=str(e))
+
+    @post
+    @rule('/start')
+    @form(OperationForm)
+    def start(self):
+        ids = self.form.ids.data
+
+        excs = {}
+        for id in ids:
+            try:
+                ContainerService.start(id)
+            except Exception as e:
+                excs[id] = str(e)
+
+        if len(excs):
+            self.error(*START_FAILED, excs=excs)
+
+        self.success(*START_SUCCESS)
+
+    @post
+    @rule('/stop')
+    @form(OperationForm)
+    def stop(self):
+        ids = self.form.ids.data
+
+        excs = {}
+        for id in ids:
+            try:
+                ContainerService.stop(id)
+            except Exception as e:
+                excs[id] = str(e)
+
+        if len(excs):
+            self.error(*STOP_FAILED, excs=excs)
+
+        self.success(*STOP_SUCCESS)
+
+    @post
+    @rule('/restart')
+    @form(OperationForm)
+    def restart(self):
+        ids = self.form.ids.data
+
+        excs = {}
+        for id in ids:
+            try:
+                ContainerService.restart(id)
+            except Exception as e:
+                excs[id] = str(e)
+
+        if len(excs):
+            self.error(*RESTART_FAILED, excs=excs)
+
+        self.success(*RESTART_SUCCESS)

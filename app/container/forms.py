@@ -8,8 +8,8 @@ class ListForm(ArgsForm):
     is_all = BooleanField('显示所有', default=False)
 
 
-class DeleteForm(Form):
-    ids = DataField('被删除项', validators=[DataRequired()])
+class OperationForm(Form):
+    ids = DataField('被操作项', validators=[DataRequired()])
 
 
 class CreateForm(Form):

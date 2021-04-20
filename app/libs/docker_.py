@@ -10,16 +10,14 @@ class CollectionAdapter:
     def __init__(self, c: Collection):
         self._c = c
 
-    def item(self, id, raw=False):
+    def item(self, id):
         item = self._c.get(id)
-        if not raw:
-            item = self._convert(item, verbose=True)
+        item = self._convert(item, verbose=True)
         return item
 
-    def list(self, verbose=False, raw=False, **kwargs):
+    def list(self, verbose=False, **kwargs):
         items = self._c.list(**kwargs)
-        if not raw:
-            items = [self._convert(i, verbose) for i in items]
+        items = [self._convert(i, verbose) for i in items]
         return items
 
     def _convert(self, obj, verbose=False):
@@ -72,12 +70,24 @@ class ContainerAdapter(CollectionAdapter):
         return item
 
     def remove(self, id):
-        item = self.item(id, raw=True)  # type: Container
-        return item.remove()
+        item = self._c.get(id)  # type: Container
+        item.remove()
 
     def create(self, name, image, command):
         item = self._c.create(image, command, name=name)
         return self._convert(item, verbose=True)
+
+    def start(self, id):
+        item = self._c.get(id)  # type: Container
+        item.start()
+
+    def stop(self, id):
+        item = self._c.get(id)  # type: Container
+        item.stop()
+
+    def restart(self, id):
+        item = self._c.get(id)  # type: Container
+        item.restart()
 
 
 class Docker:

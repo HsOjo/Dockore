@@ -26,24 +26,22 @@ class Image(UserAPIController):
 
     @post
     @rule('/delete')
-    @form(DeleteForm)
+    @form(OperationForm)
     def delete(self):
         ids = self.form.ids.data
 
-        success = []
-        error = {}
+        excs = {}
 
         for id in ids:
             try:
                 ImageService.delete(id)
-                success.append(id)
             except Exception as e:
-                error[id] = str(e)
+                excs[id] = str(e)
 
-        if len(error):
-            self.error(*DELETE_FAILED, excs=error)
-        else:
-            self.success(*DELETE_SUCCESS)
+        if len(excs):
+            self.error(*DELETE_FAILED, excs=excs)
+
+        self.success(*DELETE_SUCCESS)
 
     @get
     @rule('/search/<string:keyword>')

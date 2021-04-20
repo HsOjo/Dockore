@@ -12,8 +12,20 @@ class ContainerService:
 
     @staticmethod
     def delete(id):
-        return Docker().container.remove(id)
+        Docker().container.remove(id)
 
     @staticmethod
     def create(name, image, command):
         return Docker().container.create(name, image, command)
+
+    @staticmethod
+    def start(id):
+        Docker().container.start(id)
+
+    @staticmethod
+    def stop(id):
+        Docker().container.stop(id)
+
+    @staticmethod
+    def restart(id):
+        Docker().container.restart(id)
