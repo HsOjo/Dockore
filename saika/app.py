@@ -5,6 +5,7 @@ import sys
 import traceback
 
 from flask import Flask
+from werkzeug.serving import is_running_from_reloader
 
 from . import hard_code
 from .config import Config
@@ -17,6 +18,9 @@ from .meta_table import MetaTable
 class SaikaApp(Flask):
     def __init__(self):
         super().__init__(self.__class__.__module__)
+        if self.debug and not is_running_from_reloader():
+            return
+
         try:
             self._init_env()
             self._init_config()

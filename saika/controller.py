@@ -48,10 +48,12 @@ class Controller:
                 continue
 
             f = getattr(self, k)
-            if callable(f) and hasattr(f, '__func__'):
-                meta = MetaTable.all(f.__func__)
+            if callable(f):
+                if hasattr(f, '__func__'):
+                    f = f.__func__
+                meta = MetaTable.all(f)
                 if meta is not None:
-                    print('  - %s %a' % (f.__func__, meta))
+                    print('  - %s %a' % (f.__qualname__ if hasattr(f, '__qualname__') else f.__name__, meta))
                     self._blueprint.add_url_rule(
                         rule=meta[hard_code.MK_RULE_STR],
                         methods=meta[hard_code.MK_METHODS],
