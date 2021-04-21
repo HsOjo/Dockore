@@ -45,9 +45,7 @@ class Container(DockerAPIController):
     @form(CreateForm)
     def create(self):
         try:
-            return self.response(*CREATE_SUCCESS, item=self.docker.container.create(
-                **self.form.data
-            ))
+            return self.response(*CREATE_SUCCESS, item=self.docker.container.create(**self.form.data))
         except Exception as e:
             self.error(*CREATE_FAILED, exc=str(e))
 

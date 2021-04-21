@@ -1,8 +1,11 @@
+from typing import Dict
+
 from flask_wtf import FlaskForm
 from werkzeug.datastructures import MultiDict
 from wtforms import Field
+from wtforms.fields.core import UnboundField
 
-from . import hard_code
+from . import hard_code, common
 from .context import Context
 from .enum import PARAMS_MISMATCH
 from .environ import Environ
@@ -27,13 +30,54 @@ def process_form():
         Context.g_set(hard_code.MK_FORM, form)
         if args.get(hard_code.AK_VALIDATE):
             if not form.validate():
-                raise FormException(*PARAMS_MISMATCH)
+                print(form.errors)
+                raise FormException(*PARAMS_MISMATCH, data=dict(
+                    errors=common.obj_standard(form.errors, True, True)
+                ))
 
 
-class DataField(Field):
+def simple_choices(obj):
+    if isinstance(obj, list):
+        return [(i, i) for i in obj]
+    elif isinstance(obj, dict):
+        return [(v, k) for k, v in obj.items()]
+    return obj
+
+
+class ListField(Field):
+    def __init__(self, item_field=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._item_fields = {}  # type: Dict[Field]
+        self._item_field_g = item_field
+        if isinstance(item_field, UnboundField):
+            self._item_field_g = lambda: UnboundField(
+                item_field.field_class, *item_field.args, **item_field.kwargs
+            )
+        self._data = None
+        self.data = None
+        self._errors = []
+
     def process_formdata(self, valuelist):
         if valuelist:
             self.data = valuelist
+            self._data = MultiDict([(str(i), v) for i, v in enumerate(valuelist)])
+
+            for k, v in self._data.items():
+                field = self._item_field_g()
+                field = field.bind(form=None, name=k, id=k, _meta=self.meta, translations=self._translations)
+                field.process(self._data, v)
+                self._item_fields[k] = field
+
+    def validate(self, *args, **kwargs):
+        success = True
+        for field in self._item_fields.values():
+            if not field.validate(*args, **kwargs):
+                success = False
+        return success
+
+    @property
+    def errors(self):
+        return {int(k): f.errors for k, f in self._item_fields.items() if f.errors}
 
 
 class Form(FlaskForm):
