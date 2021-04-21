@@ -53,19 +53,19 @@ class ListField(Field):
             self._item_field_g = lambda: UnboundField(
                 item_field.field_class, *item_field.args, **item_field.kwargs
             )
+        self._data_md = None
         self._data = None
-        self.data = None
         self._errors = []
 
     def process_formdata(self, valuelist):
         if valuelist:
-            self.data = valuelist
-            self._data = MultiDict([(str(i), v) for i, v in enumerate(valuelist)])
+            self._data = valuelist
+            self._data_md = MultiDict([(str(i), v) for i, v in enumerate(valuelist)])
 
-            for k, v in self._data.items():
+            for k, v in self._data_md.items():
                 field = self._item_field_g()
                 field = field.bind(form=None, name=k, id=k, _meta=self.meta, translations=self._translations)
-                field.process(self._data, v)
+                field.process(self._data_md, v)
                 self._item_fields[k] = field
 
     def validate(self, *args, **kwargs):
@@ -78,6 +78,14 @@ class ListField(Field):
     @property
     def errors(self):
         return {int(k): f.errors for k, f in self._item_fields.items() if f.errors}
+
+    @property
+    def data(self):
+        return [f.data for f in self._item_fields.values()]
+
+    @data.setter
+    def data(self, v):
+        self._data = v
 
 
 class Form(FlaskForm):

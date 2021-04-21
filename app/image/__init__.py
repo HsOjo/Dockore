@@ -1,3 +1,5 @@
+from docker.errors import APIError
+
 from app.base.controller import DockerAPIController
 from saika.decorator import *
 from .enum import *
@@ -32,7 +34,7 @@ class Image(DockerAPIController):
         for id in ids:
             try:
                 self.docker.image.remove(id)
-            except Exception as e:
+            except APIError as e:
                 excs[id] = str(e)
 
         if len(excs):
@@ -56,7 +58,7 @@ class Image(DockerAPIController):
                 *PULL_SUCCESS, item=self.docker.image.pull(
                     **self.form.data
                 ))
-        except Exception as e:
+        except APIError as e:
             self.error(*PULL_FAILED, exc=str(e))
 
     @post

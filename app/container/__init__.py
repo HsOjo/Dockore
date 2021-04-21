@@ -1,3 +1,5 @@
+from docker.errors import APIError
+
 from app.base.controller import DockerAPIController
 from saika.decorator import *
 from .enum import *
@@ -32,7 +34,7 @@ class Container(DockerAPIController):
         for id in ids:
             try:
                 self.docker.container.remove(id)
-            except Exception as e:
+            except APIError as e:
                 excs[id] = str(e)
 
         if len(excs):
@@ -46,7 +48,7 @@ class Container(DockerAPIController):
     def create(self):
         try:
             return self.response(*CREATE_SUCCESS, item=self.docker.container.create(**self.form.data))
-        except Exception as e:
+        except APIError as e:
             self.error(*CREATE_FAILED, exc=str(e))
 
     @post
@@ -59,7 +61,7 @@ class Container(DockerAPIController):
         for id in ids:
             try:
                 self.docker.container.start(id)
-            except Exception as e:
+            except APIError as e:
                 excs[id] = str(e)
 
         if len(excs):
@@ -78,7 +80,7 @@ class Container(DockerAPIController):
         for id in ids:
             try:
                 self.docker.container.stop(id, timeout)
-            except Exception as e:
+            except APIError as e:
                 excs[id] = str(e)
 
         if len(excs):
@@ -97,7 +99,7 @@ class Container(DockerAPIController):
         for id in ids:
             try:
                 self.docker.container.restart(id, timeout)
-            except Exception as e:
+            except APIError as e:
                 excs[id] = str(e)
 
         if len(excs):
@@ -113,7 +115,7 @@ class Container(DockerAPIController):
             return self.response(*RENAME_SUCCESS, item=self.docker.container.rename(
                 **self.form.data
             ))
-        except Exception as e:
+        except APIError as e:
             self.error(*RENAME_FAILED, exc=str(e))
 
     @post

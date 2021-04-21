@@ -1,11 +1,24 @@
+import traceback
+
+from docker.errors import APIError
+
 from app.libs.docker_sdk import Docker
-from saika import Config
 from app.user.user_api import UserAPIController
+from saika import Config
+from saika.api import APIException
 
 GK_DOCKER = 'docker'
 
 
 class DockerAPIController(UserAPIController):
+    def callback_before_register(self):
+        super().callback_before_register()
+
+        @self.blueprint.errorhandler(APIError)
+        def catch(e: APIError):
+            traceback.print_exc()
+            return APIException(msg=str(e))
+
     def callback_auth_success(self):
         self.context.g_set(
             GK_DOCKER, Docker(Config.section('docker').get('url'))

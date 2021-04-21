@@ -5,3 +5,4 @@ from .controller import Controller
 from .database import db, model
 from .decorator import *
 from .environ import Environ
+from .exception import AppException
