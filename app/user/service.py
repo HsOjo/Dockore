@@ -1,6 +1,7 @@
 import hashlib
 
 from saika import db, common, Config
+
 from .models import User
 
 

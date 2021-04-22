@@ -1,7 +1,7 @@
 from docker.errors import APIError
+from saika.decorator import *
 
 from app.base.controller import DockerAPIController
-from saika.decorator import *
 from .enums import *
 from .forms import *
 
@@ -69,3 +69,10 @@ class Image(DockerAPIController):
             self.success(*TAG_SUCCESS)
         else:
             self.error(*TAG_FAILED)
+
+    @get
+    @rule('/history/<string:id>')
+    def history(self, id):
+        self.success(
+            histories=self.docker.image.history(id)
+        )

@@ -1,7 +1,6 @@
+from saika.form import Form
 from wtforms import StringField
 from wtforms.validators import DataRequired
-
-from saika.form import Form
 
 
 class LoginForm(Form):

@@ -1,7 +1,7 @@
 from docker.models.images import ImageCollection, Image
 
 from .collection import CollectionAdapter
-from ..convertor import ImageConvertor
+from ..convertor import ImageConvertor, HistoriesConvertor
 
 
 class ImageAdapter(CollectionAdapter):
@@ -31,3 +31,6 @@ class ImageAdapter(CollectionAdapter):
 
     def tag(self, id, name, tag):
         return self._c.get(id).tag(name, tag)
+
+    def history(self, id):
+        return HistoriesConvertor.from_docker(self._c.get(id).history())

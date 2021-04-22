@@ -19,6 +19,6 @@ class ImageConvertor:
                 interactive=cfg['OpenStdin'],
                 architecture=obj.attrs['Architecture'],
                 os=obj.attrs['Os'],
-                ports=PortsConvertor.from_docker(cfg['ExposedPorts'])
+                ports=PortsConvertor.from_docker(cfg.get('ExposedPorts'))
             )
         return item

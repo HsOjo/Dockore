@@ -1,7 +1,6 @@
+from saika.form import Form, ArgsForm, ListField
 from wtforms import BooleanField, StringField
 from wtforms.validators import DataRequired
-
-from saika.form import Form, ArgsForm, ListField
 
 
 class ListForm(ArgsForm):

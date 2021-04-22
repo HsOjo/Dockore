@@ -1,7 +1,6 @@
+from saika.form import Form, ArgsForm, ListField, simple_choices
 from wtforms import BooleanField, StringField, IntegerField, DateTimeField, FormField, SelectField
 from wtforms.validators import DataRequired, NumberRange, IPAddress
-
-from saika.form import Form, ArgsForm, ListField, simple_choices
 
 
 class ListForm(ArgsForm):
