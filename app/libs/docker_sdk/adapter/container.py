@@ -2,7 +2,7 @@ from docker.models.containers import ContainerCollection, Container, ExecResult
 
 from .collection import CollectionAdapter
 from .image import ImageAdapter
-from ..convertor import ContainerConvertor
+from ..convertor import ContainerConvertor, PortMappingConvertor
 
 
 class ContainerAdapter(CollectionAdapter):
