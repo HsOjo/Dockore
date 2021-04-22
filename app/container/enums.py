@@ -15,3 +15,6 @@ RENAME_FAILED = (3005, '容器更名失败。')
 
 COMMIT_SUCCESS = (0, '提交容器镜像成功。')
 COMMIT_FAILED = (3006, '提交容器镜像失败。')
+
+RUN_SUCCESS = (0, '创建（运行）容器成功。')
+RUN_FAILED = (3007, '创建（运行）容器失败。')

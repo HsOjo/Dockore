@@ -52,6 +52,15 @@ class Container(DockerAPIController):
             self.error(*CREATE_FAILED, exc=str(e))
 
     @post
+    @rule('/run')
+    @form(CreateForm)
+    def run(self):
+        try:
+            return self.response(*RUN_SUCCESS, item=self.docker.container.run(**self.form.data))
+        except APIError as e:
+            self.error(*RUN_FAILED, exc=str(e))
+
+    @post
     @rule('/start')
     @form(OperationForm)
     def start(self):

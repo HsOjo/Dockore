@@ -26,6 +26,13 @@ class ContainerAdapter(CollectionAdapter):
         )
         return self.convert(item, verbose=True)
 
+    def run(self, name, image, command, interactive=False, tty=False, ports=None):
+        item = self._c.run(
+            image, command, name=name, stdin_open=interactive, tty=tty,
+            ports=PortMappingConvertor.to_docker(ports)
+        )
+        return self.convert(item, verbose=True)
+
     def start(self, id):
         self._item(id).start()
 
