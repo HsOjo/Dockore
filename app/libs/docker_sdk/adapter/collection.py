@@ -7,15 +7,16 @@ class CollectionAdapter:
 
     def item(self, id):
         item = self._item(id)
-        item = self._convert(item, verbose=True)
+        item = self.convert(item, verbose=True)
         return item
 
     def list(self, verbose=False, **kwargs):
         items = self._c.list(**kwargs)
-        items = [self._convert(i, verbose) for i in items]
+        items = [self.convert(i, verbose) for i in items]
         return items
 
-    def _convert(self, obj, verbose=False):
+    @staticmethod
+    def convert(obj, verbose=False):
         pass
 
     def _item(self, id):

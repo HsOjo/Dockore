@@ -1,6 +1,7 @@
 from docker.models.containers import ContainerCollection, Container, ExecResult
 
 from .collection import CollectionAdapter
+from .image import ImageAdapter
 from ..util.port_mapping import PortMapping
 
 
@@ -11,7 +12,8 @@ class ContainerAdapter(CollectionAdapter):
         item = self._c.get(id)  # type: Container
         return item
 
-    def _convert(self, obj, verbose=False):
+    @staticmethod
+    def convert(obj, verbose=False):
         item = dict(
             id=obj.short_id,
             name=obj.name,
@@ -45,7 +47,7 @@ class ContainerAdapter(CollectionAdapter):
             image, command, name=name, stdin_open=interactive, tty=tty,
             ports=PortMapping.to_docker_py(ports)
         )
-        return self._convert(item, verbose=True)
+        return self.convert(item, verbose=True)
 
     def start(self, id):
         self._item(id).start()
@@ -81,3 +83,7 @@ class ContainerAdapter(CollectionAdapter):
                 ds.get(i['Kind'], result['other']).append(i['Path'])
 
         return result
+
+    def commit(self, id, name, tag, message=None, author=None):
+        image = self._item(id).commit(name, tag, message=message, author=author)  # type: bytes
+        return ImageAdapter.convert(image, verbose=True)

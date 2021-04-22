@@ -2,7 +2,7 @@ from docker.errors import APIError
 
 from app.base.controller import DockerAPIController
 from saika.decorator import *
-from .enum import *
+from .enums import *
 from .forms import *
 
 
@@ -130,3 +130,11 @@ class Container(DockerAPIController):
     @rule('/diff/<string:id>')
     def diff(self, id):
         self.success(files=self.docker.container.diff(id))
+
+    @post
+    @rule('/commit')
+    @form(CommitForm)
+    def commit(self):
+        self.success(*COMMIT_SUCCESS, content=self.docker.container.commit(
+            **self.form.data
+        ))

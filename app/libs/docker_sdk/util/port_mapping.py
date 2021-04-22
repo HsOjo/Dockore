@@ -4,6 +4,9 @@ from typing import List, Dict
 class PortMapping:
     @staticmethod
     def to_docker_py(ports):
+        if ports is None:
+            return None
+
         result = {}
 
         for port in ports:
@@ -20,6 +23,9 @@ class PortMapping:
 
     @staticmethod
     def from_docker_py(ports):
+        if ports is None:
+            return None
+
         result = []
         for inner, host in ports.items():
             inner: str

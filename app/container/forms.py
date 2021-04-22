@@ -41,3 +41,11 @@ class LogsForm(Form):
     id = StringField('容器', validators=[DataRequired()])
     since = DateTimeField('起始时间')
     until = DateTimeField('终止时间')
+
+
+class CommitForm(Form):
+    id = StringField('容器', validators=[DataRequired()])
+    name = StringField('镜像名称', validators=[DataRequired()])
+    tag = StringField('版本标签')
+    message = StringField('改动消息')
+    author = StringField('作者名称')

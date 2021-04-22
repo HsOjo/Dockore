@@ -1,7 +1,7 @@
 from saika import MetaTable
 from saika.api import APIController
 from saika.context import Context
-from .enum import TOKEN_INVALID
+from .enums import TOKEN_INVALID
 from .models import User
 from .service import UserService
 

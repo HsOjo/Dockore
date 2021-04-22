@@ -7,7 +7,7 @@ from wtforms.fields.core import UnboundField
 
 from . import hard_code, common
 from .context import Context
-from .enum import PARAMS_MISMATCH
+from .enums import PARAMS_MISMATCH
 from .environ import Environ
 from .exception import AppException
 from .meta_table import MetaTable

@@ -10,7 +10,8 @@ class ImageAdapter(CollectionAdapter):
         item = self._c.get(id)  # type: Image
         return item
 
-    def _convert(self, obj, verbose=False):
+    @staticmethod
+    def convert(obj, verbose=False):
         item = dict(
             id=obj.short_id,
             tags=obj.tags,
@@ -41,7 +42,7 @@ class ImageAdapter(CollectionAdapter):
         if tag == '*':
             tag = None
         item = self._c.pull(name, tag)
-        return self._convert(item, True)
+        return self.convert(item, True)
 
     def tag(self, id, name, tag):
         return self._c.get(id).tag(name, tag)

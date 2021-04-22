@@ -1,5 +1,5 @@
 from saika.decorator import *
-from .enum import *
+from .enums import *
 from .forms import LoginForm
 from .service import UserService
 from .user_api import UserAPIController, ignore_auth

@@ -2,7 +2,7 @@ from docker.errors import APIError
 
 from app.base.controller import DockerAPIController
 from saika.decorator import *
-from .enum import *
+from .enums import *
 from .forms import *
 
 

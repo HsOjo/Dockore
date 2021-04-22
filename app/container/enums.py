@@ -12,3 +12,6 @@ RESTART_FAILED = (3004, '重启容器失败。')
 
 RENAME_SUCCESS = (0, '容器更名成功。')
 RENAME_FAILED = (3005, '容器更名失败。')
+
+COMMIT_SUCCESS = (0, '提交容器镜像成功。')
+COMMIT_FAILED = (3006, '提交容器镜像失败。')

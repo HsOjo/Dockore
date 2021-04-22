@@ -1,6 +1,6 @@
 from werkzeug.exceptions import HTTPException
 
-from .enum import APP_ERROR
+from .enums import APP_ERROR
 
 
 class AppException(HTTPException):
