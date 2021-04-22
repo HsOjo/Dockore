@@ -1,7 +1,6 @@
 from flask_cors import CORS
-from flask_migrate import Migrate
 
-from saika import SaikaApp, db
+from saika import SaikaApp
 
 
 class Application(SaikaApp):
@@ -11,4 +10,3 @@ class Application(SaikaApp):
 
 cors = CORS(supports_credentials=True)
 app = Application()
-migrate = Migrate(app, db)

@@ -1,6 +1,6 @@
-from saika import MetaTable
-from saika.api import APIController
+from saika import MetaTable, APIController
 from saika.context import Context
+
 from .enums import TOKEN_INVALID
 from .models import User
 from .service import UserService
@@ -24,7 +24,7 @@ class UserAPIController(APIController):
             if self.request.method == 'OPTIONS':
                 return
 
-            f = Context.view_function()
+            f = Context.get_view_function()
             if f is None or MetaTable.get(f, MK_PUBLIC):
                 return
 
