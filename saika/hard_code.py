@@ -17,3 +17,6 @@ CK_DATABASE = 'database'
 
 # Arg Key
 AK_VALIDATE = 'validate'
+
+# G Key
+GK_CONTEXT = 'context'

@@ -1,9 +1,9 @@
 from typing import List, Dict
 
 
-class PortMapping:
+class PortMappingConvertor:
     @staticmethod
-    def to_docker_py(ports):
+    def to_docker(ports: list):
         if ports is None:
             return None
 
@@ -22,7 +22,7 @@ class PortMapping:
         return result
 
     @staticmethod
-    def from_docker_py(ports):
+    def from_docker(ports: dict):
         if ports is None:
             return None
 

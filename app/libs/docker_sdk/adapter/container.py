@@ -2,7 +2,7 @@ from docker.models.containers import ContainerCollection, Container, ExecResult
 
 from .collection import CollectionAdapter
 from .image import ImageAdapter
-from ..util.port_mapping import PortMapping
+from ..convertor import ContainerConvertor
 
 
 class ContainerAdapter(CollectionAdapter):
@@ -14,30 +14,7 @@ class ContainerAdapter(CollectionAdapter):
 
     @staticmethod
     def convert(obj, verbose=False):
-        item = dict(
-            id=obj.short_id,
-            name=obj.name,
-            image_id=obj.image.short_id,
-            create_time=obj.attrs['Created'],
-            status=obj.status,
-        )
-        if verbose:
-            ns = obj.attrs['NetworkSettings']
-            cfg = obj.attrs['Config']
-
-            item.update(
-                command=' '.join(cfg['Cmd']),
-                tty=cfg['Tty'],
-                interactive=cfg['OpenStdin'],
-                network=dict(
-                    ip=ns['IPAddress'],
-                    prefix=ns['IPPrefixLen'],
-                    gateway=ns['Gateway'],
-                    mac_address=ns['MacAddress'],
-                    ports=PortMapping.from_docker_py(obj.attrs['HostConfig']['PortBindings']),
-                )
-            )
-        return item
+        return ContainerConvertor.from_docker(obj, verbose)
 
     def remove(self, id):
         self._item(id).remove()
@@ -45,7 +22,7 @@ class ContainerAdapter(CollectionAdapter):
     def create(self, name, image, command, interactive=False, tty=False, ports=None):
         item = self._c.create(
             image, command, name=name, stdin_open=interactive, tty=tty,
-            ports=PortMapping.to_docker_py(ports)
+            ports=PortMappingConvertor.to_docker(ports)
         )
         return self.convert(item, verbose=True)
 
