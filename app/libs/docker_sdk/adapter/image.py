@@ -18,8 +18,8 @@ class ImageAdapter(CollectionAdapter):
     def search(self, keyword):
         return self._c.search(keyword)
 
-    def remove(self, id):
-        self._c.remove(id)
+    def remove(self, id, tag_only=False):
+        self._c.remove(id, noprune=tag_only)
 
     def pull(self, name, tag):
         if not tag:

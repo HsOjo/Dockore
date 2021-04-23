@@ -1,7 +1,7 @@
 from saika.decorator import *
 
 from .enums import *
-from .forms import LoginForm
+from .forms import *
 from .service import UserService
 from .user_api import UserAPIController, ignore_auth
 
@@ -13,10 +13,7 @@ class User(UserAPIController):
     @rule('/login')
     @form(LoginForm)
     def login(self):
-        username = self.form.username.data
-        password = self.form.password.data
-
-        token = UserService.login(username, password)
+        token = UserService.login(**self.form.data)
         if not token:
             self.error(*LOGIN_FAILED)
 
@@ -30,3 +27,13 @@ class User(UserAPIController):
             id=user.id,
             username=user.username,
         )
+
+    @post
+    @rule('/change_password')
+    @form(ChangePasswordForm)
+    def change_password(self):
+        result = UserService.change_password(**self.form.data)
+        if not result:
+            self.error(*CHANGE_PASSWORD_FAILED)
+
+        self.success(*CHANGE_PASSWORD_SUCCESS)
