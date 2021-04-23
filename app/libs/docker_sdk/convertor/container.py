@@ -1,3 +1,4 @@
+from .image import ImageConvertor
 from .ports_mapping import PortMappingConvertor
 
 
@@ -7,7 +8,7 @@ class ContainerConvertor:
         item = dict(
             id=obj.short_id,
             name=obj.name,
-            image_id=obj.image.short_id,
+            image=ImageConvertor.from_docker(obj.image),
             create_time=obj.attrs['Created'],
             status=obj.status,
         )
