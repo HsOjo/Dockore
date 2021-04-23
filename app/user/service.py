@@ -35,6 +35,22 @@ class UserService:
             return common.obj_encrypt(dict(id=item.id), expires)
 
     @staticmethod
+    def change_password(username, old, new):
+        password = pw_hash(old)
+        item = User.query.filter_by(
+            username=username,
+            password=password,
+        ).first()  # type: User
+
+        if item is None:
+            return False
+        else:
+            item.password = pw_hash(new)
+            db.session.add(item)
+            db.session.commit()
+            return True
+
+    @staticmethod
     def get_user(token: str):
         obj = common.obj_decrypt(token)  # type: dict
         if obj is not None:

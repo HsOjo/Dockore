@@ -11,6 +11,10 @@ class OperationForm(Form):
     ids = ListField(StringField('被操作项', validators=[DataRequired()]))
 
 
+class DeleteForm(OperationForm):
+    tag_only = BooleanField('仅删除标签')
+
+
 class PullForm(Form):
     name = StringField('镜像名称', validators=[DataRequired()])
     tag = StringField('版本标签')

@@ -25,15 +25,16 @@ class Image(DockerAPIController):
 
     @post
     @rule('/delete')
-    @form(OperationForm)
+    @form(DeleteForm)
     def delete(self):
         ids = self.form.ids.data
+        tag_only = self.form.tag_only.data
 
         excs = {}
 
         for id in ids:
             try:
-                self.docker.image.remove(id)
+                self.docker.image.remove(id, tag_only)
             except APIError as e:
                 excs[id] = str(e)
 

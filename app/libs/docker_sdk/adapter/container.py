@@ -28,7 +28,7 @@ class ContainerAdapter(CollectionAdapter):
 
     def run(self, name, image, command, interactive=False, tty=False, ports=None):
         item = self._c.run(
-            image, command, name=name, stdin_open=interactive, tty=tty,
+            image, command, name=name, stdin_open=interactive, tty=tty, detach=True,
             ports=PortMappingConvertor.to_docker(ports)
         )
         return self.convert(item, verbose=True)

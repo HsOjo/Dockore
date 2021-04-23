@@ -3,3 +3,5 @@ Flask_Script
 Flask_Cors
 WTForms
 Flask_Migrate
+pymysql
+uwsgi
