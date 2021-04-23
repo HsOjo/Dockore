@@ -32,7 +32,7 @@ class User(UserAPIController):
     @rule('/change_password')
     @form(ChangePasswordForm)
     def change_password(self):
-        result = UserService.change_password(**self.form.data)
+        result = UserService.change_password(self.current_user.username, **self.form.data)
         if not result:
             self.error(*CHANGE_PASSWORD_FAILED)
 
