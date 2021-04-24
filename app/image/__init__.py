@@ -6,7 +6,7 @@ from .enums import *
 from .forms import *
 
 
-@register_controller('/api/image')
+@controller('/api/image')
 class Image(DockerAPIController):
     @get
     @rule('/list')
