@@ -4,7 +4,7 @@ from docker.errors import APIError
 from saika import Config, APIException
 
 from app.libs import Docker
-from app.user.user_api import UserAPIController
+from app.user import UserAPIController
 
 GK_DOCKER = 'docker'
 

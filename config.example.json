@@ -1,0 +1,22 @@
+{
+  "database": {
+    "driver": "mysql+pymysql",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "user": "root",
+    "password": "",
+    "database": "dockore",
+    "charset": "utf8mb4"
+  },
+  "docker": {
+    "url": "tcp://127.0.0.1:2375"
+  },
+  "user": {
+    "login_expires": 86400
+  },
+  "core": {
+    "SQLALCHEMY_TRACK_MODIFICATIONS": true,
+    "SECRET_KEY": "Dockore",
+    "WTF_CSRF_ENABLED": false
+  }
+}
