@@ -1,12 +1,12 @@
 from docker.errors import APIError
 from saika.decorator import *
 
-from app.base.controller import DockerAPIController
+from app.base import DockerAPIController
 from .enums import *
 from .forms import *
 
 
-@register_controller('/api/container')
+@controller('/api/container')
 class Container(DockerAPIController):
     @get
     @rule('/list')

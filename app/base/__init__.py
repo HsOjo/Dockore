@@ -1,1 +1,1 @@
-from . import controller
+from .controller import DockerAPIController

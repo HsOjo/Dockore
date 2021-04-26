@@ -6,7 +6,7 @@ from .service import UserService
 from .user_api import UserAPIController, ignore_auth
 
 
-@register_controller('/api/user')
+@controller('/api/user')
 class User(UserAPIController):
     @ignore_auth
     @post
