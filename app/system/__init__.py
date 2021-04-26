@@ -1,14 +1,17 @@
+import platform
+
 from saika import Config, Environ
 from saika.decorator import *
 from saika.form import AUTO
 
-from app.user import UserAPIController
+from app.base import DockerAPIController
 from .enums import *
 from .forms import *
+from ..const import Const
 
 
 @controller('/api/system')
-class System(UserAPIController):
+class System(DockerAPIController):
     @get
     @post
     @rule('/config')
@@ -23,3 +26,18 @@ class System(UserAPIController):
                 return self.response(*CONFIG_SUCCESS)
             except Exception as e:
                 self.error(*CONFIG_FAILED, exc=str(e))
+
+    @get
+    @rule('/version')
+    def version(self):
+        uname = platform.uname()
+        version = {Const.project: dict(
+            version=Const.version,
+            hostname=uname.node,
+            py_version=platform.python_version(),
+            os=uname.system,
+            arch=uname.machine,
+            kernel_version=uname.release,
+        )}
+        version.update(self.docker.version)
+        self.success(version=version)
