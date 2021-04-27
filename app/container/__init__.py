@@ -4,6 +4,7 @@ from saika.decorator import *
 from app.base import DockerAPIController
 from .enums import *
 from .forms import *
+from .sockets import *
 
 
 @controller('/api/container')
@@ -147,3 +148,10 @@ class Container(DockerAPIController):
         self.success(*COMMIT_SUCCESS, content=self.docker.container.commit(
             **self.form.data
         ))
+
+    @get
+    @rule('/terminal/<string:id>')
+    def terminal(self, id):
+        expires = Config.section('docker').get('shell_expires', 600)
+        item = self.docker.container.item(id)
+        self.success(token=common.obj_encrypt(dict(id=item['id']), expires))

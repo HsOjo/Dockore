@@ -1,4 +1,5 @@
-from saika.database import *
+from saika.database import db
+from saika.decorator import model
 
 
 @model
