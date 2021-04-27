@@ -159,8 +159,8 @@ class Container(DockerAPIController):
 
         cfg = Config.section('docker')
 
-        expires = cfg.get('shell_expires', 600)
-        cmd = [cfg.get('cli-bin'), '-H', cfg.get('url')]
+        expires = cfg.get('terminal_expires', 600)
+        cmd = [cfg.get('cli_bin'), '-H', cfg.get('url')]
 
         if self.form.cmd.data:
             cmd += ['exec', '-it', item['id'], *self.form.cmd.data.split(' ')]
