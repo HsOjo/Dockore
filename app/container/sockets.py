@@ -26,7 +26,7 @@ class Terminal(SocketIOController):
         fd = self.context.session.pop(GK_FD, None)
         if fd:
             child_pid = self.context.session.get(GK_CHILD_PID)
-            print('Kill: %d %d' % (child_pid, fd))
+            print('Kill: %s %s' % (child_pid, fd))
             os.kill(child_pid, signal.SIGTERM)
             os.close(fd)
 
@@ -47,10 +47,10 @@ class Terminal(SocketIOController):
         cmd = obj['cmd']
 
         (child_pid, fd) = pty.fork()
-        if child_pid == 0:
+        if not child_pid:
             subprocess.run(cmd)
         else:
-            print('Run: %d %d %s' % (child_pid, fd, ' '.join(cmd)))
+            print('Run: %s %s %s' % (child_pid, fd, ' '.join(cmd)))
             self.context.session[GK_FD] = fd
             self.context.session[GK_CHILD_PID] = child_pid
             self.set_winsize(fd, 20, 30)
