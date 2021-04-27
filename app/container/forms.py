@@ -48,3 +48,8 @@ class CommitForm(JSONForm):
     tag = StringField('版本标签')
     message = StringField('改动消息')
     author = StringField('作者名称')
+
+
+class TerminalForm(JSONForm):
+    id = StringField('容器', validators=[DataRequired()])
+    cmd = StringField('命令')

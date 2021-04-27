@@ -149,9 +149,25 @@ class Container(DockerAPIController):
             **self.form.data
         ))
 
-    @get
-    @rule('/terminal/<string:id>')
-    def terminal(self, id):
-        expires = Config.section('docker').get('shell_expires', 600)
-        item = self.docker.container.item(id)
-        self.success(token=common.obj_encrypt(dict(id=item['id']), expires))
+    @post
+    @rule('/terminal')
+    @form(TerminalForm)
+    def terminal(self):
+        item = self.docker.container.item(self.form.id.data)
+        if not item:
+            self.error(*TERMINAL_FAILED_NOT_EXISTED)
+
+        cfg = Config.section('docker')
+
+        expires = cfg.get('shell_expires', 600)
+        cmd = [cfg.get('cli-bin'), '-H', cfg.get('url')]
+
+        if self.form.cmd.data:
+            cmd += ['exec', '-it', item['id'], *self.form.cmd.data.split(' ')]
+        else:
+            cmd += ['attach', item['id']]
+
+        if item['tty'] and item['interactive']:
+            self.success(token=common.obj_encrypt(dict(id=item['id'], cmd=cmd), expires))
+        else:
+            self.error(*TERMINAL_FAILED)

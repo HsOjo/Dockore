@@ -32,18 +32,16 @@ class Terminal(SocketIOController):
 
     def on_open(self, obj_str):
         obj = common.obj_decrypt(obj_str)  # type: dict
-        if not (obj and obj.get('id')):
-            self.emit('auth_failed')
+        if not (obj and obj.get('id') and obj.get('cmd')):
+            self.emit('init_failed')
             return
 
         item = self.docker.container.item(obj['id'])
         if not item:
-            self.emit('auth_failed')
+            self.emit('init_failed')
             return
 
-        self.emit('auth_success', item)
-        cfg = Config.section('docker')
-        cmd = [cfg.get('cli-bin'), '-H', cfg.get('url'), 'attach', item['id']]
+        cmd = obj['cmd']
 
         (child_pid, fd) = pty.fork()
         if child_pid == 0:
@@ -54,6 +52,7 @@ class Terminal(SocketIOController):
             self.context.session[GK_CHILD_PID] = child_pid
             self.set_winsize(fd, 20, 30)
             socket_io.start_background_task(target=self.read_and_forward_pty_output, fd=fd, sid=self.sid)
+            self.emit('init_success', item)
 
     def on_pty_input(self, data):
         if not isinstance(data, dict):
