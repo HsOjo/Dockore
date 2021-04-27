@@ -42,7 +42,8 @@ class Terminal(SocketIOController):
             return
 
         self.emit('auth_success', item)
-        cmd = ['/usr/local/bin/docker', '-H', Config.section('docker').get('url'), 'attach', item['id']]
+        cfg = Config.section('docker')
+        cmd = [cfg.get('cli-bin'), '-H', cfg.get('url'), 'attach', item['id']]
 
         (child_pid, fd) = pty.fork()
         if child_pid == 0:
