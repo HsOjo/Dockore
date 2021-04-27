@@ -30,7 +30,10 @@ class Terminal(SocketIOController):
             os.kill(child_pid, signal.SIGTERM)
             os.close(fd)
 
-    def on_open(self, obj_str):
+    def on_open(self, *args):
+        if len(args) != 1:
+            return
+        [obj_str] = args
         obj = common.obj_decrypt(obj_str)  # type: dict
         if not (obj and obj.get('id') and obj.get('cmd')):
             self.emit('init_failed')
@@ -54,7 +57,10 @@ class Terminal(SocketIOController):
             socket_io.start_background_task(target=self.read_and_forward_pty_output, fd=fd, sid=self.sid)
             self.emit('init_success', item)
 
-    def on_pty_input(self, data):
+    def on_pty_input(self, *args):
+        if len(args) != 1:
+            return
+        [data] = args
         if not isinstance(data, dict):
             return
         fd = self.context.session.get(GK_FD)
@@ -62,7 +68,10 @@ class Terminal(SocketIOController):
             return
         os.write(fd, data["input"].encode())
 
-    def on_resize(self, data):
+    def on_resize(self, *args):
+        if len(args) != 1:
+            return
+        [data] = args
         if not isinstance(data, dict):
             return
         fd = self.context.session.get(GK_FD)
