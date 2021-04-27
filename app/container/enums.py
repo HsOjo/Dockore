@@ -18,3 +18,6 @@ COMMIT_FAILED = (3006, '提交容器镜像失败。')
 
 RUN_SUCCESS = (0, '创建（运行）容器成功。')
 RUN_FAILED = (3007, '创建（运行）容器失败。')
+
+TERMINAL_FAILED = (3008, '打开容器终端失败，该容器未启用"虚拟终端"及"交互模式"。')
+TERMINAL_FAILED_NOT_EXISTED = (3009, '打开终端失败，容器不存在。')

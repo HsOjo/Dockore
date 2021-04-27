@@ -4,6 +4,7 @@ from saika.decorator import *
 from app.base import DockerAPIController
 from .enums import *
 from .forms import *
+from .sockets import *
 
 
 @controller('/api/container')
@@ -147,3 +148,26 @@ class Container(DockerAPIController):
         self.success(*COMMIT_SUCCESS, content=self.docker.container.commit(
             **self.form.data
         ))
+
+    @post
+    @rule('/terminal')
+    @form(TerminalForm)
+    def terminal(self):
+        item = self.docker.container.item(self.form.id.data)
+        if not item:
+            self.error(*TERMINAL_FAILED_NOT_EXISTED)
+
+        cfg = Config.section('docker')
+
+        expires = cfg.get('shell_expires', 600)
+        cmd = [cfg.get('cli-bin'), '-H', cfg.get('url')]
+
+        if self.form.cmd.data:
+            cmd += ['exec', '-it', item['id'], *self.form.cmd.data.split(' ')]
+        else:
+            cmd += ['attach', item['id']]
+
+        if item['tty'] and item['interactive']:
+            self.success(token=common.obj_encrypt(dict(id=item['id'], cmd=cmd), expires))
+        else:
+            self.error(*TERMINAL_FAILED)

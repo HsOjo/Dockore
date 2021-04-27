@@ -9,7 +9,9 @@
     "charset": "utf8mb4"
   },
   "docker": {
-    "url": "tcp://127.0.0.1:2375"
+    "url": "tcp://127.0.0.1:2375",
+    "cli-bin": "/usr/local/bin/docker",
+    "shell_expires": 3600
   },
   "user": {
     "login_expires": 86400
