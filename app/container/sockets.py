@@ -22,7 +22,11 @@ class Terminal(SocketIOController):
     def docker(self):
         return Docker(Config.section('docker').get('url'))
 
+    def on_connect(self):
+        print('Connect: %s' % self.sid)
+
     def on_disconnect(self):
+        print('Disconnect: %s' % self.sid)
         fd = self.context.session.pop(GK_FD, None)
         if fd:
             child_pid = self.context.session.get(GK_CHILD_PID)
@@ -36,11 +40,13 @@ class Terminal(SocketIOController):
         [obj_str] = args
         obj = common.obj_decrypt(obj_str)  # type: dict
         if not (obj and obj.get('id') and obj.get('cmd')):
+            print('Init Object Failed: %s' % obj)
             self.emit('init_failed')
             return
 
         item = self.docker.container.item(obj['id'])
         if not item:
+            print('Init Item Failed: %s' % item)
             self.emit('init_failed')
             return
 
