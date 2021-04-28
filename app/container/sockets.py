@@ -11,6 +11,8 @@ from saika import socket_io, SocketIOController, common, Config
 from saika.decorator import on_namespace
 
 from app.libs.docker_sdk import Docker
+from app.user import UserService
+from .enums import *
 
 GK_FD = 'fd'
 GK_CHILD_PID = 'child_pid'
@@ -35,19 +37,22 @@ class Terminal(SocketIOController):
             os.close(fd)
 
     def on_open(self, *args):
-        if len(args) != 1:
+        if len(args) != 2:
             return
-        [obj_str] = args
+        [user_token, obj_str] = args
+        user = UserService.get_user(user_token)
+        if not user:
+            self.emit('init_failed', TERMINAL_PERMISSION_DENIED)
+            return
+
         obj = common.obj_decrypt(obj_str)  # type: dict
         if not (obj and obj.get('id') and obj.get('cmd')):
-            print('Init Object Failed: %s' % obj)
-            self.emit('init_failed')
+            self.emit('init_failed', TERMINAL_SESSION_INVALID)
             return
 
         item = self.docker.container.item(obj['id'])
         if not item:
-            print('Init Item Failed: %s' % item)
-            self.emit('init_failed')
+            self.emit('init_failed', TERMINAL_CONTAINER_NOT_EXISTED)
             return
 
         cmd = obj['cmd']
@@ -72,7 +77,11 @@ class Terminal(SocketIOController):
         fd = self.context.session.get(GK_FD)
         if not fd:
             return
-        os.write(fd, data["input"].encode())
+        try:
+            os.write(fd, data["input"].encode())
+        except OSError as e:
+            if e.errno == 5:
+                self.disconnect()
 
     def on_resize(self, *args):
         if len(args) != 1:

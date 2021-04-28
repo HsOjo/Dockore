@@ -21,3 +21,7 @@ RUN_FAILED = (3007, '创建（运行）容器失败。')
 
 TERMINAL_FAILED = (3008, '打开容器终端失败，该容器未启用"虚拟终端"及"交互模式"。')
 TERMINAL_FAILED_NOT_EXISTED = (3009, '打开终端失败，容器不存在。')
+
+TERMINAL_PERMISSION_DENIED = dict(msg='无权限访问。')
+TERMINAL_SESSION_INVALID = dict(msg='会话无效，请重新打开终端。')
+TERMINAL_CONTAINER_NOT_EXISTED = dict(msg='容器不存在。')

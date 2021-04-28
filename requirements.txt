@@ -2,5 +2,6 @@ Saika
 pymysql
 uwsgi
 docker
-eventlet
+gevent
+gevent-websocket
 flask_socketio==4.3.2
