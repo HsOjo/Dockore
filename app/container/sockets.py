@@ -8,7 +8,7 @@ import subprocess
 import termios
 
 from saika import socket_io, SocketIOController, common, Config
-from saika.decorator import on_namespace
+from saika.decorator import controller
 
 from app.libs.docker_sdk import Docker
 from app.user import UserService
@@ -18,7 +18,7 @@ GK_FD = 'fd'
 GK_CHILD_PID = 'child_pid'
 
 
-@on_namespace('/terminal')
+@controller('/terminal')
 class Terminal(SocketIOController):
     @property
     def docker(self):
