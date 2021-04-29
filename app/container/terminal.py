@@ -119,7 +119,7 @@ class Terminal(EventSocketController):
     @staticmethod
     def read_and_forward_pty_output(fd, socket: WebSocket):
         max_read_bytes = 1024 * 20
-        while True:
+        while not socket.closed:
             try:
                 socket_io.sleep(0.018)
                 (data_ready, _, _) = select.select([fd], [], [], 0)
@@ -131,3 +131,8 @@ class Terminal(EventSocketController):
                 if e.errno not in [5, 9]:
                     raise e
                 break
+
+        try:
+            socket.close()
+        except:
+            pass
