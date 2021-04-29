@@ -144,4 +144,4 @@ test.py
 config.json
 data
 migrations
-uwsgi.ini
+gunicorn.py
