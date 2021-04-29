@@ -53,7 +53,12 @@ class Terminal(EventSocketController):
         if fd:
             child_pid = self.context.session.get(GK_CHILD_PID)
             print('Kill: %s %s' % (child_pid, fd))
-            os.kill(child_pid, signal.SIGTERM)
+            try:
+                os.kill(child_pid, signal.SIGTERM)
+            except ProcessLookupError as e:
+                # If process died, skip.
+                if not e.errno == 3:
+                    raise e
             os.close(fd)
 
     def on_open(self, user_token, token):
@@ -93,15 +98,17 @@ class Terminal(EventSocketController):
         try:
             os.write(fd, input.encode())
         except OSError as e:
-            if e.errno == 5:
-                self.disconnect()
+            # If write input failed, disconnect and kill.
+            if e.errno != 5:
+                raise e
+            self.disconnect()
 
     def on_resize(self, rows, cols):
         fd = self.context.session.get(GK_FD)
         if not fd:
             return
 
-        if rows and cols:
+        if fd and rows and cols:
             self.set_winsize(fd, rows, cols)
 
     @staticmethod
@@ -114,14 +121,13 @@ class Terminal(EventSocketController):
         max_read_bytes = 1024 * 20
         while True:
             try:
-                socket_io.sleep(0.01)
-                timeout_sec = 0
-                (data_ready, _, _) = select.select([fd], [], [], timeout_sec)
+                socket_io.sleep(0.018)
+                (data_ready, _, _) = select.select([fd], [], [], 0)
                 if data_ready:
                     output = os.read(fd, max_read_bytes).decode(errors='ignore')
                     socket.send(json.dumps(dict(event="pty_output", data=dict(output=output))))
             except OSError as e:
-                if e.errno == 9:
-                    break
-                else:
+                # If process died, end loop.
+                if e.errno != 9:
                     raise e
+                break

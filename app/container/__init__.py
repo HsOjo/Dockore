@@ -4,7 +4,7 @@ from saika.decorator import *
 from app.base import DockerAPIController
 from .enums import *
 from .forms import *
-from .sockets import *
+from .terminal import *
 
 
 @controller('/api/container')
