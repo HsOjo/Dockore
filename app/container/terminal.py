@@ -128,6 +128,6 @@ class Terminal(EventSocketController):
                     socket.send(json.dumps(dict(event="pty_output", data=dict(output=output))))
             except OSError as e:
                 # If process died, end loop.
-                if e.errno != 9:
+                if e.errno not in [5, 9]:
                     raise e
                 break
