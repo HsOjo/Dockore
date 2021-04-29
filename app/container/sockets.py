@@ -1,4 +1,5 @@
 import fcntl
+import json
 import os
 import pty
 import select
@@ -7,8 +8,9 @@ import struct
 import subprocess
 import termios
 
-from saika import socket_io, SocketIOController, common, Config
-from saika.decorator import controller
+from geventwebsocket.websocket import WebSocket
+from saika import common, Config, EventSocketController, socket_io
+from saika.decorator import controller, rule_rs
 
 from app.libs.docker_sdk import Docker
 from app.user import UserService
@@ -16,19 +18,37 @@ from .enums import *
 
 GK_FD = 'fd'
 GK_CHILD_PID = 'child_pid'
+GK_CURRENT_USER = 'currnet_user'
+GK_CONTAINER = 'container'
+GK_COMMAND = 'command'
+
+EVENT_INIT_SUCCESS = 'init_success'
+EVENT_INIT_FAILED = 'init_failed'
 
 
 @controller('/terminal')
-class Terminal(SocketIOController):
+class Terminal(EventSocketController):
     @property
     def docker(self):
         return Docker(Config.section('docker').get('url'))
 
-    def on_connect(self):
-        print('Connect: %s' % self.sid)
+    @property
+    def currnet_user(self):
+        return self.context.g_get(GK_CURRENT_USER)
+
+    @property
+    def container(self):
+        return self.context.g_get(GK_CONTAINER)
+
+    @property
+    def command(self):
+        return self.context.g_get(GK_COMMAND)
+
+    @rule_rs('/')
+    def portal(self, socket: WebSocket):
+        self.handle(socket)
 
     def on_disconnect(self):
-        print('Disconnect: %s' % self.sid)
         fd = self.context.session.pop(GK_FD, None)
         if fd:
             child_pid = self.context.session.get(GK_CHILD_PID)
@@ -36,65 +56,50 @@ class Terminal(SocketIOController):
             os.kill(child_pid, signal.SIGTERM)
             os.close(fd)
 
-    def on_open(self, *args):
-        if len(args) != 2:
-            return
-        [user_token, obj_str] = args
+    def on_open(self, user_token, token):
         user = UserService.get_user(user_token)
         if not user:
-            self.emit('init_failed', TERMINAL_PERMISSION_DENIED)
+            self.emit(EVENT_INIT_FAILED, TERMINAL_PERMISSION_DENIED)
             return
+        self.context.g_set(GK_CURRENT_USER, user)
 
-        obj = common.obj_decrypt(obj_str)  # type: dict
+        obj = common.obj_decrypt(token)  # type: dict
         if not (obj and obj.get('id') and obj.get('cmd')):
-            self.emit('init_failed', TERMINAL_SESSION_INVALID)
+            self.emit(EVENT_INIT_FAILED, TERMINAL_SESSION_INVALID)
             return
+        self.context.g_set(GK_COMMAND, obj['cmd'])
 
         item = self.docker.container.item(obj['id'])
         if not item:
-            self.emit('init_failed', TERMINAL_CONTAINER_NOT_EXISTED)
+            self.emit(EVENT_INIT_FAILED, TERMINAL_CONTAINER_NOT_EXISTED)
             return
-
-        cmd = obj['cmd']
+        self.context.g_set(GK_CONTAINER, item)
 
         (child_pid, fd) = pty.fork()
         if not child_pid:
-            subprocess.run(cmd)
+            subprocess.run(self.command)
         else:
-            print('Run: %s %s %s' % (child_pid, fd, ' '.join(cmd)))
+            print('Run: %s %s %s' % (child_pid, fd, ' '.join(self.command)))
             self.context.session[GK_FD] = fd
             self.context.session[GK_CHILD_PID] = child_pid
             self.set_winsize(fd, 20, 30)
-            socket_io.start_background_task(target=self.read_and_forward_pty_output, fd=fd, sid=self.sid)
-            self.emit('init_success', item)
+            socket_io.start_background_task(target=self.read_and_forward_pty_output, fd=fd, socket=self.socket)
+            self.emit(EVENT_INIT_SUCCESS, item)
 
-    def on_pty_input(self, *args):
-        if len(args) != 1:
-            return
-        [data] = args
-        if not isinstance(data, dict):
-            return
+    def on_pty_input(self, input):
         fd = self.context.session.get(GK_FD)
         if not fd:
             return
         try:
-            os.write(fd, data["input"].encode())
+            os.write(fd, input.encode())
         except OSError as e:
             if e.errno == 5:
                 self.disconnect()
 
-    def on_resize(self, *args):
-        if len(args) != 1:
-            return
-        [data] = args
-        if not isinstance(data, dict):
-            return
+    def on_resize(self, rows, cols):
         fd = self.context.session.get(GK_FD)
         if not fd:
             return
-
-        rows = int(data.get('rows'))
-        cols = int(data.get('cols'))
 
         if rows and cols:
             self.set_winsize(fd, rows, cols)
@@ -104,7 +109,8 @@ class Terminal(SocketIOController):
         winsize = struct.pack("HHHH", row, col, xpix, ypix)
         fcntl.ioctl(fd, termios.TIOCSWINSZ, winsize)
 
-    def read_and_forward_pty_output(self, fd, sid):
+    @staticmethod
+    def read_and_forward_pty_output(fd, socket: WebSocket):
         max_read_bytes = 1024 * 20
         while True:
             try:
@@ -113,11 +119,9 @@ class Terminal(SocketIOController):
                 (data_ready, _, _) = select.select([fd], [], [], timeout_sec)
                 if data_ready:
                     output = os.read(fd, max_read_bytes).decode(errors='ignore')
-                    self.emit("pty_output", {"output": output}, room=sid)
+                    socket.send(json.dumps(dict(event="pty_output", data=dict(output=output))))
             except OSError as e:
                 if e.errno == 9:
                     break
                 else:
                     raise e
-
-        self.disconnect(sid=sid)
