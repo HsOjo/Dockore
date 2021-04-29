@@ -15,6 +15,8 @@ class DatabaseForm(Form):
 
 class DockerForm(Form):
     url = StringField('URL', validators=[DataRequired()])
+    cli_bin = StringField('客户端路径', validators=[DataRequired()])
+    terminal_expires = IntegerField('交互会话有效期', validators=[DataRequired()])
 
 
 class UserForm(Form):

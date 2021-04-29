@@ -21,7 +21,9 @@ class System(DockerAPIController):
             self.success(config=Config.all())
         elif self.request.method == 'POST':
             try:
-                Config.all().update(**self.form.config.data)
+                cfgs = Config.all()
+                for k, v in self.form.config.data.items():
+                    cfgs[k].update(v)
                 Config.save(Environ.config_path)
                 return self.response(*CONFIG_SUCCESS)
             except Exception as e:

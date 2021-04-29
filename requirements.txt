@@ -1,6 +1,4 @@
 Saika
 pymysql
-uwsgi
 docker
-eventlet
-flask_socketio==4.3.2
+gunicorn
