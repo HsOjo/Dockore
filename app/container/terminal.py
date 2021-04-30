@@ -52,7 +52,6 @@ class Terminal(EventSocketController):
         fd = self.context.session.pop(GK_FD, None)
         if fd:
             child_pid = self.context.session.get(GK_CHILD_PID)
-            print('Kill: %s %s' % (child_pid, fd))
             try:
                 os.kill(child_pid, signal.SIGTERM)
             except ProcessLookupError as e:
@@ -84,7 +83,6 @@ class Terminal(EventSocketController):
         if not child_pid:
             subprocess.run(self.command)
         else:
-            print('Run: %s %s %s' % (child_pid, fd, ' '.join(self.command)))
             self.context.session[GK_FD] = fd
             self.context.session[GK_CHILD_PID] = child_pid
             self.set_winsize(fd, 20, 30)
