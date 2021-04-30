@@ -9,7 +9,7 @@ import subprocess
 import termios
 
 from geventwebsocket.websocket import WebSocket
-from saika import common, Config, EventSocketController, socket_io
+from saika import common, Config, EventSocketController, socket_io, db
 from saika.decorator import controller, rule_rs
 
 from app.libs.docker_sdk import Docker
@@ -79,6 +79,9 @@ class Terminal(EventSocketController):
             return
         self.context.g_set(GK_CONTAINER, item)
 
+        # Must dispose engine before fork.
+        db.dispose_engine()
+
         (child_pid, fd) = pty.fork()
         if not child_pid:
             subprocess.run(self.command)
@@ -86,7 +89,9 @@ class Terminal(EventSocketController):
             self.context.session[GK_FD] = fd
             self.context.session[GK_CHILD_PID] = child_pid
             self.set_winsize(fd, 20, 30)
-            socket_io.start_background_task(target=self.read_and_forward_pty_output, fd=fd, socket=self.socket)
+            socket_io.start_background_task(
+                target=self.read_and_forward_pty_output, fd=fd, socket=self.socket
+            )
             self.emit(EVENT_INIT_SUCCESS, item)
 
     def on_pty_input(self, input):
@@ -116,13 +121,12 @@ class Terminal(EventSocketController):
 
     @staticmethod
     def read_and_forward_pty_output(fd, socket: WebSocket):
-        max_read_bytes = 1024 * 20
         while not socket.closed:
             try:
                 socket_io.sleep(0.018)
                 (data_ready, _, _) = select.select([fd], [], [], 0)
                 if data_ready:
-                    output = os.read(fd, max_read_bytes).decode(errors='ignore')
+                    output = os.read(fd, 1024 * 20).decode(errors='ignore')
                     socket.send(json.dumps(dict(event="pty_output", data=dict(output=output))))
             except OSError as e:
                 # If process died, end loop.
@@ -130,7 +134,4 @@ class Terminal(EventSocketController):
                     raise e
                 break
 
-        try:
-            socket.close()
-        except:
-            pass
+        socket.close()
