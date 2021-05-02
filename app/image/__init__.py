@@ -38,9 +38,15 @@ class Image(DockerAPIController):
 
         for id in ids:
             try:
-                item = self.docker.image.item(id)
-                if self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, item['id']):
-                    self.docker.image.remove(id, tag_only)
+                if self.current_user.role == OwnerShip.OBJ_TYPE_IMAGE or tag_only:
+                    item = self.docker.image.item(id)
+                    if self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, item['id']):
+                        self.docker.image.remove(id, tag_only)
+
+                item = db.query(OwnerShip).filter_by(
+                    user_id=self.current_user.id, type=OwnerShip.OBJ_TYPE_IMAGE, obj_id=id).first()
+                if item:
+                    db.delete_instance(item)
             except APIError as e:
                 excs[id] = str(e)
 

@@ -13,8 +13,10 @@ class ImageConvertor:
         )
         if verbose:
             cfg = obj.attrs['Config']
+            if cfg['Cmd']:
+                item.update(command=' '.join(cfg['Cmd']),)
+
             item.update(
-                command=' '.join(cfg['Cmd']),
                 tty=cfg['Tty'],
                 interactive=cfg['OpenStdin'],
                 architecture=obj.attrs['Architecture'],

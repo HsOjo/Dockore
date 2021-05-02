@@ -39,6 +39,11 @@ class Container(DockerAPIController):
         for id in ids:
             try:
                 self.docker.container.remove(id)
+
+                item = db.query(OwnerShip).filter_by(
+                    user_id=self.current_user.id, type=OwnerShip.OBJ_TYPE_CONTAINER, obj_id=id).first()
+                if item:
+                    db.delete_instance(item)
             except APIError as e:
                 excs[id] = str(e)
 
