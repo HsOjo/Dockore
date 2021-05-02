@@ -6,7 +6,7 @@ from .enums import *
 from .forms import *
 from .terminal import *
 from ..user.enums import ROLE_PERMISSION_DENIED
-from ..user.models import OwnerShip
+from ..user.models import OwnerShip, RoleShip
 
 
 @controller('/api/container')
@@ -52,7 +52,10 @@ class Container(DockerAPIController):
     @form(CreateForm)
     def create(self):
         try:
-            item = self.docker.container.create(**self.form.data)
+            data = self.form.data
+            if self.current_user.role != RoleShip.TYPE_ADMIN:
+                data['name'] = '%s_%s' % (self.current_user.username, data['name'])
+            item = self.docker.container.create(**data)
             db.add_instance(OwnerShip(
                 type=OwnerShip.OBJ_TYPE_CONTAINER,
                 user_id=self.current_user.id,
@@ -67,7 +70,10 @@ class Container(DockerAPIController):
     @form(CreateForm)
     def run(self):
         try:
-            item = self.docker.container.run(**self.form.data)
+            data = self.form.data
+            if self.current_user.role != RoleShip.TYPE_ADMIN:
+                data['name'] = '%s_%s' % (self.current_user.username, data['name'])
+            item = self.docker.container.run(**data)
             db.add_instance(OwnerShip(
                 type=OwnerShip.OBJ_TYPE_CONTAINER,
                 user_id=self.current_user.id,

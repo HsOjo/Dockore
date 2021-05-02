@@ -38,7 +38,7 @@ class User(db.Model):
         if owners:
             mapping = {id: id for id in ids}
             for owner in owners:
-                id = mapping.get(owner.id)
+                id = mapping.get(owner.obj_id)
                 if id:
                     result.append(id)
 
