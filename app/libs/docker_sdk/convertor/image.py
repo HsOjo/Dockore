@@ -5,7 +5,7 @@ class ImageConvertor:
     @staticmethod
     def from_docker(obj, verbose=False):
         item = dict(
-            id=obj.short_id,
+            id=obj.short_id[7:],
             tags=obj.tags,
             author=obj.attrs['Author'],
             create_time=obj.attrs['Created'],

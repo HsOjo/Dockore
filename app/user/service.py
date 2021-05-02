@@ -17,8 +17,7 @@ class UserService:
             username=username,
             password=password,
         )
-        db.session.add(item)
-        db.session.commit()
+        db.add_instance(item)
 
     @staticmethod
     def login(username, password):
@@ -46,8 +45,7 @@ class UserService:
             return False
         else:
             item.password = pw_hash(new)
-            db.session.add(item)
-            db.session.commit()
+            db.add_instance(item)
             return True
 
     @staticmethod

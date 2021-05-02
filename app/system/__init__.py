@@ -8,6 +8,7 @@ from app.base import DockerAPIController
 from .enums import *
 from .forms import *
 from ..const import Const
+from ..user import role_auth, RoleShip
 
 
 @controller('/api/system')
@@ -16,6 +17,7 @@ class System(DockerAPIController):
     @post
     @rule('/config')
     @form(ConfigForm, AUTO)
+    @role_auth(RoleShip.TYPE_ADMIN)
     def config(self):
         if self.request.method == 'GET':
             self.success(config=Config.all())

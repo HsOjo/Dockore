@@ -5,6 +5,8 @@ from app.base import DockerAPIController
 from .enums import *
 from .forms import *
 from .terminal import *
+from ..user.enums import ROLE_PERMISSION_DENIED
+from ..user.models import OwnerShip
 
 
 @controller('/api/container')
@@ -13,22 +15,24 @@ class Container(DockerAPIController):
     @rule('/list')
     @form(ListForm)
     def list(self):
-        self.success(
-            items=self.docker.container.list(all=self.form.is_all.data)
-        )
+        items = self.docker.container.list(all=self.form.is_all.data)
+        items = self.current_user.filter_owner(OwnerShip.OBJ_TYPE_CONTAINER, items)
+        self.success(items=items)
 
     @get
     @rule('/item/<string:id>')
     def item(self, id: str):
-        self.success(
-            item=self.docker.container.item(id)
-        )
+        item = self.docker.container.item(id)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
+            self.error(*ROLE_PERMISSION_DENIED)
+        self.success(item=item)
 
     @post
     @rule('/delete')
     @form(OperationForm)
     def delete(self):
         ids = self.form.ids.data
+        ids = self.current_user.filter_owner_ids(OwnerShip.OBJ_TYPE_CONTAINER, ids)
 
         excs = {}
 
@@ -48,7 +52,13 @@ class Container(DockerAPIController):
     @form(CreateForm)
     def create(self):
         try:
-            return self.response(*CREATE_SUCCESS, item=self.docker.container.create(**self.form.data))
+            item = self.docker.container.create(**self.form.data)
+            db.add_instance(OwnerShip(
+                type=OwnerShip.OBJ_TYPE_CONTAINER,
+                user_id=self.current_user.id,
+                obj_id=item['id'],
+            ))
+            return self.response(*CREATE_SUCCESS, item=item)
         except APIError as e:
             self.error(*CREATE_FAILED, exc=str(e))
 
@@ -57,7 +67,13 @@ class Container(DockerAPIController):
     @form(CreateForm)
     def run(self):
         try:
-            return self.response(*RUN_SUCCESS, item=self.docker.container.run(**self.form.data))
+            item = self.docker.container.run(**self.form.data)
+            db.add_instance(OwnerShip(
+                type=OwnerShip.OBJ_TYPE_CONTAINER,
+                user_id=self.current_user.id,
+                obj_id=item['id'],
+            ))
+            return self.response(*RUN_SUCCESS, item=item)
         except APIError as e:
             self.error(*RUN_FAILED, exc=str(e))
 
@@ -66,6 +82,7 @@ class Container(DockerAPIController):
     @form(OperationForm)
     def start(self):
         ids = self.form.ids.data
+        ids = self.current_user.filter_owner_ids(OwnerShip.OBJ_TYPE_CONTAINER, ids)
 
         excs = {}
         for id in ids:
@@ -84,6 +101,7 @@ class Container(DockerAPIController):
     @form(StopForm)
     def stop(self):
         ids = self.form.ids.data
+        ids = self.current_user.filter_owner_ids(OwnerShip.OBJ_TYPE_CONTAINER, ids)
         timeout = int(self.form.timeout.data / len(ids))
 
         excs = {}
@@ -103,6 +121,7 @@ class Container(DockerAPIController):
     @form(StopForm)
     def restart(self):
         ids = self.form.ids.data
+        ids = self.current_user.filter_owner_ids(OwnerShip.OBJ_TYPE_CONTAINER, ids)
         timeout = int(self.form.timeout.data / len(ids))
 
         excs = {}
@@ -122,9 +141,11 @@ class Container(DockerAPIController):
     @form(RenameForm)
     def rename(self):
         try:
-            return self.response(*RENAME_SUCCESS, item=self.docker.container.rename(
-                **self.form.data
-            ))
+            if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+                self.error(*ROLE_PERMISSION_DENIED)
+
+            self.docker.container.rename(**self.form.data)
+            return self.response(*RENAME_SUCCESS)
         except APIError as e:
             self.error(*RENAME_FAILED, exc=str(e))
 
@@ -132,6 +153,9 @@ class Container(DockerAPIController):
     @rule('/logs')
     @form(LogsForm)
     def logs(self):
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+            self.error(*ROLE_PERMISSION_DENIED)
+
         self.success(content=self.docker.container.logs(
             **self.form.data
         ))
@@ -139,12 +163,18 @@ class Container(DockerAPIController):
     @get
     @rule('/diff/<string:id>')
     def diff(self, id):
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, id):
+            self.error(*ROLE_PERMISSION_DENIED)
+
         self.success(files=self.docker.container.diff(id))
 
     @post
     @rule('/commit')
     @form(CommitForm)
     def commit(self):
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+            self.error(*ROLE_PERMISSION_DENIED)
+
         self.success(*COMMIT_SUCCESS, content=self.docker.container.commit(
             **self.form.data
         ))
@@ -153,6 +183,9 @@ class Container(DockerAPIController):
     @rule('/terminal')
     @form(TerminalForm)
     def terminal(self):
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+            self.error(*ROLE_PERMISSION_DENIED)
+
         item = self.docker.container.item(self.form.id.data)
         if not item:
             self.error(*TERMINAL_FAILED_NOT_EXISTED)
