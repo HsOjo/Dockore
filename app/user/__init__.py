@@ -2,8 +2,9 @@ from saika.decorator import *
 
 from .enums import *
 from .forms import *
+from .models import RoleShip, OwnerShip
 from .service import UserService
-from .user_api import UserAPIController, ignore_auth
+from .user_api import UserAPIController, ignore_auth, role_auth
 
 
 @controller('/api/user')
@@ -26,6 +27,7 @@ class User(UserAPIController):
         self.success(
             id=user.id,
             username=user.username,
+            role_type=user.role.type,
         )
 
     @post

@@ -1,18 +1,28 @@
 from saika import MetaTable, APIController
 from saika.context import Context
 
-from .enums import TOKEN_INVALID
-from .models import User
+from .enums import *
+from .models import User, RoleShip
 from .service import UserService
 
 GK_USER = 'user'
 HK_TOKEN = 'Token'
 MK_PUBLIC = 'public'
+MK_ROLES = 'roles'
 
 
 def ignore_auth(f):
     MetaTable.set(f, MK_PUBLIC, True)
     return f
+
+
+def role_auth(role):
+    def wrapper(f):
+        roles = MetaTable.get(f, MK_ROLES, [])  # type: list
+        roles.append(role)
+        return f
+
+    return wrapper
 
 
 class UserAPIController(APIController):
@@ -22,7 +32,7 @@ class UserAPIController(APIController):
         @self.blueprint.before_request
         def authentication():
             if self.request.method == 'OPTIONS':
-                return
+                return ''
 
             f = Context.get_view_function()
             if f is None or MetaTable.get(f, MK_PUBLIC):
@@ -33,11 +43,12 @@ class UserAPIController(APIController):
             if user is None:
                 self.error(*TOKEN_INVALID)
 
-            self.context.g_set(GK_USER, user)
-            self.callback_auth_success()
+            if user.role.type != RoleShip.TYPE_ADMIN:
+                roles = MetaTable.get(f, MK_ROLES, [])  # type: list
+                if roles and user.role.type not in roles:
+                    self.error(*ROLE_PERMISSION_DENIED)
 
-    def callback_auth_success(self):
-        pass
+            self.context.g_set(GK_USER, user)
 
     @property
     def current_user(self):

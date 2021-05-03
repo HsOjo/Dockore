@@ -5,7 +5,7 @@ class ImageConvertor:
     @staticmethod
     def from_docker(obj, verbose=False):
         item = dict(
-            id=obj.short_id,
+            id=obj.short_id[7:],
             tags=obj.tags,
             author=obj.attrs['Author'],
             create_time=obj.attrs['Created'],
@@ -13,8 +13,10 @@ class ImageConvertor:
         )
         if verbose:
             cfg = obj.attrs['Config']
+            if cfg['Cmd']:
+                item.update(command=' '.join(cfg['Cmd']),)
+
             item.update(
-                command=' '.join(cfg['Cmd']),
                 tty=cfg['Tty'],
                 interactive=cfg['OpenStdin'],
                 architecture=obj.attrs['Architecture'],
