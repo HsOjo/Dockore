@@ -18,10 +18,11 @@ class DockerAPIController(UserAPIController):
             traceback.print_exc()
             return APIException(msg=str(e))
 
-    def callback_auth_success(self):
-        self.context.g_set(
-            GK_DOCKER, Docker(Config.section('docker').get('url'))
-        )
+        @self.blueprint.before_request
+        def init_docker():
+            self.context.g_set(
+                GK_DOCKER, Docker(Config.section('docker').get('url'))
+            )
 
     @property
     def docker(self):

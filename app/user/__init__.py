@@ -27,7 +27,7 @@ class User(UserAPIController):
         self.success(
             id=user.id,
             username=user.username,
-            role=user.role.type,
+            role_type=user.role.type,
         )
 
     @post

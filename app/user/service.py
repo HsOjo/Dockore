@@ -11,15 +11,6 @@ def pw_hash(x: str):
 
 class UserService:
     @staticmethod
-    def register(username, password):
-        password = pw_hash(password)
-        item = User(
-            username=username,
-            password=password,
-        )
-        db.add_instance(item)
-
-    @staticmethod
     def login(username, password):
         password = pw_hash(password)
         item = User.query.filter_by(

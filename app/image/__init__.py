@@ -6,7 +6,7 @@ from app.base import DockerAPIController
 from .enums import *
 from .forms import *
 from ..user import ROLE_PERMISSION_DENIED
-from ..user.models import OwnerShip
+from ..user.models import OwnerShip, RoleShip
 
 
 @controller('/api/image')
@@ -38,7 +38,7 @@ class Image(DockerAPIController):
 
         for id in ids:
             try:
-                if self.current_user.role == OwnerShip.OBJ_TYPE_IMAGE or tag_only:
+                if self.current_user.role.type == RoleShip.TYPE_ADMIN or tag_only:
                     item = self.docker.image.item(id)
                     if self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, item['id']):
                         self.docker.image.remove(id, tag_only)

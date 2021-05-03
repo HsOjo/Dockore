@@ -32,7 +32,7 @@ class UserAPIController(APIController):
         @self.blueprint.before_request
         def authentication():
             if self.request.method == 'OPTIONS':
-                return
+                return ''
 
             f = Context.get_view_function()
             if f is None or MetaTable.get(f, MK_PUBLIC):
@@ -49,10 +49,6 @@ class UserAPIController(APIController):
                     self.error(*ROLE_PERMISSION_DENIED)
 
             self.context.g_set(GK_USER, user)
-            self.callback_auth_success()
-
-    def callback_auth_success(self):
-        pass
 
     @property
     def current_user(self):

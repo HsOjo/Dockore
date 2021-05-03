@@ -1,14 +1,21 @@
+from app.user import RoleShip
+
+
 def register(manager):
-    @manager.command
-    def register_user():
-        from app.user.service import UserService
+    def useradd():
+        from app.admin.user.service import AdminUserService
 
         username = input('Input Username: ')
         password = input('Input Password: ')
+        is_admin = input('Is Admin? (Y/n): ').lower() != 'n'
 
         try:
-            UserService.register(username, password)
+            role_type = RoleShip.TYPE_ADMIN if is_admin else RoleShip.TYPE_USER
+            AdminUserService.add(username, password, role_type)
             print('Register success.')
         except Exception as e:
             print('Register failed.')
             raise e
+
+    useradd.__doc__ = 'Add a user for dockore by command.'
+    manager.command(useradd)

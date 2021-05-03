@@ -58,7 +58,7 @@ class Container(DockerAPIController):
     def create(self):
         try:
             data = self.form.data
-            if self.current_user.role != RoleShip.TYPE_ADMIN:
+            if self.current_user.role.type != RoleShip.TYPE_ADMIN:
                 data['name'] = '%s_%s' % (self.current_user.username, data['name'])
             item = self.docker.container.create(**data)
             db.add_instance(OwnerShip(
@@ -76,7 +76,7 @@ class Container(DockerAPIController):
     def run(self):
         try:
             data = self.form.data
-            if self.current_user.role != RoleShip.TYPE_ADMIN:
+            if self.current_user.role.type != RoleShip.TYPE_ADMIN:
                 data['name'] = '%s_%s' % (self.current_user.username, data['name'])
             item = self.docker.container.run(**data)
             db.add_instance(OwnerShip(
