@@ -1,5 +1,6 @@
 import platform
 
+from saika import Const as SaikaConst
 from saika.decorator import *
 
 from app.base import DockerAPIController
@@ -16,6 +17,7 @@ class System(DockerAPIController):
             version=Const.version,
             hostname=uname.node,
             py_version=platform.python_version(),
+            saika_version=SaikaConst.version,
             os=uname.system,
             arch=uname.machine,
             kernel_version=uname.release,
