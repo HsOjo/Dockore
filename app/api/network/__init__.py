@@ -47,7 +47,6 @@ class Network(DockerAPIController):
 
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
-
         self.success(*DELETE_SUCCESS)
 
     @post
