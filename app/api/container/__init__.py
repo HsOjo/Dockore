@@ -199,7 +199,7 @@ class Container(DockerAPIController):
 
         item = self.docker.container.item(self.form.id.data)
         if not item:
-            self.error(*TERMINAL_FAILED_NOT_EXISTED)
+            self.error(*TERMINAL_CONTAINER_NOT_EXISTED)
 
         cfg = Config.section('docker')
 
