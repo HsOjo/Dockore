@@ -1,9 +1,9 @@
-from app.user import RoleShip
+from app.api.user import RoleShip
 
 
 def register(manager):
     def useradd():
-        from app.admin.user.service import AdminUserService
+        from app.api.admin.user import AdminUserService
 
         username = input('Input Username: ')
         password = input('Input Password: ')

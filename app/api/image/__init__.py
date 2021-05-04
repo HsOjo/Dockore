@@ -2,14 +2,14 @@ from docker.errors import APIError
 from saika import db
 from saika.decorator import *
 
-from app.base import DockerAPIController
+from app.api.base import DockerAPIController
 from .enums import *
 from .forms import *
 from ..user import ROLE_PERMISSION_DENIED
 from ..user.models import OwnerShip, RoleShip
 
 
-@controller('/api/image')
+@controller()
 class Image(DockerAPIController):
     @get
     @rule('/list')

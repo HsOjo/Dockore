@@ -7,7 +7,7 @@ from .service import UserService
 from .user_api import UserAPIController, ignore_auth, role_auth
 
 
-@controller('/api/user')
+@controller()
 class User(UserAPIController):
     @ignore_auth
     @post

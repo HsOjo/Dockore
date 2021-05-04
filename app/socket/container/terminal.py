@@ -12,9 +12,9 @@ from geventwebsocket.websocket import WebSocket
 from saika import common, Config, EventSocketController, socket_io, db
 from saika.decorator import controller, rule_rs
 
+from app.api.container.enums import *
+from app.api.user import UserService
 from app.libs.docker_sdk import Docker
-from app.user import UserService
-from .enums import *
 
 GK_FD = 'fd'
 GK_CHILD_PID = 'child_pid'
@@ -26,8 +26,12 @@ EVENT_INIT_SUCCESS = 'init_success'
 EVENT_INIT_FAILED = 'init_failed'
 
 
-@controller('/terminal')
+@controller()
 class Terminal(EventSocketController):
+    @rule_rs('/')
+    def portal(self, socket: WebSocket):
+        self.handle(socket)
+
     @property
     def docker(self):
         return Docker(Config.section('docker').get('url'))
@@ -43,10 +47,6 @@ class Terminal(EventSocketController):
     @property
     def command(self):
         return self.context.g_get(GK_COMMAND)
-
-    @rule_rs('/')
-    def portal(self, socket: WebSocket):
-        self.handle(socket)
 
     def on_disconnect(self):
         fd = self.context.session.pop(GK_FD, None)

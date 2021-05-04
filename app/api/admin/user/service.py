@@ -1,7 +1,7 @@
 from saika import db
 
-from app.user.models import User, RoleShip
-from app.user.service import pw_hash
+from app.api.user.models import User, RoleShip
+from app.api.user.service import pw_hash
 
 
 class AdminUserService:

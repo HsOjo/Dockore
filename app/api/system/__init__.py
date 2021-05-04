@@ -3,11 +3,11 @@ import platform
 from saika import Const as SaikaConst
 from saika.decorator import *
 
-from app.base import DockerAPIController
-from ..const import Const
+from app.api.base import DockerAPIController
+from app.const import Const
 
 
-@controller('/api/system')
+@controller()
 class System(DockerAPIController):
     @get
     @rule('/version')

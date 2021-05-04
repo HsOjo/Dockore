@@ -6,7 +6,7 @@ from .service import AdminUserService
 from ..admin_api import AdminAPIController
 
 
-@controller('/api/admin/user')
+@controller()
 class AdminUser(AdminAPIController):
     @get
     @rule('/list')
