@@ -2,7 +2,7 @@ from saika.form import JSONForm, simple_choices, ArgsForm
 from wtforms import StringField, IntegerField, SelectField, FieldList
 from wtforms.validators import DataRequired
 
-from app.user import RoleShip
+from app.api.user import RoleShip
 
 
 class ListForm(ArgsForm):

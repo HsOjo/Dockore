@@ -1,6 +1,6 @@
 from docker import DockerClient
 
-from .adapter import ImageAdapter, ContainerAdapter
+from .adapter import ImageAdapter, ContainerAdapter, NetworkAdapter, VolumeAdapter
 from .utils import dict_to_lower, remove_empty_obj
 
 
@@ -9,6 +9,8 @@ class Docker:
         self._cli = DockerClient(url)
         self.image = ImageAdapter(self._cli.images)
         self.container = ContainerAdapter(self._cli.containers)
+        self.network = NetworkAdapter(self._cli.networks)
+        self.volume = VolumeAdapter(self._cli.volumes)
 
     @property
     def version(self):

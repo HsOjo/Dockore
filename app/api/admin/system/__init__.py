@@ -2,13 +2,13 @@ from saika import Config, Environ
 from saika.decorator import *
 from saika.form import AUTO
 
-from app.user import role_auth, RoleShip
+from app.api.user import role_auth, RoleShip
 from .enums import *
 from .forms import *
 from ..admin_api import DockerAdminAPIController
 
 
-@controller('/api/admin/system')
+@controller()
 class AdminSystem(DockerAdminAPIController):
     @get
     @post
@@ -24,6 +24,6 @@ class AdminSystem(DockerAdminAPIController):
                 for k, v in self.form.config.data.items():
                     cfgs[k].update(v)
                 Config.save(Environ.config_path)
-                return self.response(*CONFIG_SUCCESS)
             except Exception as e:
                 self.error(*CONFIG_FAILED, exc=str(e))
+            self.success(*CONFIG_SUCCESS)

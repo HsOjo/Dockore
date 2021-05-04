@@ -1,3 +1,4 @@
+from docker.errors import NotFound
 from docker.models.resource import Collection
 
 
@@ -6,8 +7,11 @@ class CollectionAdapter:
         self._c = c
 
     def item(self, id):
-        item = self._item(id)
-        item = self.convert(item, verbose=True)
+        try:
+            item = self._item(id)
+            item = self.convert(item, verbose=True)
+        except NotFound:
+            return None
         return item
 
     def list(self, verbose=False, **kwargs):

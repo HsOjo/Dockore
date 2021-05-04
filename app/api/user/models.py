@@ -72,6 +72,8 @@ class OwnerShip(db.Model):
 
     OBJ_TYPE_IMAGE = 1
     OBJ_TYPE_CONTAINER = 2
+    OBJ_TYPE_NETWORK = 3
+    OBJ_TYPE_VOLUME = 4
 
     id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)
     type = db.Column(db.INTEGER, index=True)

@@ -12,9 +12,9 @@ from geventwebsocket.websocket import WebSocket
 from saika import common, Config, EventSocketController, socket_io, db
 from saika.decorator import controller, rule_rs
 
+from app.api.user import UserService, OwnerShip
 from app.libs.docker_sdk import Docker
-from app.user import UserService
-from .enums import *
+from .messages import *
 
 GK_FD = 'fd'
 GK_CHILD_PID = 'child_pid'
@@ -26,8 +26,12 @@ EVENT_INIT_SUCCESS = 'init_success'
 EVENT_INIT_FAILED = 'init_failed'
 
 
-@controller('/terminal')
+@controller()
 class Terminal(EventSocketController):
+    @rule_rs('/')
+    def portal(self, socket: WebSocket):
+        self.handle(socket)
+
     @property
     def docker(self):
         return Docker(Config.section('docker').get('url'))
@@ -44,10 +48,6 @@ class Terminal(EventSocketController):
     def command(self):
         return self.context.g_get(GK_COMMAND)
 
-    @rule_rs('/')
-    def portal(self, socket: WebSocket):
-        self.handle(socket)
-
     def on_disconnect(self):
         fd = self.context.session.pop(GK_FD, None)
         if fd:
@@ -63,20 +63,23 @@ class Terminal(EventSocketController):
     def on_open(self, user_token, token):
         user = UserService.get_user(user_token)
         if not user:
-            self.emit(EVENT_INIT_FAILED, TERMINAL_PERMISSION_DENIED)
+            self.emit(EVENT_INIT_FAILED, PERMISSION_DENIED)
             return
         self.context.g_set(GK_CURRENT_USER, user)
 
         obj = common.obj_decrypt(token)  # type: dict
         if not (obj and obj.get('id') and obj.get('cmd')):
-            self.emit(EVENT_INIT_FAILED, TERMINAL_SESSION_INVALID)
+            self.emit(EVENT_INIT_FAILED, SESSION_INVALID)
             return
         self.context.g_set(GK_COMMAND, obj['cmd'])
 
         item = self.docker.container.item(obj['id'])
         if not item:
-            self.emit(EVENT_INIT_FAILED, TERMINAL_CONTAINER_NOT_EXISTED)
+            self.emit(EVENT_INIT_FAILED, CONTAINER_NOT_EXISTED)
             return
+        if not user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, obj['id']):
+            self.emit(EVENT_INIT_FAILED, CONTAINER_PERMISSION_DENIED)
+
         self.context.g_set(GK_CONTAINER, item)
 
         # Must dispose engine before fork.
