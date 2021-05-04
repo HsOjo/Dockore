@@ -24,6 +24,6 @@ class AdminSystem(DockerAdminAPIController):
                 for k, v in self.form.config.data.items():
                     cfgs[k].update(v)
                 Config.save(Environ.config_path)
-                return self.response(*CONFIG_SUCCESS)
             except Exception as e:
                 self.error(*CONFIG_FAILED, exc=str(e))
+            self.success(*CONFIG_SUCCESS)

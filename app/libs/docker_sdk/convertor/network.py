@@ -1,5 +1,7 @@
 from docker.models.networks import Network
 
+from .container import ContainerConvertor
+
 
 class NetworkConvertor:
     @staticmethod
@@ -27,6 +29,7 @@ class NetworkConvertor:
                 internal=attrs['Internal'],
                 attachable=attrs['Attachable'],
                 options=attrs['Options'],
+                containers=[ContainerConvertor.from_docker(i, True) for i in obj.containers]
             )
 
         return item

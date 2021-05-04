@@ -6,15 +6,15 @@ class VolumeConvertor:
     def from_docker(obj: Volume, verbose=False):
         attrs = obj.attrs
         item = dict(
-            id=obj.short_id,
+            id=obj.id,
             name=obj.name,
             driver=attrs['Driver'],
+            mount_point=attrs['Mountpoint'],
             scope=attrs['Scope'],
             create_time=attrs['CreatedAt'],
         )
         if verbose:
             item.update(
-                mount_point=attrs['Mountpoint'],
                 options=attrs['Options'],
             )
 

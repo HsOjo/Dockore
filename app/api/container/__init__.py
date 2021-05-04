@@ -1,5 +1,5 @@
 from docker.errors import APIError
-from saika import Config, common
+from saika import Config, common, db
 from saika.decorator import *
 
 from app.api.base import DockerAPIController
@@ -156,9 +156,9 @@ class Container(DockerAPIController):
                 self.error(*ROLE_PERMISSION_DENIED)
 
             self.docker.container.rename(**self.form.data)
-            return self.response(*RENAME_SUCCESS)
         except APIError as e:
             self.error(*RENAME_FAILED, exc=str(e))
+        self.success(*RENAME_SUCCESS)
 
     @post
     @rule('/logs')

@@ -5,7 +5,7 @@ from .collection import CollectionAdapter
 from ..convertor import NetworkConvertor
 
 
-class ImageAdapter(CollectionAdapter):
+class NetworkAdapter(CollectionAdapter):
     _c: NetworkCollection
 
     def _item(self, id):
@@ -19,7 +19,7 @@ class ImageAdapter(CollectionAdapter):
     def remove(self, id):
         self._item(id).remove()
 
-    def create(self, name, driver, attachable=True, scope=None, options=None, subnet=None, gateway=None, ip_range=None):
+    def create(self, name, driver, attachable=True, options=None, subnet=None, gateway=None, ip_range=None):
         ipam_config = None
         if subnet:
             ipam_config = IPAMConfig(pool_configs=[IPAMPool(
@@ -27,7 +27,7 @@ class ImageAdapter(CollectionAdapter):
                 gateway=gateway,
                 iprange=ip_range,
             )])
-        item = self._c.create(name, driver, scope=scope, attachable=attachable, options=options, ipam=ipam_config)
+        item = self._c.create(name, driver, attachable=attachable, options=options, ipam=ipam_config)
         return self.convert(item, verbose=True)
 
     def connect(self, id, container_id, ipv4_address=None):
