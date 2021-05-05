@@ -5,6 +5,7 @@ from saika.decorator import *
 from app.api.base import DockerAPIController
 from .enums import *
 from .forms import *
+from ..enums import OBJECT_NOT_EXISTED
 from ..user.enums import ROLE_PERMISSION_DENIED
 from ..user.models import OwnerShip, RoleShip
 
@@ -23,6 +24,8 @@ class Container(DockerAPIController):
     @rule('/item/<string:id>')
     def item(self, id: str):
         item = self.docker.container.item(id)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
         if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
         self.success(item=item)
@@ -152,7 +155,10 @@ class Container(DockerAPIController):
     @form(RenameForm)
     def rename(self):
         try:
-            if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+            item = self.docker.container.item(self.form.id.data)
+            if not item:
+                self.error(*OBJECT_NOT_EXISTED)
+            if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
                 self.error(*ROLE_PERMISSION_DENIED)
 
             self.docker.container.rename(**self.form.data)
@@ -164,7 +170,10 @@ class Container(DockerAPIController):
     @rule('/logs')
     @form(LogsForm)
     def logs(self):
-        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+        item = self.docker.container.item(self.form.id.data)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
 
         self.success(content=self.docker.container.logs(
@@ -174,7 +183,10 @@ class Container(DockerAPIController):
     @get
     @rule('/diff/<string:id>')
     def diff(self, id):
-        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, id):
+        item = self.docker.container.item(id)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
 
         self.success(files=self.docker.container.diff(id))
@@ -183,7 +195,10 @@ class Container(DockerAPIController):
     @rule('/commit')
     @form(CommitForm)
     def commit(self):
-        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
+        item = self.docker.container.item(self.form.id.data)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
 
         self.success(*COMMIT_SUCCESS, content=self.docker.container.commit(
@@ -194,12 +209,11 @@ class Container(DockerAPIController):
     @rule('/terminal')
     @form(TerminalForm)
     def terminal(self):
-        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, self.form.id.data):
-            self.error(*ROLE_PERMISSION_DENIED)
-
         item = self.docker.container.item(self.form.id.data)
         if not item:
-            self.error(*TERMINAL_CONTAINER_NOT_EXISTED)
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
+            self.error(*ROLE_PERMISSION_DENIED)
 
         cfg = Config.section('docker')
 

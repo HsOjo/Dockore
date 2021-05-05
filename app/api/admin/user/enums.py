@@ -9,3 +9,6 @@ ADD_FAILED = (5002, '添加用户失败。')
 
 EDIT_SUCCESS = (0, '编辑用户成功。')
 EDIT_FAILED = (5003, '编辑用户失败。')
+
+REMOVE_OWNER_SHIP_SUCCESS = (0, '移除所有权成功。')
+REMOVE_OWNER_SHIP_FAILED = (5004, '移除所有权失败。')
