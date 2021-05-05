@@ -6,6 +6,7 @@ import select
 import signal
 import struct
 import subprocess
+import sys
 import termios
 
 from geventwebsocket.websocket import WebSocket
@@ -79,6 +80,10 @@ class Terminal(EventSocketController):
             return
         if not user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, obj['id']):
             self.emit(EVENT_INIT_FAILED, CONTAINER_PERMISSION_DENIED)
+            return
+        if item['status'] != 'running':
+            self.emit(EVENT_INIT_FAILED, CONTAINER_NOT_RUNNING)
+            return
 
         self.context.g_set(GK_CONTAINER, item)
 
@@ -87,7 +92,9 @@ class Terminal(EventSocketController):
 
         (child_pid, fd) = pty.fork()
         if not child_pid:
+            # In child process, child_pid = 0
             subprocess.run(self.command)
+            sys.exit(0)
         else:
             self.context.session[GK_FD] = fd
             self.context.session[GK_CHILD_PID] = child_pid
