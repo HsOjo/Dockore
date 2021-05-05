@@ -18,10 +18,11 @@ class NetworkConvertor:
             ipam = attrs['IPAM']
             ipam_cfg = ipam['Config']
             if ipam_cfg:
-                ipam_cfg = ipam_cfg[0]
+                ipam_cfg = ipam_cfg[0]  # type: dict
                 item.update(
                     subnet=ipam_cfg['Subnet'],
                     gateway=ipam_cfg['Gateway'],
+                    ip_range=ipam_cfg.get('IPRange'),
                 )
 
             item.update(
