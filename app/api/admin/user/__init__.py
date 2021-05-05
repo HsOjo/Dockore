@@ -17,6 +17,7 @@ class AdminUser(AdminAPIController):
             id=item.id,
             username=item.username,
             role_type=item.role.type,
+            owner_item_num=item.owner_item_num,
         ) for item in pagi.items], total=pagi.total)
 
     @get

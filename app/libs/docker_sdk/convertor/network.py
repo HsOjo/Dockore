@@ -7,12 +7,14 @@ class NetworkConvertor:
     @staticmethod
     def from_docker(obj: Network, verbose=False):
         attrs = obj.attrs
+        containers = obj.containers
         item = dict(
             id=obj.short_id,
             name=obj.name,
             driver=attrs['Driver'],
             scope=attrs['Scope'],
             create_time=attrs['Created'],
+            container_num=len(containers)
         )
         if verbose:
             ipam = attrs['IPAM']
@@ -30,7 +32,7 @@ class NetworkConvertor:
                 internal=attrs['Internal'],
                 attachable=attrs['Attachable'],
                 options=attrs['Options'],
-                containers=[ContainerConvertor.from_docker(i, True) for i in obj.containers]
+                containers=[ContainerConvertor.from_docker(i, True) for i in containers]
             )
 
         return item
