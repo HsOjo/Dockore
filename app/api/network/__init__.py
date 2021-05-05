@@ -15,7 +15,7 @@ class Network(DockerAPIController):
     @get
     @rule('/list')
     def list(self):
-        items = self.docker.network.list()
+        items = self.docker.network.list(greedy=True)
         items = self.current_user.filter_owner(OwnerShip.OBJ_TYPE_NETWORK, items)
         self.success(items=items)
 
