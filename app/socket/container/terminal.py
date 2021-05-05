@@ -6,6 +6,7 @@ import select
 import signal
 import struct
 import subprocess
+import sys
 import termios
 
 from geventwebsocket.websocket import WebSocket
@@ -87,7 +88,9 @@ class Terminal(EventSocketController):
 
         (child_pid, fd) = pty.fork()
         if not child_pid:
+            # In child process, child_pid = 0
             subprocess.run(self.command)
+            sys.exit(0)
         else:
             self.context.session[GK_FD] = fd
             self.context.session[GK_CHILD_PID] = child_pid
