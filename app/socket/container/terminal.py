@@ -80,8 +80,11 @@ class Terminal(EventSocketController):
             return
         if not user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, obj['id']):
             self.emit(EVENT_INIT_FAILED, CONTAINER_PERMISSION_DENIED)
+            return
         if item['status'] != 'running':
             self.emit(EVENT_INIT_FAILED, CONTAINER_NOT_RUNNING)
+            return
+
         self.context.g_set(GK_CONTAINER, item)
 
         # Must dispose engine before fork.
