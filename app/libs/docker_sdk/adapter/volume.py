@@ -1,7 +1,7 @@
 from docker.models.volumes import VolumeCollection, Volume
 
 from .collection import CollectionAdapter
-from ..convertor import VolumeConvertor
+from ..convertor import VolumeConvertor, OptionConvertor
 
 
 class VolumeAdapter(CollectionAdapter):
@@ -19,5 +19,5 @@ class VolumeAdapter(CollectionAdapter):
         self._item(id).remove()
 
     def create(self, name, driver=None, driver_opts=None):
-        item = self._c.create(name, driver=driver, driver_opts=driver_opts)
+        item = self._c.create(name, driver=driver, driver_opts=OptionConvertor.to(driver_opts))
         return self.convert(item, verbose=True)

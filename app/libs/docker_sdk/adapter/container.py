@@ -2,7 +2,7 @@ from docker.models.containers import ContainerCollection, Container, ExecResult
 
 from .collection import CollectionAdapter
 from .image import ImageAdapter
-from ..convertor import ContainerConvertor, PortMappingConvertor
+from ..convertor import ContainerConvertor, PortMappingConvertor, VolumesMappingConvertor
 
 
 class ContainerAdapter(CollectionAdapter):
@@ -19,17 +19,17 @@ class ContainerAdapter(CollectionAdapter):
     def remove(self, id):
         self._item(id).remove()
 
-    def create(self, name, image, command, interactive=False, tty=False, ports=None):
+    def create(self, name, image, command, interactive=False, tty=False, ports=None, volumes=None):
         item = self._c.create(
             image, command, name=name, stdin_open=interactive, tty=tty,
-            ports=PortMappingConvertor.to_docker(ports)
+            ports=PortMappingConvertor.to_docker(ports), volumes=VolumesMappingConvertor.to_docker(volumes)
         )
         return self.convert(item, verbose=True)
 
-    def run(self, name, image, command, interactive=False, tty=False, ports=None):
+    def run(self, name, image, command, interactive=False, tty=False, ports=None, volumes=None):
         item = self._c.run(
             image, command, name=name, stdin_open=interactive, tty=tty, detach=True,
-            ports=PortMappingConvertor.to_docker(ports)
+            ports=PortMappingConvertor.to_docker(ports), volumes=VolumesMappingConvertor.to_docker(volumes)
         )
         return self.convert(item, verbose=True)
 

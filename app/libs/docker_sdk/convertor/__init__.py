@@ -2,5 +2,8 @@ from .container import ContainerConvertor
 from .histories import HistoriesConvertor
 from .image import ImageConvertor
 from .network import NetworkConvertor
+from .option import OptionConvertor
 from .ports_mapping import PortMappingConvertor
 from .volume import VolumeConvertor
+from .volumes_mapping import VolumesMappingConvertor
+from .mounts import MountsConvertor

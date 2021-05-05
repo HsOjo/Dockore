@@ -2,7 +2,7 @@ from docker.models.networks import NetworkCollection, Network
 from docker.types import IPAMConfig, IPAMPool
 
 from .collection import CollectionAdapter
-from ..convertor import NetworkConvertor
+from ..convertor import NetworkConvertor, OptionConvertor
 
 
 class NetworkAdapter(CollectionAdapter):
@@ -27,7 +27,8 @@ class NetworkAdapter(CollectionAdapter):
                 gateway=gateway,
                 iprange=ip_range,
             )])
-        item = self._c.create(name, driver, attachable=attachable, options=options, ipam=ipam_config)
+        item = self._c.create(name, driver,
+                              attachable=attachable, options=OptionConvertor.to(options), ipam=ipam_config)
         return self.convert(item, verbose=True)
 
     def connect(self, id, container_id, ipv4_address=None):
