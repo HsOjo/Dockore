@@ -15,7 +15,7 @@ class VolumeConvertor:
         )
         if verbose:
             item.update(
-                options=attrs['Options'],
+                driver_opts=attrs['Options'],
             )
 
         return item

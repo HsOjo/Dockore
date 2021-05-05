@@ -1,6 +1,6 @@
 from saika import db
 
-from app.api.user.models import User, RoleShip
+from app.api.user.models import User, RoleShip, OwnerShip
 from app.api.user.service import pw_hash
 
 
@@ -14,7 +14,8 @@ class AdminUserService:
 
     @staticmethod
     def item(id):
-        return db.query(User).get(id)
+        item = db.query(User).get(id)  # type: User
+        return item
 
     @staticmethod
     def add(username, password, role_type):
@@ -40,6 +41,11 @@ class AdminUserService:
     @staticmethod
     def delete(id):
         item = db.query(User).get(id)
+        db.delete_instance(item)
+
+    @staticmethod
+    def remove_owner_ship(id):
+        item = db.query(OwnerShip).get(id)
         db.delete_instance(item)
 
     @staticmethod

@@ -1,5 +1,5 @@
 from saika.form import JSONForm, ArgsForm, simple_choices
-from wtforms import BooleanField, StringField, IntegerField, DateTimeField, FormField, SelectField, FieldList
+from wtforms import BooleanField, StringField, IntegerField, DateTimeField, FormField, SelectField, FieldList, Form
 from wtforms.validators import DataRequired, NumberRange, IPAddress
 
 
@@ -15,20 +15,25 @@ class StopForm(OperationForm):
     timeout = IntegerField('超时时间', default=10)
 
 
-class PortMappintForm(JSONForm):
-    port = IntegerField('端口', validators=[DataRequired(), NumberRange(1, 65535)])
-    protocol = SelectField('协议', validators=[DataRequired()], choices=simple_choices(['tcp', 'udp', 'sctp']))
-    listen_ip = StringField('监听主机', validators=[DataRequired(), IPAddress()])
-    listen_port = IntegerField('监听端口', validators=[DataRequired(), NumberRange(1, 65535)])
-
-
 class CreateForm(JSONForm):
+    class PortMappingForm(Form):
+        port = IntegerField('端口', validators=[DataRequired(), NumberRange(1, 65535)])
+        protocol = SelectField('协议', validators=[DataRequired()], choices=simple_choices(['tcp', 'udp', 'sctp']))
+        listen_ip = StringField('监听主机', validators=[DataRequired(), IPAddress()])
+        listen_port = IntegerField('监听端口', validators=[DataRequired(), NumberRange(1, 65535)])
+
+    class VolumeMappingForm(Form):
+        path = StringField('存储卷', validators=[DataRequired()])
+        mode = SelectField('挂载模式', choices=simple_choices(['ro', 'rw']))
+        bind = StringField('挂载位置', validators=[DataRequired()])
+
     image = StringField('镜像', validators=[DataRequired()])
     command = StringField('命令', validators=[DataRequired()])
     name = StringField('容器名称')
     interactive = BooleanField('交互模式')
     tty = BooleanField('虚拟终端')
-    ports = FieldList(FormField(PortMappintForm, '端口映射项'))
+    ports = FieldList(FormField(PortMappingForm, '端口映射项'))
+    volumes = FieldList(FormField(VolumeMappingForm, '存储卷挂载项'))
 
 
 class RenameForm(JSONForm):

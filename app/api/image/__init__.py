@@ -5,6 +5,7 @@ from saika.decorator import *
 from app.api.base import DockerAPIController
 from .enums import *
 from .forms import *
+from ..enums import OBJECT_NOT_EXISTED
 from ..user import ROLE_PERMISSION_DENIED
 from ..user.models import OwnerShip, RoleShip
 
@@ -23,6 +24,8 @@ class Image(DockerAPIController):
     @rule('/item/<string:id>')
     def item(self, id):
         item = self.docker.image.item(id)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
         if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
         self.success(item=item)
@@ -80,7 +83,10 @@ class Image(DockerAPIController):
     @rule('/tag')
     @form(TagForm)
     def tag(self):
-        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, self.form.id.data):
+        item = self.docker.image.item(self.form.id.data)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
 
         if self.docker.image.tag(**self.form.data):
@@ -91,7 +97,10 @@ class Image(DockerAPIController):
     @get
     @rule('/history/<string:id>')
     def history(self, id):
-        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, id):
+        item = self.docker.image.item(id)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_IMAGE, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
 
         self.success(histories=self.docker.image.history(id))

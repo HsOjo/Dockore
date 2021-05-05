@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from saika.database import db
@@ -62,6 +63,7 @@ class RoleShip(db.Model):
     id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)
     type = db.Column(db.INTEGER, index=True)
     user_id = db.Column(db.INTEGER, db.ForeignKey(User.id), index=True)
+    create_time = db.Column(db.DATETIME, default=datetime.now)
 
     user: User
 
@@ -79,5 +81,6 @@ class OwnerShip(db.Model):
     type = db.Column(db.INTEGER, index=True)
     user_id = db.Column(db.INTEGER, db.ForeignKey(User.id), index=True)
     obj_id = db.Column(db.VARCHAR(255))
+    create_time = db.Column(db.DATETIME, default=datetime.now)
 
     user: User

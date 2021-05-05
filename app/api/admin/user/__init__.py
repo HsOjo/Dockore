@@ -30,6 +30,13 @@ class AdminUser(AdminAPIController):
             id=item.id,
             username=item.username,
             role_type=item.role.type,
+            create_time=item.role.create_time,
+            own_items=[dict(
+                id=item.id,
+                type=item.type,
+                obj_id=item.obj_id,
+                create_time=item.create_time,
+            ) for item in item.own_items],
         ))
 
     @post
@@ -69,3 +76,21 @@ class AdminUser(AdminAPIController):
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
         self.success(*DELETE_SUCCESS)
+
+    @post
+    @rule('/remove-owner-ship')
+    @form(OperationForm)
+    def remove_owner_ship(self):
+        ids = self.form.ids.data
+
+        excs = {}
+
+        for id in ids:
+            try:
+                AdminUserService.remove_owner_ship(id)
+            except Exception as e:
+                excs[id] = str(e)
+
+        if len(excs):
+            self.error(*REMOVE_OWNER_SHIP_FAILED, excs=excs)
+        self.success(*REMOVE_OWNER_SHIP_SUCCESS)

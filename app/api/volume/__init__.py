@@ -5,6 +5,7 @@ from saika.decorator import *
 from app.api.base import DockerAPIController
 from .enums import *
 from .forms import *
+from ..enums import OBJECT_NOT_EXISTED
 from ..user import ROLE_PERMISSION_DENIED
 from ..user.models import OwnerShip, RoleShip
 
@@ -22,6 +23,8 @@ class Volume(DockerAPIController):
     @rule('/item/<string:id>')
     def item(self, id):
         item = self.docker.volume.item(id)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
         if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_VOLUME, item['id']):
             self.error(*ROLE_PERMISSION_DENIED)
         self.success(item=item)
