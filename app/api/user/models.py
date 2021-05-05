@@ -52,6 +52,10 @@ class User(db.Model):
         obj = db.query(OwnerShip).filter_by(user_id=self.id, type=type, obj_id=obj_id).first()
         return obj is not None
 
+    @property
+    def owner_item_num(self):
+        return db.query(OwnerShip).filter_by(user_id=self.id).count()
+
 
 @model
 class RoleShip(db.Model):
