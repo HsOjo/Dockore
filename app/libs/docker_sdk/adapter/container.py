@@ -45,13 +45,16 @@ class ContainerAdapter(CollectionAdapter):
     def rename(self, id, name):
         self._item(id).rename(name)
 
-    def exec(self, id, command, interactive=False, tty=False, privileged=False):
+    def exec(self, id, command, interactive=False, tty=False, privileged=False, binary=False):
         result = self._item(id).exec_run(
             command, stdin=interactive, tty=tty, privileged=privileged
         )  # type: ExecResult
+        output = result.output
+        if not binary:
+            output = output.decode(errors='ignore')
         return dict(
             exit_code=result.exit_code,
-            output=result.output.decode(errors='ignore'),
+            output=output,
         )
 
     def logs(self, id, since, until):
