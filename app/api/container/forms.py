@@ -57,4 +57,11 @@ class CommitForm(JSONForm):
 
 class TerminalForm(JSONForm):
     id = StringField('容器', validators=[DataRequired()])
-    cmd = StringField('命令')
+    command = StringField('命令')
+
+
+class ExecForm(TerminalForm):
+    interactive = BooleanField('交互模式', default=True)
+    tty = BooleanField('虚拟终端', default=True)
+    privileged = BooleanField('权限模式', default=False)
+    binary = BooleanField('二进制输出', default=False)

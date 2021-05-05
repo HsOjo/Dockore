@@ -218,14 +218,26 @@ class Container(DockerAPIController):
         cfg = Config.section('docker')
 
         expires = cfg.get('terminal_expires', 600)
-        cmd = [cfg.get('cli_bin'), '-H', cfg.get('url')]
+        command = [cfg.get('cli_bin'), '-H', cfg.get('url')]
 
-        if self.form.cmd.data:
-            cmd += ['exec', '-it', item['id'], *self.form.cmd.data.split(' ')]
+        if self.form.command.data:
+            command += ['exec', '-it', item['id'], *self.form.command.data.split(' ')]
         else:
-            cmd += ['attach', item['id']]
+            command += ['attach', item['id']]
 
         if item['tty'] and item['interactive']:
-            self.success(token=common.obj_encrypt(dict(id=item['id'], cmd=cmd), expires))
+            self.success(token=common.obj_encrypt(dict(id=item['id'], command=command), expires))
         else:
             self.error(*TERMINAL_FAILED)
+
+    @post
+    @rule('/exec')
+    @form(ExecForm)
+    def exec(self):
+        item = self.docker.container.item(self.form.id.data)
+        if not item:
+            self.error(*OBJECT_NOT_EXISTED)
+        if not self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, item['id']):
+            self.error(*ROLE_PERMISSION_DENIED)
+
+        self.success(*EXEC_SUCCESS, result=self.docker.container.exec(**self.form.data))

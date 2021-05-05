@@ -68,10 +68,10 @@ class Terminal(EventSocketController):
         self.context.g_set(GK_CURRENT_USER, user)
 
         obj = common.obj_decrypt(token)  # type: dict
-        if not (obj and obj.get('id') and obj.get('cmd')):
+        if not (obj and obj.get('id') and obj.get('command')):
             self.emit(EVENT_INIT_FAILED, SESSION_INVALID)
             return
-        self.context.g_set(GK_COMMAND, obj['cmd'])
+        self.context.g_set(GK_COMMAND, obj['command'])
 
         item = self.docker.container.item(obj['id'])
         if not item:
