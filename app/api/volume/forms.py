@@ -14,4 +14,4 @@ class CreateForm(JSONForm):
 
     name = StringField('名称', validators=[DataRequired()])
     driver = StringField('驱动器类型', validators=[DataRequired()])
-    options = FieldList(FormField(DriverOptionForm, '驱动器选项'))
+    driver_opts = FieldList(FormField(DriverOptionForm, '驱动器选项'))
