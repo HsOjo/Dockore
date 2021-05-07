@@ -46,7 +46,7 @@ class Network(DockerAPIController):
                 if item:
                     db.delete_instance(item)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
@@ -68,7 +68,7 @@ class Network(DockerAPIController):
             ))
             return self.response(*CREATE_SUCCESS, item=item)
         except APIError as e:
-            self.error(*CREATE_FAILED, exc=str(e))
+            self.error(*CREATE_FAILED, exc=e)
 
     @post
     @rule('/delete')
@@ -87,7 +87,7 @@ class Network(DockerAPIController):
                 if item:
                     db.delete_instance(item)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
         self.success(*DELETE_SUCCESS)
@@ -105,7 +105,7 @@ class Network(DockerAPIController):
                     self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, container_id):
                 self.docker.network.connect(id, container_id, ipv4_address)
         except APIError as e:
-            self.error(*CONNECT_FAILED, exc=str(e))
+            self.error(*CONNECT_FAILED, exc=e)
         self.success(*CONNECT_SUCCESS)
 
     @post
@@ -121,5 +121,5 @@ class Network(DockerAPIController):
                     self.current_user.check_permission(OwnerShip.OBJ_TYPE_CONTAINER, container_id):
                 self.docker.network.disconnect(id, container_id, force)
         except APIError as e:
-            self.error(*DISCONNECT_FAILED, exc=str(e))
+            self.error(*DISCONNECT_FAILED, exc=e)
         self.success(*DISCONNECT_SUCCESS)

@@ -51,7 +51,7 @@ class Image(DockerAPIController):
                 if item:
                     db.delete_instance(item)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
@@ -77,7 +77,7 @@ class Image(DockerAPIController):
 
             return self.response(*PULL_SUCCESS, item=item)
         except APIError as e:
-            self.error(*PULL_FAILED, exc=str(e))
+            self.error(*PULL_FAILED, exc=e)
 
     @post
     @rule('/tag')

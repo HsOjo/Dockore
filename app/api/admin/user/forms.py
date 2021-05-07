@@ -25,3 +25,9 @@ class EditForm(AddForm):
 
 class OperationForm(JSONForm):
     ids = FieldList(IntegerField('被操作项', validators=[DataRequired()]))
+
+
+class DistributeForm(JSONForm):
+    id = IntegerField('用户', validators=[DataRequired()])
+    type = IntegerField('类型', validators=[DataRequired()])
+    obj_id = StringField('对象', validators=[DataRequired()])
