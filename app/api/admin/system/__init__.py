@@ -24,6 +24,7 @@ class AdminSystem(AdminAPIController):
                 for k, v in self.form.config.data.items():
                     cfgs[k].update(v)
                 Config.save(Environ.config_path)
+                Environ.app.reload()
             except Exception as e:
                 self.error(*CONFIG_FAILED, exc=e)
             self.success(*CONFIG_SUCCESS)
