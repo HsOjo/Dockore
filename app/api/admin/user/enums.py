@@ -12,3 +12,6 @@ EDIT_FAILED = (5003, '编辑用户失败。')
 
 REMOVE_OWNER_SHIP_SUCCESS = (0, '移除所有权成功。')
 REMOVE_OWNER_SHIP_FAILED = (5004, '移除所有权失败。')
+
+DISTRIBUTE_SUCCESS = (0, '分配对象成功。')
+DISTRIBUTE_FAILED = (5005, '分配对象失败，该用户已拥有该对象。')

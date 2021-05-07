@@ -84,7 +84,7 @@ class OwnerShip(db.Model):
     id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)
     type = db.Column(db.INTEGER, index=True)
     user_id = db.Column(db.INTEGER, db.ForeignKey(User.id), index=True)
-    obj_id = db.Column(db.VARCHAR(255))
+    obj_id = db.Column(db.VARCHAR(255), index=True)
     create_time = db.Column(db.DATETIME, default=datetime.now)
 
     user: User

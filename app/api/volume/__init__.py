@@ -46,7 +46,7 @@ class Volume(DockerAPIController):
                 if item:
                     db.delete_instance(item)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
@@ -69,4 +69,4 @@ class Volume(DockerAPIController):
             ))
             return self.response(*CREATE_SUCCESS, item=item)
         except APIError as e:
-            self.error(*CREATE_FAILED, exc=str(e))
+            self.error(*CREATE_FAILED, exc=e)

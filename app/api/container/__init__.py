@@ -48,7 +48,7 @@ class Container(DockerAPIController):
                 if item:
                     db.delete_instance(item)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*DELETE_FAILED, excs=excs)
@@ -71,7 +71,7 @@ class Container(DockerAPIController):
             ))
             return self.response(*CREATE_SUCCESS, item=item)
         except APIError as e:
-            self.error(*CREATE_FAILED, exc=str(e))
+            self.error(*CREATE_FAILED, exc=e)
 
     @post
     @rule('/run')
@@ -89,7 +89,7 @@ class Container(DockerAPIController):
             ))
             return self.response(*RUN_SUCCESS, item=item)
         except APIError as e:
-            self.error(*RUN_FAILED, exc=str(e))
+            self.error(*RUN_FAILED, exc=e)
 
     @post
     @rule('/start')
@@ -103,7 +103,7 @@ class Container(DockerAPIController):
             try:
                 self.docker.container.start(id)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*START_FAILED, excs=excs)
@@ -123,7 +123,7 @@ class Container(DockerAPIController):
             try:
                 self.docker.container.stop(id, timeout)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*STOP_FAILED, excs=excs)
@@ -143,7 +143,7 @@ class Container(DockerAPIController):
             try:
                 self.docker.container.restart(id, timeout)
             except APIError as e:
-                excs[id] = str(e)
+                excs[id] = e
 
         if len(excs):
             self.error(*RESTART_FAILED, excs=excs)
@@ -163,7 +163,7 @@ class Container(DockerAPIController):
 
             self.docker.container.rename(**self.form.data)
         except APIError as e:
-            self.error(*RENAME_FAILED, exc=str(e))
+            self.error(*RENAME_FAILED, exc=e)
         self.success(*RENAME_SUCCESS)
 
     @post

@@ -51,3 +51,13 @@ class AdminUserService:
     @staticmethod
     def count_admin():
         return db.query(RoleShip).filter_by(type=RoleShip.TYPE_ADMIN).count()
+
+    @staticmethod
+    def distribute_obj(id, type, obj_id):
+        fields = dict(user_id=id, type=type, obj_id=obj_id)
+        existed = db.query(OwnerShip).filter_by(**fields).first()
+        if not existed:
+            db.add_instance(OwnerShip(**fields))
+            return True
+
+        return False
