@@ -8,7 +8,7 @@ from ...enums import OBJECT_NOT_EXISTED
 from ...user import OwnerShip
 
 
-@controller()
+@controller
 class AdminUser(DockerAdminAPIController):
     @get
     @rule('/list')

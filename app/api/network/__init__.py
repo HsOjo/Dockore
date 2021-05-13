@@ -10,7 +10,7 @@ from ..user import ROLE_PERMISSION_DENIED
 from ..user.models import OwnerShip, RoleShip
 
 
-@controller()
+@controller
 class Network(DockerAPIController):
     @get
     @rule('/list')

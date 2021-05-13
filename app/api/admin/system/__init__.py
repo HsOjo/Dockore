@@ -2,19 +2,17 @@ from saika import Config, Environ
 from saika.decorator import *
 from saika.form import AUTO
 
-from app.api.user import role_auth, RoleShip
 from .enums import *
 from .forms import *
 from ..admin_api import AdminAPIController
 
 
-@controller()
+@controller
 class AdminSystem(AdminAPIController):
     @get
     @post
     @rule('/config')
     @form(ConfigForm, AUTO)
-    @role_auth(RoleShip.TYPE_ADMIN)
     def config(self):
         if self.request.method == 'GET':
             self.success(config=Config.all())
