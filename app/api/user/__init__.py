@@ -31,7 +31,7 @@ class User(UserAPIController):
         )
 
     @post
-    @rule('/change_password')
+    @rule('/change-password')
     @form(ChangePasswordForm)
     def change_password(self):
         result = UserService.change_password(self.current_user.username, **self.form.data)
