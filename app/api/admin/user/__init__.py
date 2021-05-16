@@ -19,6 +19,7 @@ class AdminUser(DockerAdminAPIController):
             id=item.id,
             username=item.username,
             role_type=item.role.type,
+            create_time=item.role.create_time,
             owner_item_num=item.owner_item_num,
         ) for item in pagi.items], total=pagi.total)
 
