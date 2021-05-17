@@ -10,7 +10,7 @@ from ..user.enums import ROLE_PERMISSION_DENIED
 from ..user.models import OwnerShip, RoleShip
 
 
-@controller()
+@controller
 class Container(DockerAPIController):
     @get
     @rule('/list')

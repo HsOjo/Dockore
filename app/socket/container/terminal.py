@@ -27,7 +27,7 @@ EVENT_INIT_SUCCESS = 'init_success'
 EVENT_INIT_FAILED = 'init_failed'
 
 
-@controller()
+@controller
 class Terminal(EventSocketController):
     @rule_rs('/')
     def portal(self, socket: WebSocket):

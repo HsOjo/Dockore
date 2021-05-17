@@ -19,5 +19,5 @@ class DockerAdminAPIController(DockerAPIController):
 
         @self.blueprint.before_request
         def authentication():
-            if self.current_user.role.type != RoleShip.TYPE_ADMIN:
+            if not self.current_user or self.current_user.role.type != RoleShip.TYPE_ADMIN:
                 self.error(*ROLE_PERMISSION_DENIED)

@@ -7,7 +7,7 @@ from app.api.base import DockerAPIController
 from app.const import Const
 
 
-@controller()
+@controller
 class System(DockerAPIController):
     @get
     @rule('/version')
