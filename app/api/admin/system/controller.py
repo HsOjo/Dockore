@@ -15,7 +15,7 @@ class AdminSystem(AdminAPIController):
     @form(ConfigForm, AUTO)
     def config(self):
         if self.request.method == 'GET':
-            self.success(config=Config.all(True))
+            self.success(config={k: cfg.data_now for k, cfg in Config.all(True).items()})
         elif self.request.method == 'POST':
             try:
                 configs = Config.all(True)

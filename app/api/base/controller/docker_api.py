@@ -1,6 +1,7 @@
 import traceback
 
 from docker.errors import APIError, DockerException
+from requests.exceptions import ConnectionError
 from saika import Config, APIException
 
 from app.api.enums import DOCKER_CAN_NOT_CONNECT
@@ -17,7 +18,7 @@ class DockerAPIController(UserAPIController):
 
         @self.blueprint.errorhandler(DockerException)
         def handle_connect(e):
-            if 'Error while fetching server API version' in str(e):
+            if isinstance(e.__context__, ConnectionError):
                 return APIException(*DOCKER_CAN_NOT_CONNECT)
             return e
 

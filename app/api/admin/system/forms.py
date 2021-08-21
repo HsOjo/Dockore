@@ -1,5 +1,5 @@
 from saika.form import JSONForm, Form
-from wtforms import StringField, IntegerField, FormField
+from wtforms import StringField, IntegerField, FormField, BooleanField
 from wtforms.validators import DataRequired
 
 
@@ -7,12 +7,9 @@ class ConfigForm(JSONForm):
     class _(Form):
         class DatabaseForm(Form):
             driver = StringField('数据库驱动', validators=[DataRequired()])
-            host = StringField('主机', validators=[DataRequired()])
-            port = IntegerField('端口', validators=[DataRequired()])
-            user = StringField('用户', validators=[DataRequired()])
-            password = StringField('密码', default='')
-            database = StringField('数据库', validators=[DataRequired()])
-            charset = StringField('编码', validators=[DataRequired()])
+            path = StringField('文件路径', validators=[DataRequired()])
+            echo_sql = BooleanField('输出SQL')
+            track_modifications = BooleanField('追踪变化')
 
         class DockerForm(Form):
             url = StringField('URL', validators=[DataRequired()])

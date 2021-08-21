@@ -217,7 +217,7 @@ class Container(DockerAPIController):
             self.error(*ROLE_PERMISSION_DENIED)
 
         cfg = Config.get(DockerConfig)  # type: DockerConfig
-        command = [cfg.cli_bin, '-H', cfg.get('url')]
+        command = [cfg.cli_bin, '-H', cfg.url]
 
         if self.form.command.data:
             command += ['exec', '-it', item['id'], *self.form.command.data.split(' ')]
