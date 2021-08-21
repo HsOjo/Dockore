@@ -1,14 +1,8 @@
-from saika.form import JSONForm, simple_choices, ArgsForm
+from saika.form import JSONForm, simple_choices
 from wtforms import StringField, IntegerField, SelectField, FieldList
 from wtforms.validators import DataRequired
 
-from app.api.user import RoleShip
-
-
-class ListForm(ArgsForm):
-    keyword = StringField('关键字', default='')
-    page = IntegerField('页数', default=1)
-    per_page = IntegerField('每页项目数', default=10)
+from app.api.user.models import RoleShip
 
 
 class AddForm(JSONForm):

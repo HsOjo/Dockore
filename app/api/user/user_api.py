@@ -6,28 +6,18 @@ from .models import User, RoleShip
 from .service import UserService
 
 GK_USER = 'user'
-HK_TOKEN = 'Token'
+HK_AUTH = 'Authorization'
 MK_PUBLIC = 'public'
 MK_ROLES = 'roles'
 
 
-def ignore_auth(f):
-    MetaTable.set(f, MK_PUBLIC, True)
-    return f
-
-
-def role_auth(role):
-    def wrapper(f):
-        roles = MetaTable.get(f, MK_ROLES, [])  # type: list
-        roles.append(role)
-        return f
-
-    return wrapper
-
-
 class UserAPIController(APIController):
+    @property
+    def service_user(self):
+        return UserService()
+
     def callback_before_register(self):
-        super(UserAPIController, self).callback_before_register()
+        super().callback_before_register()
 
         @self.blueprint.before_request
         def authentication():
@@ -38,8 +28,8 @@ class UserAPIController(APIController):
             if f is None or MetaTable.get(f, MK_PUBLIC):
                 return
 
-            token = self.request.headers.get(HK_TOKEN)
-            user = UserService.get_user(token)
+            token = self.request.headers.get(HK_AUTH)
+            user = self.service_user.get_user(token)
             if user is None:
                 self.error(*TOKEN_INVALID)
 

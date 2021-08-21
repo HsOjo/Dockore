@@ -1,5 +1,6 @@
 from app.api.base import DockerAPIController
-from app.api.user import UserAPIController, RoleShip
+from app.api.user.user_api import UserAPIController
+from app.api.user.models import  RoleShip
 from app.api.user.enums import ROLE_PERMISSION_DENIED
 
 

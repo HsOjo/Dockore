@@ -1,19 +1,24 @@
 import hashlib
 
-from saika import db, common, Config
+from saika import db, common, Service, Config
 
+from app.config.user import UserConfig
 from .models import User
 
-
-def pw_hash(x: str):
-    return hashlib.md5(x.encode()).hexdigest()
+EXPIRES_CFG = object()
 
 
-class UserService:
+class UserService(Service):
+    def __init__(self):
+        super().__init__(User)
+
     @staticmethod
-    def login(username, password):
-        password = pw_hash(password)
-        item = User.query.filter_by(
+    def pw_hash(x: str):
+        return hashlib.md5(x.encode()).hexdigest()
+
+    def login(self, username, password, expires=EXPIRES_CFG):
+        password = self.pw_hash(password)
+        item = self.query.filter_by(
             username=username,
             password=password,
         ).first()  # type: User
@@ -21,13 +26,14 @@ class UserService:
         if item is None:
             return False
         else:
-            expires = Config.section('user').get('login_expires', 86400)
+            if expires is EXPIRES_CFG:
+                cfg = Config.get(UserConfig)  # type: UserConfig
+                expires = cfg.login_expires
             return common.obj_encrypt(dict(id=item.id), expires)
 
-    @staticmethod
-    def change_password(username, old, new):
-        password = pw_hash(old)
-        item = User.query.filter_by(
+    def change_password(self, username, old, new):
+        password = self.pw_hash(old)
+        item = self.query.filter_by(
             username=username,
             password=password,
         ).first()  # type: User
@@ -35,17 +41,16 @@ class UserService:
         if item is None:
             return False
         else:
-            item.password = pw_hash(new)
+            item.password = self.pw_hash(new)
             db.add_instance(item)
             return True
 
-    @staticmethod
-    def get_user(token: str):
+    def get_user(self, token: str):
         obj = common.obj_decrypt(token)  # type: dict
         if obj is not None:
             id = obj.get('id')
             if id is not None:
-                item = User.query.get(id)  # type: User
+                item = self.query.get(id)  # type: User
                 if item is not None:
                     return item
 

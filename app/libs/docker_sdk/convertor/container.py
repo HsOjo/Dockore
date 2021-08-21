@@ -1,9 +1,8 @@
 from docker.models.containers import Container
 
 from .image import ImageConvertor
-from .ports_mapping import PortMappingConvertor
-from .volumes_mapping import VolumesMappingConvertor
 from .mounts import MountsConvertor
+from .ports_mapping import PortMappingConvertor
 
 
 class ContainerConvertor:

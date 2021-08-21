@@ -13,9 +13,11 @@ from geventwebsocket.websocket import WebSocket
 from saika import common, Config, EventSocketController, socket_io, db
 from saika.decorator import controller, rule_rs
 
-from app.api.user import UserService, OwnerShip
+from app.api.user.models import OwnerShip
 from app.libs.docker_sdk import Docker
 from .messages import *
+from ...api.user.service import UserService
+from ...config.docker import DockerConfig
 
 GK_FD = 'fd'
 GK_CHILD_PID = 'child_pid'
@@ -35,7 +37,12 @@ class Terminal(EventSocketController):
 
     @property
     def docker(self):
-        return Docker(Config.section('docker').get('url'))
+        config = Config.get(DockerConfig)  # type: DockerConfig
+        return Docker(config.url)
+
+    @property
+    def service_user(self):
+        return UserService()
 
     @property
     def currnet_user(self):
@@ -62,7 +69,7 @@ class Terminal(EventSocketController):
             os.close(fd)
 
     def on_open(self, user_token, token):
-        user = UserService.get_user(user_token)
+        user = self.service_user.get_user(user_token)
         if not user:
             self.emit(EVENT_INIT_FAILED, PERMISSION_DENIED)
             return

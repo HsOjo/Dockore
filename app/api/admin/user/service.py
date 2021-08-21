@@ -1,59 +1,34 @@
 from saika import db
 
 from app.api.user.models import User, RoleShip, OwnerShip
-from app.api.user.service import pw_hash
+from app.api.user.service import UserService
 
 
-class AdminUserService:
-    @staticmethod
-    def list(page, per_page, keyword=None):
-        query = db.query(User)
-        if keyword:
-            query = query.filter(User.username.contains(keyword))
-        return query.paginate(page, per_page)
-
-    @staticmethod
-    def item(id):
-        item = db.query(User).get(id)  # type: User
-        return item
-
-    @staticmethod
-    def add(username, password, role_type):
-        password = pw_hash(password)
-        db.add_instance(User(
+class AdminUserService(UserService):
+    def add(self, username, password, role_type):
+        password = self.pw_hash(password)
+        return super().add(
             username=username, password=password,
             role=RoleShip(type=role_type)
-        ))
+        )
 
-    @staticmethod
-    def edit(id, username, password, role_type):
-        item = db.query(User).get(id)  # type: User
+    def edit(self, id, username=None, password=None, role_type=None, **kwargs):
+        item = self.query.get(id)  # type: User
         if not item:
             return False
 
         item.username = username
         if password:
-            password = pw_hash(password)
+            password = self.pw_hash(password)
             item.password = password
         item.role.type = role_type
         db.add_instance(item)
 
-    @staticmethod
-    def delete(id):
-        item = db.query(User).get(id)
-        db.delete_instance(item)
-
-    @staticmethod
-    def remove_owner_ship(id):
+    def remove_owner_ship(self, id):
         item = db.query(OwnerShip).get(id)
         db.delete_instance(item)
 
-    @staticmethod
-    def count_admin():
-        return db.query(RoleShip).filter_by(type=RoleShip.TYPE_ADMIN).count()
-
-    @staticmethod
-    def distribute_obj(id, type, obj_id):
+    def distribute_obj(self, id, type, obj_id):
         fields = dict(user_id=id, type=type, obj_id=obj_id)
         existed = db.query(OwnerShip).filter_by(**fields).first()
         if not existed:
@@ -61,3 +36,6 @@ class AdminUserService:
             return True
 
         return False
+
+    def count_admin(self):
+        return db.query(RoleShip).filter_by(type=RoleShip.TYPE_ADMIN).count()

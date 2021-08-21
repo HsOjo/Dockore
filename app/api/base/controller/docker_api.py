@@ -4,7 +4,8 @@ from docker.errors import APIError, DockerException
 from saika import Config, APIException
 
 from app.api.enums import DOCKER_CAN_NOT_CONNECT
-from app.api.user import UserAPIController
+from app.api.user.user_api import UserAPIController
+from app.config.docker import DockerConfig
 from app.libs import Docker
 
 GK_DOCKER = 'docker'
@@ -25,13 +26,7 @@ class DockerAPIController(UserAPIController):
             traceback.print_exc()
             return APIException(msg=e)
 
-        @self.blueprint.before_request
-        def init_docker():
-            self.context.g_set(
-                GK_DOCKER, Docker(Config.section('docker').get('url'))
-            )
-
     @property
     def docker(self):
-        docker = self.context.g_get(GK_DOCKER)  # type: Docker
-        return docker
+        config = Config.get(DockerConfig)  # type: DockerConfig
+        return Docker(config.url)
