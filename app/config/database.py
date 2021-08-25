@@ -7,4 +7,4 @@ from saika.decorator import config
 
 @config
 class DatabaseConfig(FileDBConfig):
-    path = os.path.join(Environ.data_path, 'db.sqlite')
+    path = os.path.join(Environ.data_dir, 'db.sqlite')
