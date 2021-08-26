@@ -1,5 +1,5 @@
 from saika.form import JSONForm, Form
-from wtforms import StringField, IntegerField, FormField, BooleanField
+from wtforms import StringField, IntegerField, FormField, BooleanField, Field
 from wtforms.validators import DataRequired
 
 
@@ -19,6 +19,7 @@ class ConfigForm(JSONForm):
         class UserForm(Form):
             login_expires = IntegerField('登录过期时间', validators=[DataRequired()])
 
+        flask = Field()
         database = FormField(DatabaseForm)
         docker = FormField(DockerForm)
         user = FormField(UserForm)

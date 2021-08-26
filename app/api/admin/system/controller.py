@@ -26,6 +26,7 @@ class AdminSystem(AdminAPIController):
                         cfg.load(**v)
                         save_configs.append(cfg)
                 Config.save(*save_configs)
+                self.app.load_configs()
             except Exception as e:
                 self.error(*CONFIG_FAILED, exc=e)
             self.success(*CONFIG_SUCCESS)
