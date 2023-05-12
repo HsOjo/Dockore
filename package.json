@@ -1,0 +1,52 @@
+{
+  "name": "dockore-frontend",
+  "version": "0.2.3",
+  "private": true,
+  "description": "A simple GUI Manager for Docker.",
+  "author": {
+    "name": "HsOjo",
+    "url": "https://github.com/HsOjo",
+    "email": "hsojo@qq.com"
+  },
+  "scripts": {
+    "serve": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
+  },
+  "main": ".vite/build/main.js",
+  "dependencies": {
+    "@juggle/resize-observer": "^3.4.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "element-ui": "^2.15.13",
+    "filesize": "^6.4.0",
+    "is-electron": "^2.2.2",
+    "moment": "^2.29.4",
+    "vue": "^2.7.14",
+    "vue-native-websocket": "^2.0.15",
+    "vue-router": "^3.6.5",
+    "vuex": "^3.6.2",
+    "xterm": "^5.1.0",
+    "xterm-addon-fit": "^0.7.0",
+    "xterm-addon-search": "^0.11.0",
+    "xterm-addon-web-links": "^0.8.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.1.1",
+    "@electron-forge/maker-deb": "^6.1.1",
+    "@electron-forge/maker-dmg": "^6.1.1",
+    "@electron-forge/maker-rpm": "^6.1.1",
+    "@electron-forge/maker-squirrel": "^6.1.1",
+    "@electron-forge/maker-zip": "^6.1.1",
+    "@electron-forge/plugin-vite": "^6.1.1",
+    "@vitejs/plugin-vue2": "^2.2.0",
+    "axios": "^0.27.2",
+    "electron": "^22.3.9",
+    "vite": "^4.3.5",
+    "vite-plugin-require": "^1.1.10",
+    "vue-template-compiler": "^2.7.14"
+  }
+}
