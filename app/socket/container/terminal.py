@@ -10,7 +10,7 @@ import sys
 import termios
 
 from geventwebsocket.websocket import WebSocket
-from saika import common, Config, EventSocketController, socket_io, db
+from saika import common, Config, EventSocketController, socket_io, db, Context
 from saika.decorator import controller, rule_rs
 
 from app.api.user.models import OwnerShip
@@ -46,20 +46,20 @@ class Terminal(EventSocketController):
 
     @property
     def currnet_user(self):
-        return self.context.g_get(GK_CURRENT_USER)
+        return Context.g_get(GK_CURRENT_USER)
 
     @property
     def container(self):
-        return self.context.g_get(GK_CONTAINER)
+        return Context.g_get(GK_CONTAINER)
 
     @property
     def command(self):
-        return self.context.g_get(GK_COMMAND)
+        return Context.g_get(GK_COMMAND)
 
     def on_disconnect(self):
-        fd = self.context.session.pop(GK_FD, None)
+        fd = Context.session.pop(GK_FD, None)
         if fd:
-            child_pid = self.context.session.get(GK_CHILD_PID)
+            child_pid = Context.session.get(GK_CHILD_PID)
             try:
                 os.kill(child_pid, signal.SIGTERM)
             except ProcessLookupError as e:
@@ -73,13 +73,13 @@ class Terminal(EventSocketController):
         if not user:
             self.emit(EVENT_INIT_FAILED, PERMISSION_DENIED)
             return
-        self.context.g_set(GK_CURRENT_USER, user)
+        Context.g_set(GK_CURRENT_USER, user)
 
         obj = common.obj_decrypt(token)  # type: dict
         if not (obj and obj.get('id') and obj.get('command')):
             self.emit(EVENT_INIT_FAILED, SESSION_INVALID)
             return
-        self.context.g_set(GK_COMMAND, obj['command'])
+        Context.g_set(GK_COMMAND, obj['command'])
 
         item = self.docker.container.item(obj['id'])
         if not item:
@@ -92,7 +92,7 @@ class Terminal(EventSocketController):
             self.emit(EVENT_INIT_FAILED, CONTAINER_NOT_RUNNING)
             return
 
-        self.context.g_set(GK_CONTAINER, item)
+        Context.g_set(GK_CONTAINER, item)
 
         # Must dispose engine before fork.
         db.dispose_engine()
@@ -103,8 +103,8 @@ class Terminal(EventSocketController):
             subprocess.run(self.command)
             sys.exit(0)
         else:
-            self.context.session[GK_FD] = fd
-            self.context.session[GK_CHILD_PID] = child_pid
+            Context.session[GK_FD] = fd
+            Context.session[GK_CHILD_PID] = child_pid
             self.set_winsize(fd, 20, 30)
             socket_io.start_background_task(
                 target=self.read_and_forward_pty_output, fd=fd, socket=self.socket
@@ -112,7 +112,7 @@ class Terminal(EventSocketController):
             self.emit(EVENT_INIT_SUCCESS, item)
 
     def on_pty_input(self, input):
-        fd = self.context.session.get(GK_FD)
+        fd = Context.session.get(GK_FD)
         if not fd:
             return
         try:
@@ -124,7 +124,7 @@ class Terminal(EventSocketController):
             self.disconnect()
 
     def on_resize(self, rows, cols):
-        fd = self.context.session.get(GK_FD)
+        fd = Context.session.get(GK_FD)
         if not fd:
             return
 

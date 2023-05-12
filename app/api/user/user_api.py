@@ -21,14 +21,14 @@ class UserAPIController(APIController):
 
         @self.blueprint.before_request
         def authentication():
-            if self.request.method == 'OPTIONS':
+            if Context.request.method == 'OPTIONS':
                 return ''
 
             f = Context.get_view_function()
             if f is None or MetaTable.get(f, MK_PUBLIC):
                 return
 
-            token = self.request.headers.get(HK_AUTH)
+            token = Context.request.headers.get(HK_AUTH)
             user = self.service_user.get_user(token)
             if user is None:
                 self.error(*TOKEN_INVALID)
@@ -38,9 +38,9 @@ class UserAPIController(APIController):
                 if roles and user.role.type not in roles:
                     self.error(*ROLE_PERMISSION_DENIED)
 
-            self.context.g_set(GK_USER, user)
+            Context.g_set(GK_USER, user)
 
     @property
     def current_user(self):
-        user = self.context.g_get(GK_USER)  # type: User
+        user = Context.g_get(GK_USER)  # type: User
         return user

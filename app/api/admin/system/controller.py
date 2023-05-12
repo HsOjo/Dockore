@@ -1,4 +1,4 @@
-from saika import Config
+from saika import Config, Context
 from saika.decorator import *
 from saika.form import AUTO
 
@@ -14,9 +14,9 @@ class AdminSystem(AdminAPIController):
     @rule('/config')
     @form(ConfigForm, AUTO)
     def config(self):
-        if self.request.method == 'GET':
+        if Context.request.method == 'GET':
             self.success(config={k: cfg.data_now for k, cfg in Config.all(True).items()})
-        elif self.request.method == 'POST':
+        elif Context.request.method == 'POST':
             try:
                 configs = Config.all(True)
                 save_configs = []
