@@ -22,8 +22,8 @@ class NetworkConvertor:
             if ipam_cfg:
                 ipam_cfg = ipam_cfg[0]  # type: dict
                 item.update(
-                    subnet=ipam_cfg['Subnet'],
-                    gateway=ipam_cfg['Gateway'],
+                    subnet=ipam_cfg.get('Subnet'),
+                    gateway=ipam_cfg.get('Gateway'),
                     ip_range=ipam_cfg.get('IPRange'),
                 )
 
