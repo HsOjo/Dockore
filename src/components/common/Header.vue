@@ -55,9 +55,6 @@ export default {
     title() {
       return this.$text.global.project.name;
     },
-    window() {
-      return {};
-    },
   },
   data() {
     return {
@@ -87,16 +84,17 @@ export default {
       }
     },
     close() {
-      this.window.close()
+      this.$store.getters.electron.ipcRenderer.send('close')
     },
     minimize() {
-      this.window.minimize()
+      this.$store.getters.electron.ipcRenderer.send('minimize')
     },
     maximize() {
-      if (this.window.isMaximized())
-        this.window.unmaximize()
+      let ipc_renderer = this.$store.getters.electron.ipcRenderer
+      if (ipc_renderer.sendSync('is_maximized'))
+        ipc_renderer.send('unmaximize')
       else
-        this.window.maximize()
+        ipc_renderer.send('maximize')
     },
   }
 }

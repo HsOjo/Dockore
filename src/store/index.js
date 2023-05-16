@@ -69,6 +69,9 @@ export default new Vuex.Store({
     isElectron(state, getters) {
       return state.is_electron
     },
+    electron(state) {
+      return state.is_electron ? window.require('electron') : null
+    },
     isLogined(state, getters) {
       return !!getters.username
     },
