@@ -278,3 +278,14 @@ dist
 .vite/
 out/
 package-lock.json
+
+### Playwright
+src/frontend/playwright/.auth/
+src/frontend/test-results/
+src/frontend/playwright-report/
+
+### Tauri
+src/frontend/src-tauri/target/
+src/frontend/src-tauri/gen/
+src/frontend/src-tauri/Cargo.lock
+src/frontend/src-tauri/binaries/

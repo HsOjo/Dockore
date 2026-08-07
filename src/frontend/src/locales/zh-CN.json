@@ -1,0 +1,301 @@
+{
+  "appName": "Dockore",
+  "loadingBackend": "正在初始化…",
+  "welcomeTitle": "欢迎使用 Dockore",
+  "welcomeDescription": "Docker 图形化管理工具",
+  "stepPreferences": "偏好设置",
+  "stepConnection": "连接服务器",
+  "language": "语言",
+  "theme": "主题",
+  "themeLight": "浅色",
+  "themeDark": "深色",
+  "themeAuto": "跟随系统",
+  "next": "下一步",
+  "back": "上一步",
+  "connect": "连接",
+  "baseURL": "服务器地址",
+  "token": "访问令牌",
+  "builtIn": "内建后端",
+  "remote": "远程连接",
+  "connectFailed": "连接失败，请检查服务器地址和 Token",
+  "search": "搜索",
+  "searchPlaceholder": "请输入关键字",
+  "refresh": "刷新",
+  "create": "创建",
+  "delete": "删除",
+  "detail": "详情",
+  "actions": "操作",
+  "more": "更多",
+  "ok": "确 定",
+  "cancel": "取 消",
+  "save": "保存",
+  "saved": "已保存",
+  "name": "名称",
+  "status": "状态",
+  "createTime": "创建时间",
+  "none": "（无）",
+  "unknown": "（未知）",
+  "menu": {
+    "containers": "容器",
+    "images": "镜像",
+    "networks": "网络",
+    "volumes": "存储卷",
+    "system": "系统",
+    "settings": "设置"
+  },
+  "connection": {
+    "connected": "已连接",
+    "disconnected": "未连接",
+    "builtInTag": "内建"
+  },
+  "container": {
+    "title": "容器管理",
+    "showAll": "显示所有容器",
+    "create": "创建容器",
+    "start": "启动",
+    "stop": "停止",
+    "restart": "重启",
+    "remove": "删除",
+    "rename": "容器更名",
+    "logs": "日志",
+    "terminal": "终端",
+    "diff": "文件差异",
+    "commit": "提交镜像",
+    "exec": "执行命令",
+    "newName": "请输入新的容器名称",
+    "confirmDelete": "确定删除容器「{name}」吗？",
+    "confirmBatchDelete": "确定删除选中的 {n} 个容器吗？",
+    "field": {
+      "id": "容器ID",
+      "name": "容器名称",
+      "image": "镜像",
+      "command": "启动命令",
+      "tty": "虚拟终端",
+      "interactive": "交互模式"
+    },
+    "status": {
+      "created": "已创建",
+      "running": "运行中",
+      "paused": "已暂停",
+      "restarting": "重启中",
+      "removing": "删除中",
+      "exited": "已退出",
+      "dead": "已死亡"
+    },
+    "tabs": {
+      "basic": "基本信息",
+      "network": "网络信息",
+      "storage": "存储信息"
+    },
+    "network": {
+      "ip": "IP",
+      "prefix": "前缀",
+      "gateway": "网关",
+      "mac": "MAC地址",
+      "ports": "端口映射列表",
+      "port": "内部端口",
+      "protocol": "协议",
+      "listenIp": "监听地址",
+      "listenPort": "监听端口",
+      "notRunning": "未启动"
+    },
+    "storage": {
+      "mounts": "存储挂载列表",
+      "type": "存储类型",
+      "volumeName": "存储卷名称",
+      "driver": "驱动器类型",
+      "mode": "挂载模式",
+      "src": "挂载源",
+      "dest": "挂载目标"
+    },
+    "createSteps": {
+      "image": "选择镜像",
+      "info": "容器信息",
+      "ports": "端口映射",
+      "volumes": "存储挂载"
+    },
+    "imageName": "镜像名称",
+    "imageTag": "镜像标签",
+    "runContainer": "运行容器",
+    "createOnly": "仅创建",
+    "addMapping": "添加",
+    "mountPath": "存储卷",
+    "mountBind": "挂载位置",
+    "diffGroups": {
+      "add": "新增",
+      "change": "修改",
+      "delete": "删除",
+      "other": "其他"
+    },
+    "diffEmpty": "当前容器无文件改动。",
+    "commitForm": {
+      "name": "镜像名称",
+      "tag": "镜像标签",
+      "author": "作者名称",
+      "message": "提交消息"
+    },
+    "execPlaceholder": "请输入需要执行的命令",
+    "execResult": "执行结果",
+    "exitCode": "退出码",
+    "logsRange": "操作时间段",
+    "logsFollow": "实时跟踪",
+    "logsQuery": "查询"
+  },
+  "image": {
+    "title": "镜像管理",
+    "showAll": "显示所有镜像",
+    "pull": "拉取镜像",
+    "tag": "标记镜像",
+    "history": "历史记录",
+    "searchHub": "搜索 Docker Hub",
+    "searchResults": "搜索结果",
+    "field": {
+      "id": "镜像ID",
+      "tags": "标签",
+      "author": "镜像作者",
+      "size": "镜像尺寸",
+      "command": "启动命令",
+      "os": "操作系统",
+      "arch": "架构",
+      "ports": "暴露端口"
+    },
+    "confirmDelete": "确定删除镜像「{name}」吗？",
+    "confirmBatchDelete": "确定删除选中的 {n} 个镜像吗？",
+    "confirmDeleteTag": "确定删除标签「{tag}」吗？",
+    "tagPrompt": "请输入新的镜像标签",
+    "tagName": "名称",
+    "tagValue": "标签",
+    "pullForm": {
+      "name": "镜像名称",
+      "tag": "版本标签（latest）",
+      "starCount": "Star数",
+      "isOfficial": "官方镜像",
+      "isAutomated": "自动构建",
+      "yes": "是",
+      "no": "否",
+      "description": "描述"
+    },
+    "pulling": "正在拉取 {name}…",
+    "pullDone": "镜像拉取完成",
+    "pullError": "镜像拉取失败",
+    "historyForm": {
+      "id": "ID",
+      "tags": "标签",
+      "comment": "提交信息",
+      "createdBy": "创建指令",
+      "view": "查看"
+    }
+  },
+  "network": {
+    "title": "网络管理",
+    "create": "创建网络",
+    "connect": "连接容器",
+    "disconnect": "断开网络",
+    "disconnectSelected": "断开选中",
+    "forceDisconnect": "强制断开",
+    "confirmDelete": "确定删除网络「{name}」吗？",
+    "confirmBatchDelete": "确定删除选中的 {n} 个网络吗？",
+    "field": {
+      "id": "ID",
+      "name": "网络名称",
+      "driver": "驱动类型",
+      "scope": "范围",
+      "subnet": "子网网段",
+      "gateway": "网关",
+      "ipRange": "IP范围",
+      "containerNum": "连接容器数量",
+      "attachable": "开放连接",
+      "internal": "内部网络",
+      "ipamDriver": "IPAM驱动"
+    },
+    "drivers": {
+      "bridge": "桥接网络",
+      "host": "主机网络",
+      "overlay": "覆盖网络",
+      "none": "无网络",
+      "macvlan": "MACVLAN",
+      "ipvlan": "IPVLAN"
+    },
+    "steps": {
+      "info": "网络信息",
+      "options": "高级选项"
+    },
+    "optionKey": "键",
+    "optionValue": "值",
+    "optionKeyPlaceholder": "com.docker.network.xxx",
+    "tabs": {
+      "basic": "基本信息",
+      "ipam": "IPAM 信息",
+      "containers": "容器列表"
+    },
+    "selectContainer": "选择容器",
+    "connectInfo": "连接信息",
+    "containerId": "容器ID",
+    "containerName": "容器名称",
+    "assignIPv4": "分配IPv4地址",
+    "subnetHint": "（子网：{subnet} 范围：{ipRange}）"
+  },
+  "volume": {
+    "title": "存储卷管理",
+    "create": "创建存储卷",
+    "confirmDelete": "确定删除存储卷「{name}」吗？",
+    "confirmBatchDelete": "确定删除选中的 {n} 个存储卷吗？",
+    "field": {
+      "name": "存储卷名称",
+      "driver": "驱动器类型",
+      "mountPoint": "挂载点",
+      "scope": "范围",
+      "driverOpts": "驱动器选项"
+    },
+    "steps": {
+      "info": "存储卷信息",
+      "driverOpts": "驱动器选项"
+    },
+    "mountMode": {
+      "rw": "读写",
+      "ro": "只读"
+    },
+    "mountType": {
+      "bind": "目录挂载",
+      "volume": "存储卷",
+      "tmpfs": "临时文件"
+    }
+  },
+  "system": {
+    "title": "系统信息",
+    "project": "项目信息",
+    "docker": "Docker 组件",
+    "field": {
+      "version": "版本",
+      "hostname": "主机名",
+      "python": "Python版本",
+      "os": "操作系统",
+      "arch": "架构",
+      "kernel": "内核版本",
+      "apiVersion": "API版本",
+      "minAPIVersion": "最低支持API版本",
+      "goVersion": "Go版本",
+      "gitCommit": "Git提交版本",
+      "buildTime": "构建时间",
+      "experimental": "实验特性"
+    },
+    "component": "组件",
+    "componentVersion": "版本"
+  },
+  "settings": {
+    "title": "设置",
+    "ui": "界面设置",
+    "backend": "后端设置",
+    "server": "服务器信息",
+    "dockerHost": "Docker 服务地址",
+    "currentServer": "当前服务器",
+    "reconfigure": "重新配置",
+    "disconnect": "断开连接",
+    "disconnectConfirm": "确定断开当前服务器连接吗？",
+    "frontendVersion": "前端版本"
+  },
+  "terminal": {
+    "title": "容器终端",
+    "networkDown": "\r\n --==========================--\r\n  * Terminal: Network was down.\r\n --==========================--\r\n"
+  }
+}

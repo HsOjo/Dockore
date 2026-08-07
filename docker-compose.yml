@@ -1,0 +1,59 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./src/backend/Dockerfile
+    container_name: dockore-backend
+    ports:
+      - "${DOCKORE_PORT:-8000}:8000"
+    environment:
+      - DOCKORE_HOST=0.0.0.0
+      - DOCKORE_PORT=8000
+      - DOCKORE_TOKEN=${DOCKORE_TOKEN:-change-me}
+      - DOCKORE_CORS_ORIGINS=${DOCKORE_CORS_ORIGINS:-http://localhost:8001,http://127.0.0.1:8001,http://localhost:8002,http://127.0.0.1:8002}
+      - DOCKORE_DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      # Dockore 是 Docker 管理工具，需要访问宿主机 Docker daemon
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./src/frontend/Dockerfile
+    container_name: dockore-frontend
+    ports:
+      - "${DOCKORE_FRONTEND_PORT:-8001}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:80/index.html"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  proxy:
+    build:
+      context: .
+      dockerfile: ./src/proxy/Dockerfile
+    container_name: dockore-proxy
+    ports:
+      - "${DOCKORE_PROXY_PORT:-8002}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      - NGINX_ENTRYPOINT_QUIET_LOGS=1

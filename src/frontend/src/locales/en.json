@@ -1,0 +1,301 @@
+{
+  "appName": "Dockore",
+  "loadingBackend": "Initializing…",
+  "welcomeTitle": "Welcome to Dockore",
+  "welcomeDescription": "A Docker GUI management tool",
+  "stepPreferences": "Preferences",
+  "stepConnection": "Connect Server",
+  "language": "Language",
+  "theme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeAuto": "System",
+  "next": "Next",
+  "back": "Back",
+  "connect": "Connect",
+  "baseURL": "Server URL",
+  "token": "Access Token",
+  "builtIn": "Built-in Backend",
+  "remote": "Remote",
+  "connectFailed": "Connection failed, please check the server URL and token",
+  "search": "Search",
+  "searchPlaceholder": "Enter keywords",
+  "refresh": "Refresh",
+  "create": "Create",
+  "delete": "Delete",
+  "detail": "Detail",
+  "actions": "Actions",
+  "more": "More",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saved": "Saved",
+  "name": "Name",
+  "status": "Status",
+  "createTime": "Created At",
+  "none": "(none)",
+  "unknown": "(unknown)",
+  "menu": {
+    "containers": "Containers",
+    "images": "Images",
+    "networks": "Networks",
+    "volumes": "Volumes",
+    "system": "System",
+    "settings": "Settings"
+  },
+  "connection": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "builtInTag": "Built-in"
+  },
+  "container": {
+    "title": "Containers",
+    "showAll": "Show all containers",
+    "create": "Create Container",
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart",
+    "remove": "Delete",
+    "rename": "Rename",
+    "logs": "Logs",
+    "terminal": "Terminal",
+    "diff": "File Diff",
+    "commit": "Commit Image",
+    "exec": "Exec Command",
+    "newName": "Enter the new container name",
+    "confirmDelete": "Delete container \"{name}\"?",
+    "confirmBatchDelete": "Delete the selected {n} containers?",
+    "field": {
+      "id": "Container ID",
+      "name": "Container Name",
+      "image": "Image",
+      "command": "Command",
+      "tty": "TTY",
+      "interactive": "Interactive"
+    },
+    "status": {
+      "created": "Created",
+      "running": "Running",
+      "paused": "Paused",
+      "restarting": "Restarting",
+      "removing": "Removing",
+      "exited": "Exited",
+      "dead": "Dead"
+    },
+    "tabs": {
+      "basic": "Basic Info",
+      "network": "Network",
+      "storage": "Storage"
+    },
+    "network": {
+      "ip": "IP",
+      "prefix": "Prefix",
+      "gateway": "Gateway",
+      "mac": "MAC Address",
+      "ports": "Port Mappings",
+      "port": "Container Port",
+      "protocol": "Protocol",
+      "listenIp": "Listen Address",
+      "listenPort": "Listen Port",
+      "notRunning": "Not running"
+    },
+    "storage": {
+      "mounts": "Mounts",
+      "type": "Type",
+      "volumeName": "Volume Name",
+      "driver": "Driver",
+      "mode": "Mode",
+      "src": "Source",
+      "dest": "Destination"
+    },
+    "createSteps": {
+      "image": "Select Image",
+      "info": "Container Info",
+      "ports": "Port Mappings",
+      "volumes": "Volume Mounts"
+    },
+    "imageName": "Image Name",
+    "imageTag": "Image Tag",
+    "runContainer": "Run container",
+    "createOnly": "Create only",
+    "addMapping": "Add",
+    "mountPath": "Volume",
+    "mountBind": "Mount Path",
+    "diffGroups": {
+      "add": "Added",
+      "change": "Changed",
+      "delete": "Deleted",
+      "other": "Other"
+    },
+    "diffEmpty": "No file changes in this container.",
+    "commitForm": {
+      "name": "Image Name",
+      "tag": "Image Tag",
+      "author": "Author",
+      "message": "Commit Message"
+    },
+    "execPlaceholder": "Enter the command to execute",
+    "execResult": "Result",
+    "exitCode": "Exit Code",
+    "logsRange": "Time range",
+    "logsFollow": "Follow",
+    "logsQuery": "Query"
+  },
+  "image": {
+    "title": "Images",
+    "showAll": "Show all images",
+    "pull": "Pull Image",
+    "tag": "Tag Image",
+    "history": "History",
+    "searchHub": "Search Docker Hub",
+    "searchResults": "Search Results",
+    "field": {
+      "id": "Image ID",
+      "tags": "Tags",
+      "author": "Author",
+      "size": "Size",
+      "command": "Command",
+      "os": "OS",
+      "arch": "Architecture",
+      "ports": "Exposed Ports"
+    },
+    "confirmDelete": "Delete image \"{name}\"?",
+    "confirmBatchDelete": "Delete the selected {n} images?",
+    "confirmDeleteTag": "Delete tag \"{tag}\"?",
+    "tagPrompt": "Enter the new image tag",
+    "tagName": "Name",
+    "tagValue": "Tag",
+    "pullForm": {
+      "name": "Image Name",
+      "tag": "Tag (latest)",
+      "starCount": "Stars",
+      "isOfficial": "Official",
+      "isAutomated": "Automated",
+      "yes": "Yes",
+      "no": "No",
+      "description": "Description"
+    },
+    "pulling": "Pulling {name}…",
+    "pullDone": "Image pulled",
+    "pullError": "Failed to pull image",
+    "historyForm": {
+      "id": "ID",
+      "tags": "Tags",
+      "comment": "Comment",
+      "createdBy": "Created By",
+      "view": "View"
+    }
+  },
+  "network": {
+    "title": "Networks",
+    "create": "Create Network",
+    "connect": "Connect Container",
+    "disconnect": "Disconnect",
+    "disconnectSelected": "Disconnect Selected",
+    "forceDisconnect": "Force disconnect",
+    "confirmDelete": "Delete network \"{name}\"?",
+    "confirmBatchDelete": "Delete the selected {n} networks?",
+    "field": {
+      "id": "ID",
+      "name": "Network Name",
+      "driver": "Driver",
+      "scope": "Scope",
+      "subnet": "Subnet",
+      "gateway": "Gateway",
+      "ipRange": "IP Range",
+      "containerNum": "Containers",
+      "attachable": "Attachable",
+      "internal": "Internal",
+      "ipamDriver": "IPAM Driver"
+    },
+    "drivers": {
+      "bridge": "Bridge",
+      "host": "Host",
+      "overlay": "Overlay",
+      "none": "None",
+      "macvlan": "MACVLAN",
+      "ipvlan": "IPVLAN"
+    },
+    "steps": {
+      "info": "Network Info",
+      "options": "Options"
+    },
+    "optionKey": "Key",
+    "optionValue": "Value",
+    "optionKeyPlaceholder": "com.docker.network.xxx",
+    "tabs": {
+      "basic": "Basic Info",
+      "ipam": "IPAM",
+      "containers": "Containers"
+    },
+    "selectContainer": "Select Container",
+    "connectInfo": "Connection Info",
+    "containerId": "Container ID",
+    "containerName": "Container Name",
+    "assignIPv4": "Assign IPv4 Address",
+    "subnetHint": "(subnet: {subnet} range: {ipRange})"
+  },
+  "volume": {
+    "title": "Volumes",
+    "create": "Create Volume",
+    "confirmDelete": "Delete volume \"{name}\"?",
+    "confirmBatchDelete": "Delete the selected {n} volumes?",
+    "field": {
+      "name": "Volume Name",
+      "driver": "Driver",
+      "mountPoint": "Mount Point",
+      "scope": "Scope",
+      "driverOpts": "Driver Options"
+    },
+    "steps": {
+      "info": "Volume Info",
+      "driverOpts": "Driver Options"
+    },
+    "mountMode": {
+      "rw": "Read-Write",
+      "ro": "Read-Only"
+    },
+    "mountType": {
+      "bind": "Bind",
+      "volume": "Volume",
+      "tmpfs": "Tmpfs"
+    }
+  },
+  "system": {
+    "title": "System Info",
+    "project": "Project Info",
+    "docker": "Docker Components",
+    "field": {
+      "version": "Version",
+      "hostname": "Hostname",
+      "python": "Python Version",
+      "os": "OS",
+      "arch": "Architecture",
+      "kernel": "Kernel Version",
+      "apiVersion": "API Version",
+      "minAPIVersion": "Min API Version",
+      "goVersion": "Go Version",
+      "gitCommit": "Git Commit",
+      "buildTime": "Build Time",
+      "experimental": "Experimental"
+    },
+    "component": "Component",
+    "componentVersion": "Version"
+  },
+  "settings": {
+    "title": "Settings",
+    "ui": "UI Settings",
+    "backend": "Backend Settings",
+    "server": "Server Info",
+    "dockerHost": "Docker Host",
+    "currentServer": "Current Server",
+    "reconfigure": "Reconfigure",
+    "disconnect": "Disconnect",
+    "disconnectConfirm": "Disconnect from the current server?",
+    "frontendVersion": "Frontend Version"
+  },
+  "terminal": {
+    "title": "Container Terminal",
+    "networkDown": "\r\n --==========================--\r\n  * Terminal: Network was down.\r\n --==========================--\r\n"
+  }
+}

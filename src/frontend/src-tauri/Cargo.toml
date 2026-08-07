@@ -1,0 +1,32 @@
+[package]
+name = "dockore"
+version = "1.0.0"
+description = "Dockore Docker GUI"
+authors = ["Dockore"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["devtools", "tray-icon", "image-png"] }
+tauri-plugin-notification = "2"
+tauri-plugin-process = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand = "0.8"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.5"
+objc2-app-kit = { version = "0.2", features = ["NSApplication", "NSResponder", "NSImage"] }
+objc2-foundation = { version = "0.2", features = ["NSData", "NSThread"] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+[[bin]]
+name = "Dockore"
+path = "src/main.rs"
