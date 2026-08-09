@@ -1,5 +1,7 @@
 # Dockore
 
+<img src="images/icon.png" alt="Dockore" width="128" />
+
 **English** | [中文](README_CN.md)
 
 A simple, handy, out-of-the-box Docker GUI manager.
