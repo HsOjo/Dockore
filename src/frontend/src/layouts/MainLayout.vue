@@ -28,13 +28,18 @@
       </div>
     </a-layout-sider>
     <a-layout>
-      <a-layout-header class="header">
-        <div class="header-left">
+      <a-layout-header
+        class="header"
+        :class="{ 'mac-inset': macInset }"
+        data-tauri-drag-region
+        @mousedown="startDraggingWindow"
+      >
+        <div class="header-left" data-tauri-drag-region="no-drag">
           <a-badge :status="conn.isReady ? 'success' : 'error'" />
           <span class="server-url">{{ conn.baseURL }}</span>
           <a-tag v-if="conn.isBuiltIn" color="blue">{{ t("connection.builtInTag") }}</a-tag>
         </div>
-        <div class="header-right">
+        <div class="header-right" data-tauri-drag-region="no-drag">
           <a-tooltip :title="t('theme')">
             <a-button type="text" @click="toggleTheme">
               <BulbFilled v-if="ui.theme === 'dark'" />
@@ -67,12 +72,13 @@ import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { BulbFilled, BulbOutlined, GlobalOutlined } from "@ant-design/icons-vue";
 import { useConnectionStore } from "@/stores";
-import { getUISettings, saveUISettings } from "@/platform";
+import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
 
 const { t, locale } = useI18n();
 const route = useRoute();
 const conn = useConnectionStore();
 const ui = getUISettings();
+const macInset = needsMacTitleInset();
 
 const selectedKeys = ref<string[]>([]);
 const settingsKey = computed(() => (route.path.startsWith("/settings") ? ["/settings"] : []));
@@ -137,6 +143,10 @@ function handleLocaleChange({ key }: { key: string | number }) {
   line-height: 56px;
   background: transparent;
   border-bottom: 1px solid rgba(5, 5, 5, 0.06);
+}
+
+.header.mac-inset {
+  padding-left: 88px;
 }
 
 .header-left {
