@@ -1,0 +1,42 @@
+# Dependencies / build outputs
+node_modules
+dist
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+.venv
+venv/
+.env
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+*.sw?
+
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose*.yml
+.dockerignore
+
+# Tauri (not needed for web build)
+src/frontend/src-tauri/
+
+# Playwright
+src/frontend/playwright/
+src/frontend/test-results/
+src/frontend/playwright-report/
+
+# Data (persistent volumes)
+data/
+*.db
+*.db-journal
+
+# Logs
+logs
+*.log

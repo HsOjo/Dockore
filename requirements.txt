@@ -1,4 +1,0 @@
-Saika
-pymysql
-docker
-gunicorn

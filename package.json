@@ -1,0 +1,25 @@
+{
+  "name": "dockore",
+  "private": true,
+  "scripts": {
+    "sync:version": "python3 scripts/sync_version.py",
+    "check:version": "python3 scripts/sync_version.py --check",
+    "gen:api": "pnpm --filter @dockore/shared gen:api",
+    "dev:backend": "cd src/backend && cross-env DOCKORE_RELOAD=1 uv run python -m app.main",
+    "dev:frontend": "pnpm --filter @dockore/frontend dev",
+    "dev": "concurrently \"pnpm dev:backend\" \"pnpm dev:frontend\"",
+    "build:shared": "pnpm --filter @dockore/shared build",
+    "build:backend": "cd src/backend && uv run --extra dev python scripts/build.py",
+    "build:frontend": "pnpm --filter @dockore/frontend build",
+    "build": "pnpm gen:api && pnpm build:shared && pnpm build:backend && pnpm build:frontend",
+    "test:backend": "cd src/backend && uv run --extra dev pytest",
+    "test:shared": "pnpm --filter @dockore/shared test",
+    "test:frontend": "pnpm --filter @dockore/frontend test",
+    "test": "pnpm test:shared && pnpm test:backend && pnpm test:frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "cross-env": "^7.0.3"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

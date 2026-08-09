@@ -1,0 +1,58 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "pnpm build:vite",
+    "beforeDevCommand": "pnpm dev:vite",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "targets": ["dmg", "nsis", "msi"],
+    "externalBin": [],
+    "resources": {
+      "binaries/backend-dist": "backend"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    }
+  },
+  "productName": "Dockore",
+  "identifier": "com.dockore.app",
+  "mainBinaryName": "Dockore",
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://example.com/dockore-updates/{{target}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEyODAyQjg1Njk2MEJCRDEKUldUUnUyQnBoU3VBb29MYkxJR2ppb3owTEI2MkFuQ0hXVUZ5dmlEZ0IydGppNFZFSnY3Mkl2cXIK"
+    }
+  },
+  "app": {
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 800,
+        "resizable": true,
+        "title": "Dockore",
+        "width": 1200,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "@dockore/shared",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./api": {
+      "import": "./dist/api/index.js",
+      "types": "./dist/api/index.d.ts"
+    },
+    "./ws": {
+      "import": "./dist/ws/index.js",
+      "types": "./dist/ws/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./i18n": {
+      "import": "./dist/i18n/index.js",
+      "types": "./dist/i18n/index.d.ts"
+    }
+  },
+  "scripts": {
+    "gen:api": "uv run --directory ../../src/backend python scripts/export_openapi.py && npx openapi-typescript ../../src/backend/openapi.json -o ./src/api/types.ts",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "openapi-fetch": "^0.13.0",
+    "openapi-typescript": "^7.4.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "dependencies": {
+    "js-sha256": "^0.11.1"
+  }
+}
