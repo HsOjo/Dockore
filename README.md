@@ -1,89 +1,93 @@
 # Dockore
 
-一个简单、便捷、开箱即用的 Docker GUI 管理工具。
+**English** | [中文](README_CN.md)
 
 A simple, handy, out-of-the-box Docker GUI manager.
 
-## 技术栈
+## Tech Stack
 
-| 层 | 技术 |
+| Layer | Technology |
 |---|---|
-| 后端 | FastAPI + SQLAlchemy(async) + SQLite + docker-py |
-| 前端 | Vue 3 + TypeScript + Ant Design Vue + Pinia + Vue I18n |
-| 桌面端 | Tauri 2（后端 PyInstaller 打包为内嵌 sidecar） |
-| 共享包 | openapi-typescript + openapi-fetch（前后端类型同步） |
+| Backend | FastAPI + SQLAlchemy (async) + SQLite + docker-py |
+| Frontend | Vue 3 + TypeScript + Ant Design Vue + Pinia + Vue I18n |
+| Desktop | Tauri 2 (backend bundled as an embedded sidecar via PyInstaller) |
+| Shared | openapi-typescript + openapi-fetch (type-safe API client) |
 
-## 项目结构
+## Project Structure
 
 ```
-├── VERSION                 # 版本唯一来源
-├── docker-compose.yml      # Web 形态部署
+├── VERSION                 # Single source of truth for versioning
+├── docker-compose.yml      # Web deployment
 └── src/
-    ├── backend/            # FastAPI 后端（uv 管理）
-    ├── frontend/           # Vue3 前端 + src-tauri 桌面端
-    ├── shared/             # @dockore/shared（API 类型/客户端、WS 封装）
-    └── proxy/              # Web 形态聚合代理（nginx）
+    ├── backend/            # FastAPI backend (managed by uv)
+    ├── frontend/           # Vue 3 frontend + src-tauri desktop app
+    ├── shared/             # @dockore/shared (API types/client, WS wrappers)
+    └── proxy/              # Aggregating reverse proxy for Web (nginx)
 ```
 
-## 功能
+## Features
 
-- 容器：列表/详情/创建/运行/启动/停止/重启/更名/删除/日志（流式）/差异/提交镜像/执行命令/Web 终端
-- 镜像：列表/详情/拉取（实时进度）/搜索/打标签/历史/删除
-- 网络：列表/详情/创建/删除/连接/断开容器
-- 卷：列表/详情/创建/删除
-- 系统：版本信息；设置（Docker Host 等运行时配置）
-- 明暗双主题、中英文双语、桌面（Tauri）+ Web 双形态
+- Containers: list/detail/create/run/start/stop/restart/rename/delete/logs (streaming)/diff/commit/exec/web terminal
+- Images: list/detail/pull (live progress)/search/tag/history/delete
+- Networks: list/detail/create/delete/connect/disconnect containers
+- Volumes: list/detail/create/delete
+- System: version info; Settings (Docker host and other runtime options)
+- Light/dark themes, Chinese & English UI, desktop (Tauri) + Web forms
 
-## 开发
+## Development
 
 ```bash
 pnpm install
-pnpm gen:api        # 从后端 openapi.json 生成 TS 类型
-pnpm dev            # 同时启动后端(8000)与前端(1420)
+pnpm gen:api        # Generate TS types from backend openapi.json
+pnpm dev            # Start backend (:8000) and frontend (:1420) together
 ```
 
-桌面端开发：`pnpm --filter @dockore/frontend dev`（需先 `pnpm build:backend` 生成 sidecar）
+Desktop development: `pnpm --filter @dockore/frontend dev` (requires `pnpm build:backend` first to produce the sidecar)
 
-## 测试
+## Testing
 
 ```bash
-pnpm test           # shared + backend + frontend 全部单测
+pnpm test           # All unit tests: shared + backend + frontend
 pnpm --filter @dockore/frontend test:e2e   # Playwright e2e
 ```
 
-## 构建
+## Build
 
 ```bash
-pnpm build                  # gen:api + shared + backend(PyInstaller) + frontend
-pnpm build:frontend         # Tauri 桌面应用打包
+pnpm build                  # gen:api + shared + backend (PyInstaller) + frontend
+pnpm build:frontend         # Package the Tauri desktop app
 ```
 
-## Docker Compose 部署（Web 形态）
+## Docker Compose Deployment (Web)
 
 ```bash
 docker compose up -d --build
 ```
 
-| 环境变量 | 默认值 | 说明 |
+| Variable | Default | Description |
 |---|---|---|
-| DOCKORE_TOKEN | change-me | 后端访问令牌（前端连接时填写） |
-| DOCKORE_PORT | 8000 | 后端 API 端口 |
-| DOCKORE_FRONTEND_PORT | 8001 | 前端 SPA 端口 |
-| DOCKORE_PROXY_PORT | 8002 | 聚合代理端口（API + WS + 前端同一入口） |
-| DOCKORE_CORS_ORIGINS | 8001/8002 各源 | 允许跨域来源，逗号分隔 |
+| DOCKORE_TOKEN | change-me | Backend access token (entered in the frontend) |
+| DOCKORE_PORT | 8000 | Backend API port |
+| DOCKORE_FRONTEND_PORT | 8001 | Frontend SPA port |
+| DOCKORE_PROXY_PORT | 8002 | Aggregated proxy port (API + WS + SPA on one origin) |
+| DOCKORE_CORS_ORIGINS | origins of 8001/8002 | Allowed CORS origins, comma-separated |
 
-- 数据持久化在 `./data`（SQLite 设置）；backend 容器只读挂载宿主机 `/var/run/docker.sock`
-- 通过 proxy（8002）访问时 API/WS 与页面同源；直连 frontend（8001）时在引导页填写后端地址 + Token
+- Data is persisted in `./data` (SQLite settings); the backend container mounts the host `/var/run/docker.sock` read-only
+- Via the proxy (8002), API/WS share the page origin; when hitting the frontend directly (8001), enter the backend address + token on the onboarding page
 
-## 版本管理
+## Release
 
-`VERSION` 文件为唯一版本来源：
+Desktop releases are built by GitHub Actions (`.github/workflows/release.yml`, manual trigger): macOS arm64/x64 + Windows x64/arm64 installers are uploaded to a draft release.
+
+## Versioning
+
+The `VERSION` file is the single source of truth:
 
 ```bash
-python3 scripts/sync_version.py <version>   # 同步到 Cargo.toml / pyproject.toml / uv.lock
-python3 scripts/sync_version.py --check     # 校验一致性
+python3 scripts/sync_version.py <version>   # Sync to Cargo.toml / pyproject.toml / uv.lock
+python3 scripts/sync_version.py --check     # Verify consistency
 ```
 
 ## License
 
-见 [LICENSE](LICENSE)。
+See [LICENSE](LICENSE).
