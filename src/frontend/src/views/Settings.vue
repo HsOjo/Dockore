@@ -1,30 +1,33 @@
 <template>
-  <div>
-    <a-card :title="t('settings.ui')" class="section">
-      <a-form layout="vertical" style="max-width: 320px">
-        <a-form-item :label="t('theme')">
-          <a-select v-model:value="theme" :options="themeOptions" @change="handleThemeChange" />
-        </a-form-item>
-        <a-form-item :label="t('language')">
-          <a-select v-model:value="localeValue" :options="localeOptions" @change="handleLocaleChange" />
-        </a-form-item>
-      </a-form>
-    </a-card>
+  <div class="settings-grid">
+    <div class="column">
+      <a-card :title="t('settings.ui')" class="section">
+        <a-form layout="vertical" style="max-width: 320px">
+          <a-form-item :label="t('theme')">
+            <a-select v-model:value="theme" :options="themeOptions" @change="handleThemeChange" />
+          </a-form-item>
+          <a-form-item :label="t('language')">
+            <a-select v-model:value="localeValue" :options="localeOptions" @change="handleLocaleChange" />
+          </a-form-item>
+        </a-form>
+      </a-card>
 
-    <a-card :title="t('settings.backend')" class="section">
-      <a-form layout="vertical" style="max-width: 480px">
-        <a-form-item :label="t('settings.dockerHost')">
-          <a-input v-model:value="dockerHost" placeholder="unix:///var/run/docker.sock" />
-        </a-form-item>
-        <a-form-item>
-          <a-button type="primary" :loading="saving" @click="saveBackend">
-            {{ t("save") }}
-          </a-button>
-        </a-form-item>
-      </a-form>
-    </a-card>
+      <a-card :title="t('settings.backend')" class="section">
+        <a-form layout="vertical" style="max-width: 480px">
+          <a-form-item :label="t('settings.dockerHost')">
+            <a-input v-model:value="dockerHost" placeholder="unix:///var/run/docker.sock" />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" :loading="saving" @click="saveBackend">
+              {{ t("save") }}
+            </a-button>
+          </a-form-item>
+        </a-form>
+      </a-card>
+    </div>
 
-    <a-card :title="t('settings.server')" class="section">
+    <div class="column">
+      <a-card :title="t('settings.server')" class="section">
       <a-descriptions :column="1" style="max-width: 640px">
         <a-descriptions-item :label="t('settings.currentServer')">
           {{ conn.baseURL || "-" }}
@@ -52,7 +55,8 @@
           <a-button danger>{{ t("settings.disconnect") }}</a-button>
         </a-popconfirm>
       </div>
-    </a-card>
+      </a-card>
+    </div>
   </div>
 </template>
 
@@ -125,6 +129,13 @@ async function handleDisconnect() {
 </script>
 
 <style scoped>
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
 .section {
   margin-bottom: 16px;
 }
