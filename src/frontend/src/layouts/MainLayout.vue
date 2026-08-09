@@ -60,6 +60,7 @@
       </a-layout-header>
       <a-layout-content class="content">
         <router-view />
+        <img class="logo-watermark" :src="logoUrl" alt="" draggable="false" />
       </a-layout-content>
     </a-layout>
   </a-layout>
@@ -72,6 +73,7 @@ import { useI18n } from "vue-i18n";
 import { BulbFilled, BulbOutlined, GlobalOutlined } from "@ant-design/icons-vue";
 import { useConnectionStore } from "@/stores";
 import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
+import logoUrl from "@/assets/logo.png";
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -169,6 +171,17 @@ function handleLocaleChange({ key }: { key: string | number }) {
 .content {
   padding: 16px;
   overflow-y: auto;
+}
+
+.logo-watermark {
+  position: fixed;
+  bottom: 5%;
+  right: 7.5%;
+  width: 240px;
+  opacity: 0.15;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
 }
 
 body.dockore-theme-dark .sider,
