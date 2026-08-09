@@ -16,7 +16,7 @@ class Docker:
 
     def __init__(self, client: DockerClient):
         self._client = client
-        self.container = ContainerService(client.containers)
+        self.container = ContainerService(client.containers, client.api)
         self.image = ImageService(client.images, client.api)
         self.network = NetworkService(client.networks)
         self.volume = VolumeService(client.volumes)

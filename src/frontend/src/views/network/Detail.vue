@@ -168,7 +168,8 @@ const optionRows = computed(() => {
   return Object.entries(options).map(([key, value]) => ({ key, value }));
 });
 
-function driverText(driver: string): string {
+function driverText(driver?: string | null): string {
+  if (!driver) return "-";
   const key = `network.drivers.${driver}`;
   return te(key) ? t(key) : driver;
 }

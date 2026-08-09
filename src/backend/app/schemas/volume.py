@@ -14,8 +14,8 @@ class VolumeCreate(BaseModel):
 class VolumeItem(BaseModel):
     id: str
     name: str
-    driver: str = ""
-    mount_point: str = ""
-    scope: str = ""
+    driver: Optional[str] = None
+    mount_point: Optional[str] = None
+    scope: Optional[str] = None
     create_time: str
     driver_opts: Optional[Dict[str, str]] = None

@@ -313,7 +313,7 @@ export const useContainerStore = defineStore("container", () => {
     return await must(
       api.POST("/api/containers/{id}/exec", {
         params: { path: { id } },
-        body: { command, interactive: true, tty: true, privileged: false },
+        body: { command, interactive: false, tty: false, privileged: false },
       })
     );
   }

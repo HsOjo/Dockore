@@ -1,6 +1,8 @@
+from collections import deque
+import threading
 from types import SimpleNamespace
 
-from docker.errors import APIError
+from docker.errors import APIError, NotFound
 
 from app.services.docker.convertors import (
     ContainerConvertor,
@@ -110,7 +112,45 @@ NETWORK = NetworkConvertor.from_docker(make_network_obj(), verbose=True)
 VOLUME = VolumeConvertor.from_docker(make_volume_obj(), verbose=True)
 
 
+class FakeSocket:
+    """SocketIO-like fake (read/write/close) with thread-safe blocking read."""
+
+    def __init__(self, chunks=None):
+        self._chunks = deque(chunks or [])
+        self.written = []
+        self.closed = False
+        self._cv = threading.Condition()
+
+    def feed(self, data: bytes):
+        with self._cv:
+            self._chunks.append(data)
+            self._cv.notify_all()
+
+    def read(self, n: int = 4096) -> bytes:
+        with self._cv:
+            while not self._chunks and not self.closed:
+                self._cv.wait(timeout=5)
+            if self._chunks:
+                return self._chunks.popleft()
+            return b""
+
+    def write(self, data: bytes) -> int:
+        self.written.append(data)
+        return len(data)
+
+    def close(self):
+        with self._cv:
+            self.closed = True
+            self._cv.notify_all()
+
+
 class FakeContainerService:
+    def __init__(self):
+        self.terminal_socket = FakeSocket()
+        self.exec_created = []
+        self.resized = []
+        self.log_stream_calls = []
+
     async def list(self, all=False, verbose=False):
         return [CONTAINER]
 
@@ -150,6 +190,27 @@ class FakeContainerService:
 
     async def commit(self, id, name, tag, message=None, author=None):
         return IMAGE
+
+    async def get_status(self, id):
+        if id != CONTAINER["id"]:
+            raise NotFound(f"no such container: {id}")
+        return "running"
+
+    async def exec_create_tty(self, id, cmd):
+        self.exec_created.append((id, cmd))
+        return "exec123"
+
+    async def exec_start_socket(self, exec_id):
+        return self.terminal_socket
+
+    async def exec_resize(self, exec_id, rows, cols):
+        self.resized.append((exec_id, rows, cols))
+
+    async def open_log_stream(self, id, since=None, until=None, follow=False):
+        if id != CONTAINER["id"]:
+            raise NotFound(f"no such container: {id}")
+        self.log_stream_calls.append(dict(since=since, until=until, follow=follow))
+        return iter([b"log line 1\n", b"log line 2\n"])
 
 
 class FakeImageService:

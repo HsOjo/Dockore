@@ -8,11 +8,8 @@
           style="width: 256px"
           allow-clear
         />
-        <a-switch
-          :checked="store.showAll"
-          :checked-children="t('image.showAll')"
-          @change="handleShowAll"
-        />
+        <a-switch :checked="store.showAll" @change="handleShowAll" />
+        <span>{{ t("image.showAll") }}</span>
       </div>
       <div class="toolbar-right">
         <a-popconfirm

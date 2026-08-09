@@ -23,8 +23,8 @@ class NetworkCreate(BaseModel):
 class NetworkItem(BaseModel):
     id: str
     name: str
-    driver: str = ""
-    scope: str = ""
+    driver: Optional[str] = None
+    scope: Optional[str] = None
     create_time: str
     container_num: int = 0
     subnet: Optional[str] = None

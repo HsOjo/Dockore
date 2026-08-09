@@ -1934,24 +1934,48 @@
       "ContainerNetwork": {
         "properties": {
           "ip": {
-            "type": "string",
-            "title": "Ip",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip"
           },
           "prefix": {
-            "type": "integer",
-            "title": "Prefix",
-            "default": 0
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prefix"
           },
           "gateway": {
-            "type": "string",
-            "title": "Gateway",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gateway"
           },
           "mac_address": {
-            "type": "string",
-            "title": "Mac Address",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mac Address"
           },
           "ports": {
             "anyOf": [
@@ -2348,7 +2372,14 @@
             "title": "Name"
           },
           "type": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Type"
           },
           "driver": {
@@ -2363,25 +2394,40 @@
             "title": "Driver"
           },
           "mode": {
-            "type": "string",
-            "title": "Mode",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
           },
           "src": {
-            "type": "string",
-            "title": "Src",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Src"
           },
           "dest": {
-            "type": "string",
-            "title": "Dest",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest"
           }
         },
         "type": "object",
-        "required": [
-          "type"
-        ],
         "title": "Mount"
       },
       "NetworkCreate": {
@@ -2459,14 +2505,26 @@
             "title": "Name"
           },
           "driver": {
-            "type": "string",
-            "title": "Driver",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver"
           },
           "scope": {
-            "type": "string",
-            "title": "Scope",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
           },
           "create_time": {
             "type": "string",
@@ -2942,19 +3000,37 @@
             "title": "Name"
           },
           "driver": {
-            "type": "string",
-            "title": "Driver",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver"
           },
           "mount_point": {
-            "type": "string",
-            "title": "Mount Point",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mount Point"
           },
           "scope": {
-            "type": "string",
-            "title": "Scope",
-            "default": ""
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
           },
           "create_time": {
             "type": "string",

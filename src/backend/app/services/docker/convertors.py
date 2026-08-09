@@ -41,27 +41,27 @@ class ContainerConvertor:
             id=obj.short_id,
             name=obj.name,
             image=ImageConvertor.from_docker(obj.image),
-            create_time=attrs['Created'],
+            create_time=attrs.get('Created', ''),
             status=obj.status,
         )
         if verbose:
-            ns = attrs['NetworkSettings']
-            cfg = attrs['Config']
-            host_cfg = attrs['HostConfig']
-            if cfg['Cmd']:
+            ns = attrs.get('NetworkSettings') or {}
+            cfg = attrs.get('Config') or {}
+            host_cfg = attrs.get('HostConfig') or {}
+            if cfg.get('Cmd'):
                 item.update(command=' '.join(cfg['Cmd']))
 
             item.update(
-                tty=cfg['Tty'],
-                interactive=cfg['OpenStdin'],
+                tty=cfg.get('Tty'),
+                interactive=cfg.get('OpenStdin'),
                 network=dict(
-                    ip=ns['IPAddress'],
-                    prefix=ns['IPPrefixLen'],
-                    gateway=ns['Gateway'],
-                    mac_address=ns['MacAddress'],
-                    ports=PortMappingConvertor.from_docker(host_cfg['PortBindings']),
+                    ip=ns.get('IPAddress'),
+                    prefix=ns.get('IPPrefixLen'),
+                    gateway=ns.get('Gateway'),
+                    mac_address=ns.get('MacAddress'),
+                    ports=PortMappingConvertor.from_docker(host_cfg.get('PortBindings')),
                 ),
-                mounts=MountsConvertor.from_docker(attrs['Mounts']),
+                mounts=MountsConvertor.from_docker(attrs.get('Mounts') or []),
             )
         return item
 
@@ -73,20 +73,20 @@ class ImageConvertor:
         item = dict(
             id=obj.short_id[7:],
             tags=obj.tags,
-            author=attrs['Author'],
-            create_time=attrs['Created'],
-            size=attrs['Size'],
+            author=attrs.get('Author', ''),
+            create_time=attrs.get('Created', ''),
+            size=attrs.get('Size', 0),
         )
         if verbose:
-            cfg = attrs['Config']
-            if cfg['Cmd']:
+            cfg = attrs.get('Config') or {}
+            if cfg.get('Cmd'):
                 item.update(command=' '.join(cfg['Cmd']))
 
             item.update(
-                tty=cfg['Tty'],
-                interactive=cfg['OpenStdin'],
-                architecture=attrs['Architecture'],
-                os=attrs['Os'],
+                tty=cfg.get('Tty'),
+                interactive=cfg.get('OpenStdin'),
+                architecture=attrs.get('Architecture'),
+                os=attrs.get('Os'),
                 ports=PortsConvertor.from_docker(cfg.get('ExposedPorts')),
             )
         return item
@@ -100,14 +100,14 @@ class NetworkConvertor:
         item = dict(
             id=obj.short_id,
             name=obj.name,
-            driver=attrs['Driver'],
-            scope=attrs['Scope'],
-            create_time=attrs['Created'],
+            driver=attrs.get('Driver'),
+            scope=attrs.get('Scope'),
+            create_time=attrs.get('Created', ''),
             container_num=len(containers),
         )
         if verbose:
-            ipam = attrs['IPAM']
-            ipam_cfg = ipam['Config']
+            ipam = attrs.get('IPAM') or {}
+            ipam_cfg = ipam.get('Config') or []
             if ipam_cfg:
                 ipam_cfg = ipam_cfg[0]
                 item.update(
@@ -117,10 +117,10 @@ class NetworkConvertor:
                 )
 
             item.update(
-                ipam_driver=ipam['Driver'],
-                internal=attrs['Internal'],
-                attachable=attrs['Attachable'],
-                options=attrs['Options'],
+                ipam_driver=ipam.get('Driver'),
+                internal=attrs.get('Internal'),
+                attachable=attrs.get('Attachable'),
+                options=attrs.get('Options') or {},
                 containers=[ContainerConvertor.from_docker(i, True) for i in containers],
             )
         return item
@@ -133,13 +133,13 @@ class VolumeConvertor:
         item = dict(
             id=obj.id,
             name=obj.name,
-            driver=attrs['Driver'],
-            mount_point=attrs['Mountpoint'],
-            scope=attrs['Scope'],
-            create_time=attrs['CreatedAt'],
+            driver=attrs.get('Driver'),
+            mount_point=attrs.get('Mountpoint'),
+            scope=attrs.get('Scope'),
+            create_time=attrs.get('CreatedAt', ''),
         )
         if verbose:
-            item.update(driver_opts=attrs['Options'])
+            item.update(driver_opts=attrs.get('Options') or {})
         return item
 
 
@@ -165,8 +165,8 @@ class MountsConvertor:
         result = []
         for mount in mounts:
             result.append(dict(
-                name=mount.get('Name'), type=mount['Type'], driver=mount.get('Driver'),
-                mode=mount['Mode'], src=mount['Source'], dest=mount['Destination'],
+                name=mount.get('Name'), type=mount.get('Type'), driver=mount.get('Driver'),
+                mode=mount.get('Mode'), src=mount.get('Source'), dest=mount.get('Destination'),
             ))
         return result
 

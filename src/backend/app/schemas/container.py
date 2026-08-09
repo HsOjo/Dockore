@@ -30,18 +30,18 @@ class ContainerCreate(BaseModel):
 
 class Mount(BaseModel):
     name: Optional[str] = None
-    type: str
+    type: Optional[str] = None
     driver: Optional[str] = None
-    mode: str = ""
-    src: str = ""
-    dest: str = ""
+    mode: Optional[str] = None
+    src: Optional[str] = None
+    dest: Optional[str] = None
 
 
 class ContainerNetwork(BaseModel):
-    ip: str = ""
-    prefix: int = 0
-    gateway: str = ""
-    mac_address: str = ""
+    ip: Optional[str] = None
+    prefix: Optional[int] = None
+    gateway: Optional[str] = None
+    mac_address: Optional[str] = None
     ports: Optional[List[PortMapping]] = None
 
 

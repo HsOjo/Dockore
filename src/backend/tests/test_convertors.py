@@ -159,3 +159,62 @@ def test_volumes_mapping_convertor():
     }
     # input must not be mutated
     assert volumes[0]["path"] == "data"
+
+
+from types import SimpleNamespace
+
+
+def test_image_convertor_missing_attrs():
+    obj = SimpleNamespace(
+        short_id="sha256:0123456789ab",
+        tags=[],
+        attrs={"Created": "2024-01-01T00:00:00Z", "Size": 100},
+    )
+    item = ImageConvertor.from_docker(obj)
+    assert item["author"] == ""
+    verbose = ImageConvertor.from_docker(obj, verbose=True)
+    assert verbose["architecture"] is None
+    assert verbose["ports"] == []
+
+
+def test_container_convertor_host_network_mode():
+    obj = make_container_obj()
+    obj.attrs["NetworkSettings"] = {}
+    obj.attrs["HostConfig"] = {}
+    item = ContainerConvertor.from_docker(obj, verbose=True)
+    assert item["network"]["ip"] is None
+    assert item["network"]["prefix"] is None
+    assert item["network"]["ports"] is None
+
+
+def test_container_convertor_missing_config():
+    obj = make_container_obj()
+    del obj.attrs["Config"]
+    obj.attrs["NetworkSettings"] = {}
+    obj.attrs["HostConfig"] = {}
+    obj.attrs["Mounts"] = []
+    item = ContainerConvertor.from_docker(obj, verbose=True)
+    assert "command" not in item
+    assert item["tty"] is None
+
+
+def test_network_convertor_missing_ipam():
+    obj = make_network_obj()
+    obj.attrs["IPAM"] = {}
+    item = NetworkConvertor.from_docker(obj, verbose=True)
+    assert item["ipam_driver"] is None
+    assert "subnet" not in item
+
+
+def test_volume_convertor_missing_options():
+    obj = make_volume_obj()
+    del obj.attrs["Options"]
+    item = VolumeConvertor.from_docker(obj, verbose=True)
+    assert item["driver_opts"] == {}
+
+
+def test_mounts_convertor_missing_fields():
+    result = MountsConvertor.from_docker([{"Source": "/a", "Destination": "/b"}])
+    assert result[0]["type"] is None
+    assert result[0]["mode"] is None
+    assert result[0]["src"] == "/a"

@@ -568,26 +568,14 @@ export interface components {
         };
         /** ContainerNetwork */
         ContainerNetwork: {
-            /**
-             * Ip
-             * @default
-             */
-            ip: string;
-            /**
-             * Prefix
-             * @default 0
-             */
-            prefix: number;
-            /**
-             * Gateway
-             * @default
-             */
-            gateway: string;
-            /**
-             * Mac Address
-             * @default
-             */
-            mac_address: string;
+            /** Ip */
+            ip?: string | null;
+            /** Prefix */
+            prefix?: number | null;
+            /** Gateway */
+            gateway?: string | null;
+            /** Mac Address */
+            mac_address?: string | null;
             /** Ports */
             ports?: components["schemas"]["PortMapping"][] | null;
         };
@@ -736,24 +724,15 @@ export interface components {
             /** Name */
             name?: string | null;
             /** Type */
-            type: string;
+            type?: string | null;
             /** Driver */
             driver?: string | null;
-            /**
-             * Mode
-             * @default
-             */
-            mode: string;
-            /**
-             * Src
-             * @default
-             */
-            src: string;
-            /**
-             * Dest
-             * @default
-             */
-            dest: string;
+            /** Mode */
+            mode?: string | null;
+            /** Src */
+            src?: string | null;
+            /** Dest */
+            dest?: string | null;
         };
         /** NetworkCreate */
         NetworkCreate: {
@@ -784,16 +763,10 @@ export interface components {
             id: string;
             /** Name */
             name: string;
-            /**
-             * Driver
-             * @default
-             */
-            driver: string;
-            /**
-             * Scope
-             * @default
-             */
-            scope: string;
+            /** Driver */
+            driver?: string | null;
+            /** Scope */
+            scope?: string | null;
             /** Create Time */
             create_time: string;
             /**
@@ -970,21 +943,12 @@ export interface components {
             id: string;
             /** Name */
             name: string;
-            /**
-             * Driver
-             * @default
-             */
-            driver: string;
-            /**
-             * Mount Point
-             * @default
-             */
-            mount_point: string;
-            /**
-             * Scope
-             * @default
-             */
-            scope: string;
+            /** Driver */
+            driver?: string | null;
+            /** Mount Point */
+            mount_point?: string | null;
+            /** Scope */
+            scope?: string | null;
             /** Create Time */
             create_time: string;
             /** Driver Opts */

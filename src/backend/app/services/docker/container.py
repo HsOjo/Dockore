@@ -21,8 +21,9 @@ def parse_ts(value: Optional[Union[str, int]]) -> Optional[Union[int, datetime]]
 class ContainerService:
     """Async wrapper over docker-py's ContainerCollection."""
 
-    def __init__(self, collection):
+    def __init__(self, collection, api=None):
         self._c = collection
+        self._api = api
 
     async def _get(self, id: str):
         return await asyncio.to_thread(self._c.get, id)
@@ -91,6 +92,34 @@ class ContainerService:
             container.logs, since=parse_ts(since), until=parse_ts(until),
         )
         return logs_data.decode(errors='ignore')
+
+    async def open_log_stream(self, id: str, since=None, until=None, follow=False):
+        """Return a sync generator of log chunks; consumed on a worker thread."""
+        container = await self._get(id)
+        return await asyncio.to_thread(
+            container.logs, stream=True, follow=follow,
+            since=parse_ts(since), until=parse_ts(until),
+        )
+
+    async def get_status(self, id: str):
+        return (await self._get(id)).status
+
+    async def exec_create_tty(self, id: str, cmd) -> str:
+        result = await asyncio.to_thread(
+            self._api.exec_create, id, cmd, tty=True, stdin=True,
+        )
+        return result['Id']
+
+    async def exec_start_socket(self, exec_id: str):
+        """Start an exec and return the raw socket (SocketIO: read/write/close)."""
+        return await asyncio.to_thread(
+            self._api.exec_start, exec_id, socket=True, tty=True, demux=False,
+        )
+
+    async def exec_resize(self, exec_id: str, rows: int, cols: int):
+        await asyncio.to_thread(
+            self._api.exec_resize, exec_id, height=rows, width=cols,
+        )
 
     async def diff(self, id: str):
         result = dict(add=[], change=[], delete=[], other=[])
