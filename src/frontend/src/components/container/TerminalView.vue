@@ -1,5 +1,7 @@
 <template>
-  <div ref="termEl" class="terminal-view" />
+  <div class="terminal-view">
+    <div ref="termEl" class="terminal-inner" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -96,10 +98,13 @@ onBeforeUnmount(() => {
 .terminal-view {
   flex: 1;
   min-height: 0;
-  height: 100%;
   background: #000;
   border-radius: 4px;
   padding: 8px;
   overflow: hidden;
+}
+
+.terminal-inner {
+  height: 100%;
 }
 </style>
