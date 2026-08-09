@@ -1,30 +1,28 @@
 <template>
   <div class="terminal-page">
-    <div class="terminal-header">
-      <a-page-header
-        :title="`${t('terminal.title')}：${item?.name || ''}`"
-        @back="router.push('/containers')"
-      />
-      <div class="terminal-actions">
-        <template v-if="item">
-          <a-button type="primary" :disabled="item.status === 'running'" @click="doStart">
-            {{ t("container.start") }}
-          </a-button>
-          <a-button :disabled="item.status !== 'running'" @click="doStop">
-            {{ t("container.stop") }}
-          </a-button>
-          <a-button @click="doRestart">{{ t("container.restart") }}</a-button>
-        </template>
-        <a-button @click="termView?.reconnect()">
-          <ReloadOutlined />
+    <DetailHeader
+      :title="`${t('terminal.title')}：${item?.name || ''}`"
+      @back="router.push('/containers')"
+    >
+      <template v-if="item">
+        <a-button type="primary" :disabled="item.status === 'running'" @click="doStart">
+          {{ t("container.start") }}
         </a-button>
-      </div>
-    </div>
+        <a-button :disabled="item.status !== 'running'" @click="doStop">
+          {{ t("container.stop") }}
+        </a-button>
+        <a-button @click="doRestart">{{ t("container.restart") }}</a-button>
+      </template>
+      <a-button @click="termView?.reconnect()">
+        <ReloadOutlined />
+      </a-button>
+    </DetailHeader>
     <TerminalView ref="termView" :container-id="containerId()" />
   </div>
 </template>
 
 <script setup lang="ts">
+import DetailHeader from "@/components/common/DetailHeader.vue";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -88,17 +86,5 @@ onMounted(loadItem);
   display: flex;
   flex-direction: column;
   height: calc(100vh - 88px);
-}
-
-.terminal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.terminal-actions {
-  display: flex;
-  gap: 8px;
-  padding-top: 8px;
 }
 </style>

@@ -1,15 +1,13 @@
 <template>
   <div>
-    <a-page-header
+    <DetailHeader
       :title="`${t('menu.volumes')}：${item?.name || ''}`"
       @back="router.push('/volumes')"
     >
-      <template #extra>
-        <a-button @click="load">
-          <ReloadOutlined />
-        </a-button>
-      </template>
-    </a-page-header>
+      <a-button @click="load">
+        <ReloadOutlined />
+      </a-button>
+    </DetailHeader>
 
     <a-spin :spinning="loading">
       <template v-if="item">
@@ -46,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import DetailHeader from "@/components/common/DetailHeader.vue";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
