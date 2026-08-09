@@ -135,11 +135,10 @@
       "message": "Commit Message"
     },
     "execPlaceholder": "Enter the command to execute",
-    "execResult": "Result",
-    "exitCode": "Exit Code",
     "logsRange": "Time range",
     "logsFollow": "Follow",
-    "logsQuery": "Query"
+    "logsQuery": "Query",
+    "execRun": "Run"
   },
   "image": {
     "title": "Images",

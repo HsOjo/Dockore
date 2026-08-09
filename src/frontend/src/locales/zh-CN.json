@@ -135,11 +135,10 @@
       "message": "提交消息"
     },
     "execPlaceholder": "请输入需要执行的命令",
-    "execResult": "执行结果",
-    "exitCode": "退出码",
     "logsRange": "操作时间段",
     "logsFollow": "实时跟踪",
-    "logsQuery": "查询"
+    "logsQuery": "查询",
+    "execRun": "执行"
   },
   "image": {
     "title": "镜像管理",
