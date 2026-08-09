@@ -295,6 +295,6 @@
   },
   "terminal": {
     "title": "容器终端",
-    "networkDown": "\r\n --==========================--\r\n  * Terminal: Network was down.\r\n --==========================--\r\n"
+    "networkDown": "\r\n[终端] 会话已断开。\r\n"
   }
 }

@@ -295,6 +295,6 @@
   },
   "terminal": {
     "title": "Container Terminal",
-    "networkDown": "\r\n --==========================--\r\n  * Terminal: Network was down.\r\n --==========================--\r\n"
+    "networkDown": "\r\n[Terminal] Session closed.\r\n"
   }
 }
