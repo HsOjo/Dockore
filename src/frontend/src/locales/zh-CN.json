@@ -288,7 +288,6 @@
     "server": "服务器信息",
     "dockerHost": "Docker 服务地址",
     "currentServer": "当前服务器",
-    "reconfigure": "重新配置",
     "disconnect": "断开连接",
     "disconnectConfirm": "确定断开当前服务器连接吗？",
     "frontendVersion": "前端版本"

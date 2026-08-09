@@ -53,9 +53,6 @@
         >
           <a-button danger>{{ t("settings.disconnect") }}</a-button>
         </a-popconfirm>
-        <a-button style="margin-left: 8px" @click="handleDisconnect">
-          {{ t("settings.reconfigure") }}
-        </a-button>
       </div>
     </a-card>
   </div>
