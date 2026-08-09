@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div class="toolbar">
-      <a-button @click="load">
-        <ReloadOutlined />
-      </a-button>
-    </div>
-
     <a-spin :spinning="loading">
       <a-tabs v-model:activeKey="tab" v-if="store.version">
         <a-tab-pane key="project" :tab="t('system.project')">
@@ -49,7 +43,6 @@
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { message } from "ant-design-vue";
-import { ReloadOutlined } from "@ant-design/icons-vue";
 import { useSystemStore, errorMessage } from "@/stores";
 
 const { t, te } = useI18n();
@@ -102,11 +95,3 @@ async function load() {
 
 onMounted(load);
 </script>
-
-<style scoped>
-.toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-</style>
