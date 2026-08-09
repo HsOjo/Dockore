@@ -1,7 +1,7 @@
 <template>
   <a-layout class="main-layout">
     <a-layout-sider :width="200" theme="light" class="sider">
-      <div class="logo">{{ t("appName") }}</div>
+      <div class="logo" :class="{ 'mac-inset': macInset }" data-tauri-drag-region>{{ t("appName") }}</div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" class="menu">
         <a-menu-item key="/containers">
           <router-link to="/containers">{{ t("menu.containers") }}</router-link>
@@ -30,7 +30,6 @@
     <a-layout>
       <a-layout-header
         class="header"
-        :class="{ 'mac-inset': macInset }"
         data-tauri-drag-region
         @mousedown="startDraggingWindow"
       >
@@ -145,8 +144,9 @@ function handleLocaleChange({ key }: { key: string | number }) {
   border-bottom: 1px solid rgba(5, 5, 5, 0.06);
 }
 
-.header.mac-inset {
-  padding-left: 88px;
+.logo.mac-inset {
+  padding-left: 72px;
+  justify-content: flex-start;
 }
 
 .header-left {
