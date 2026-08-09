@@ -10,7 +10,7 @@
     "active": true,
     "category": "DeveloperTool",
     "copyright": "",
-    "targets": ["dmg", "nsis", "msi", "deb", "appimage"],
+    "targets": ["dmg", "nsis", "msi"],
     "externalBin": [],
     "resources": {
       "binaries/backend-dist": "backend"
