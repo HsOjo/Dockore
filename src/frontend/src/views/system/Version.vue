@@ -1,12 +1,10 @@
 <template>
   <div>
-    <a-page-header :title="t('system.title')">
-      <template #extra>
-        <a-button @click="load">
-          <ReloadOutlined />
-        </a-button>
-      </template>
-    </a-page-header>
+    <div class="toolbar">
+      <a-button @click="load">
+        <ReloadOutlined />
+      </a-button>
+    </div>
 
     <a-spin :spinning="loading">
       <a-tabs v-model:activeKey="tab" v-if="store.version">
@@ -104,3 +102,11 @@ async function load() {
 
 onMounted(load);
 </script>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+</style>

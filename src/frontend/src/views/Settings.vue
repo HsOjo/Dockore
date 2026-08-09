@@ -1,7 +1,5 @@
 <template>
   <div>
-    <a-page-header :title="t('settings.title')" />
-
     <a-card :title="t('settings.ui')" class="section">
       <a-form layout="vertical" style="max-width: 320px">
         <a-form-item :label="t('theme')">

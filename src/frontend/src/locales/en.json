@@ -261,7 +261,6 @@
     }
   },
   "system": {
-    "title": "System Info",
     "project": "Project Info",
     "docker": "Docker Components",
     "field": {
@@ -282,7 +281,6 @@
     "componentVersion": "Version"
   },
   "settings": {
-    "title": "Settings",
     "ui": "UI Settings",
     "backend": "Backend Settings",
     "server": "Server Info",

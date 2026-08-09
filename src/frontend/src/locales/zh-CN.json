@@ -261,7 +261,6 @@
     }
   },
   "system": {
-    "title": "系统信息",
     "project": "项目信息",
     "docker": "Docker 组件",
     "field": {
@@ -282,7 +281,6 @@
     "componentVersion": "版本"
   },
   "settings": {
-    "title": "设置",
     "ui": "界面设置",
     "backend": "后端设置",
     "server": "服务器信息",
