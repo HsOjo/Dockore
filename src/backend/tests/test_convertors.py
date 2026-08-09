@@ -218,3 +218,24 @@ def test_mounts_convertor_missing_fields():
     assert result[0]["type"] is None
     assert result[0]["mode"] is None
     assert result[0]["src"] == "/a"
+
+
+def test_container_convertor_networks_only_fields():
+    # Docker API >= 1.44: 顶层无 IPAddress/Gateway, 信息在 Networks 内
+    obj = make_container_obj()
+    obj.attrs["NetworkSettings"] = {
+        "Networks": {
+            "bridge": {
+                "IPAddress": "192.168.215.2",
+                "IPPrefixLen": 24,
+                "Gateway": "192.168.215.1",
+                "MacAddress": "92:8e:95:a5:77:a9",
+            },
+        },
+    }
+    item = ContainerConvertor.from_docker(obj, verbose=True)
+    net = item["network"]
+    assert net["ip"] == "192.168.215.2"
+    assert net["prefix"] == 24
+    assert net["gateway"] == "192.168.215.1"
+    assert net["mac_address"] == "92:8e:95:a5:77:a9"

@@ -48,6 +48,10 @@ class ContainerConvertor:
             ns = attrs.get('NetworkSettings') or {}
             cfg = attrs.get('Config') or {}
             host_cfg = attrs.get('HostConfig') or {}
+            # Docker API >= 1.44 移除了顶层 IPAddress/Gateway 等字段,
+            # 网络信息只保留在 Networks.<name> 中, 取第一个网络并回退顶层字段
+            networks = ns.get('Networks') or {}
+            first = next(iter(networks.values()), {}) if networks else {}
             if cfg.get('Cmd'):
                 item.update(command=' '.join(cfg['Cmd']))
 
@@ -55,10 +59,14 @@ class ContainerConvertor:
                 tty=cfg.get('Tty'),
                 interactive=cfg.get('OpenStdin'),
                 network=dict(
-                    ip=ns.get('IPAddress'),
-                    prefix=ns.get('IPPrefixLen'),
-                    gateway=ns.get('Gateway'),
-                    mac_address=ns.get('MacAddress'),
+                    ip=first.get('IPAddress') or ns.get('IPAddress'),
+                    prefix=(
+                        first.get('IPPrefixLen')
+                        if first.get('IPPrefixLen') is not None
+                        else ns.get('IPPrefixLen')
+                    ),
+                    gateway=first.get('Gateway') or ns.get('Gateway'),
+                    mac_address=first.get('MacAddress') or ns.get('MacAddress'),
                     ports=PortMappingConvertor.from_docker(host_cfg.get('PortBindings')),
                 ),
                 mounts=MountsConvertor.from_docker(attrs.get('Mounts') or []),
