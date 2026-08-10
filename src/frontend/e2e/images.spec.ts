@@ -39,7 +39,6 @@ test.describe("Images", () => {
     await page.goto("/images");
     await expect(page.locator("text=nginx:latest")).toBeVisible();
     await expect(page.locator("text=postgres:16")).toBeVisible();
-    await expect(page.getByRole("cell", { name: "postgres", exact: true })).toBeVisible();
   });
 
   test("opens pull modal", async ({ page }) => {

@@ -153,7 +153,6 @@
     "field": {
       "id": "Image ID",
       "tags": "Tags",
-      "author": "Author",
       "size": "Size",
       "command": "Command",
       "os": "OS",

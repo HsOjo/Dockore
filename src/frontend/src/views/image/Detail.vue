@@ -34,9 +34,6 @@
           <a-descriptions-item :label="t('image.field.arch')">
             {{ item.architecture || "" }}
           </a-descriptions-item>
-          <a-descriptions-item :label="t('image.field.author')">
-            {{ item.author || t("unknown") }}
-          </a-descriptions-item>
           <a-descriptions-item :label="t('image.field.command')">
             <span class="mono">{{ item.command }}</span>
           </a-descriptions-item>

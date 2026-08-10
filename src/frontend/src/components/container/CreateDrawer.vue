@@ -251,7 +251,6 @@ const stepItems = computed(() => [
 const imageColumns = computed(() => [
   { title: t("image.field.id"), key: "id", dataIndex: "id", width: 140 },
   { title: t("image.field.tags"), key: "tags", dataIndex: "tags" },
-  { title: t("image.field.author"), key: "author", dataIndex: "author", width: 140 },
   { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 140 },
   { title: t("image.field.size"), key: "size", dataIndex: "size", width: 100 },
 ]);

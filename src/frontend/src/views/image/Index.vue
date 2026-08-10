@@ -53,9 +53,6 @@
             <a-tag closable @close.prevent>{{ tag }}</a-tag>
           </a-popconfirm>
         </template>
-        <template v-else-if="column.key === 'author'">
-          {{ record.author || t("unknown") }}
-        </template>
         <template v-else-if="column.key === 'create_time'">
           {{ relativeTime(record.create_time, locale) }}
         </template>
@@ -118,7 +115,6 @@ const activeId = ref("");
 const columns = computed(() => [
   { title: "ID", key: "id", dataIndex: "id", width: 120 },
   { title: t("image.field.tags"), key: "tags", dataIndex: "tags" },
-  { title: t("image.field.author"), key: "author", dataIndex: "author", width: 180 },
   { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 160 },
   { title: t("image.field.size"), key: "size", dataIndex: "size", width: 110 },
   { title: t("actions"), key: "actions", width: 300, fixed: "right" as const },
