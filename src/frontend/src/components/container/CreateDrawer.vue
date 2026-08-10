@@ -57,6 +57,9 @@
           <a-checkbox v-model:checked="form.interactive">
             {{ t("container.field.interactive") }}
           </a-checkbox>
+          <a-checkbox v-model:checked="form.privileged">
+            {{ t("container.field.privileged") }}
+          </a-checkbox>
         </a-form-item>
       </a-form>
     </div>
@@ -221,6 +224,7 @@ const form = reactive({
   command: "",
   tty: false,
   interactive: false,
+  privileged: false,
   ports: [] as PortRow[],
   volumes: [] as VolumeRow[],
 });
@@ -338,6 +342,7 @@ watch(
       command: "",
       tty: false,
       interactive: false,
+      privileged: false,
       ports: [],
       volumes: [],
     });
@@ -365,6 +370,7 @@ async function handleCreate() {
         name: form.name || null,
         tty: form.tty,
         interactive: form.interactive,
+        privileged: form.privileged,
         ports,
         volumes,
       },

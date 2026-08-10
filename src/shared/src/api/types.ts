@@ -512,6 +512,11 @@ export interface components {
              */
             tty: boolean;
             /**
+             * Privileged
+             * @default false
+             */
+            privileged: boolean;
+            /**
              * Ports
              * @default []
              */

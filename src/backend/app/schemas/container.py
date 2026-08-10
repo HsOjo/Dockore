@@ -24,6 +24,7 @@ class ContainerCreate(BaseModel):
     name: Optional[str] = None
     interactive: bool = False
     tty: bool = False
+    privileged: bool = False
     ports: List[PortMapping] = []
     volumes: List[VolumeMapping] = []
 

@@ -43,20 +43,22 @@ class ContainerService:
         await asyncio.to_thread((await self._get(id)).remove)
 
     async def create(self, name, image, command, interactive=False, tty=False,
-                     ports=None, volumes=None):
+                     privileged=False, ports=None, volumes=None):
         item = await asyncio.to_thread(
             self._c.create,
             image, command, name=name, stdin_open=interactive, tty=tty,
+            privileged=privileged,
             ports=PortMappingConvertor.to_docker(ports),
             volumes=VolumesMappingConvertor.to_docker(volumes or []),
         )
         return ContainerConvertor.from_docker(item, verbose=True)
 
     async def run(self, name, image, command, interactive=False, tty=False,
-                  ports=None, volumes=None):
+                  privileged=False, ports=None, volumes=None):
         item = await asyncio.to_thread(
             self._c.run,
             image, command, name=name, stdin_open=interactive, tty=tty, detach=True,
+            privileged=privileged,
             ports=PortMappingConvertor.to_docker(ports),
             volumes=VolumesMappingConvertor.to_docker(volumes or []),
         )

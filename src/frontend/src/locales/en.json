@@ -71,7 +71,8 @@
       "image": "Image",
       "command": "Command",
       "tty": "TTY",
-      "interactive": "Interactive"
+      "interactive": "Interactive",
+      "privileged": "Privileged"
     },
     "status": {
       "created": "Created",

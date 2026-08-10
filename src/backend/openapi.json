@@ -1780,6 +1780,11 @@
             "title": "Tty",
             "default": false
           },
+          "privileged": {
+            "type": "boolean",
+            "title": "Privileged",
+            "default": false
+          },
           "ports": {
             "items": {
               "$ref": "#/components/schemas/PortMapping"

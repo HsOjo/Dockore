@@ -138,11 +138,13 @@ async def test_container_create_converts_mappings(container_service):
     svc, collection, _ = container_service
     await svc.create(
         name="web", image="nginx", command="nginx", interactive=True, tty=True,
+        privileged=True,
         ports=[{"port": 80, "protocol": "tcp", "listen_ip": "0.0.0.0", "listen_port": 8080}],
         volumes=[{"path": "data", "bind": "/data", "mode": "ro"}],
     )
     args, kwargs = collection.create_kwargs
     assert kwargs["stdin_open"] is True and kwargs["tty"] is True
+    assert kwargs["privileged"] is True
     assert kwargs["ports"] == {"80/tcp": ("0.0.0.0", 8080)}
     assert kwargs["volumes"] == {"data": {"bind": "/data", "mode": "ro"}}
 

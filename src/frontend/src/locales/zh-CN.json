@@ -71,7 +71,8 @@
       "image": "镜像",
       "command": "启动命令",
       "tty": "虚拟终端",
-      "interactive": "交互模式"
+      "interactive": "交互模式",
+      "privileged": "特权模式"
     },
     "status": {
       "created": "已创建",
