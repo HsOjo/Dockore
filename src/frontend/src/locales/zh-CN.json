@@ -120,6 +120,7 @@
     "runContainer": "运行容器",
     "createOnly": "仅创建",
     "addMapping": "添加",
+    "exposedPorts": "暴露端口",
     "mountPath": "存储卷",
     "mountBind": "挂载位置",
     "diffGroups": {

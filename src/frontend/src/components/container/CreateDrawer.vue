@@ -65,6 +65,17 @@
     </div>
 
     <div v-show="step === 2">
+      <div v-if="exposedPorts.length" style="margin-bottom: 12px">
+        <span style="margin-right: 8px">{{ t("container.exposedPorts") }}:</span>
+        <a-tag
+          v-for="p in exposedPorts"
+          :key="`${p.port}/${p.protocol}`"
+          style="cursor: pointer"
+          @click="appendExposed(p)"
+        >
+          {{ p.port }}/{{ p.protocol }}
+        </a-tag>
+      </div>
       <a-table :data-source="form.ports" :columns="portColumns" :pagination="false" size="small">
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.key === 'port'">
@@ -203,6 +214,7 @@ const keyword = ref("");
 const run = ref(true);
 const creating = ref(false);
 const selectedImage = ref<ImageItem | null>(null);
+const exposedPorts = ref<{ port: number; protocol: string }[]>([]);
 
 interface PortRow {
   port: number | null;
@@ -308,12 +320,7 @@ async function selectImage(record: ImageItem) {
     form.command = detail.command || "";
     form.tty = detail.tty ?? false;
     form.interactive = detail.interactive ?? false;
-    form.ports = (detail.ports || []).map(({ port, protocol }) => ({
-      port,
-      protocol,
-      listen_ip: "0.0.0.0",
-      listen_port: port,
-    }));
+    exposedPorts.value = detail.ports || [];
   } catch (e: any) {
     message.error(errorMessage(e));
   }
@@ -321,6 +328,16 @@ async function selectImage(record: ImageItem) {
 
 function appendPort() {
   form.ports.push({ port: null, protocol: "tcp", listen_ip: "0.0.0.0", listen_port: null });
+}
+
+function appendExposed(p: { port: number; protocol: string }) {
+  if (form.ports.some((row) => row.port === p.port && row.protocol === p.protocol)) return;
+  form.ports.push({
+    port: p.port,
+    protocol: p.protocol,
+    listen_ip: "0.0.0.0",
+    listen_port: p.port,
+  });
 }
 
 function appendVolume() {
@@ -335,6 +352,7 @@ watch(
     keyword.value = "";
     run.value = true;
     selectedImage.value = null;
+    exposedPorts.value = [];
     Object.assign(form, {
       name: "",
       image: "",

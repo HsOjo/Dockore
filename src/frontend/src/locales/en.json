@@ -120,6 +120,7 @@
     "runContainer": "Run container",
     "createOnly": "Create only",
     "addMapping": "Add",
+    "exposedPorts": "Exposed Ports",
     "mountPath": "Volume",
     "mountBind": "Mount Path",
     "diffGroups": {
