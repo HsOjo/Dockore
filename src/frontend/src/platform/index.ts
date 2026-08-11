@@ -165,3 +165,125 @@ export async function sendNotification(title: string, body: string) {
     }
   }
 }
+
+let _menuSetupDone = false;
+
+export async function setupAppMenu(
+  reloadText: string,
+  preferencesText: string,
+  devToolsText: string,
+  checkUpdateText: string
+) {
+  if (_menuSetupDone || !(await detectTauri())) return;
+  _menuSetupDone = true;
+
+  const { Menu, Submenu, MenuItem } = await import("@tauri-apps/api/menu");
+  const { emit } = await import("@tauri-apps/api/event");
+  const menu = await Menu.default();
+
+  if (await menu.get("reload")) {
+    return;
+  }
+
+  const appMenu = await findAppSubmenu(menu);
+  const prefsAccelerator = isMac() ? "Cmd+," : "Ctrl+,";
+  const prefsItem = await MenuItem.new({
+    id: "preferences",
+    text: preferencesText,
+    accelerator: prefsAccelerator,
+    action: () => {
+      emit("menu:open-settings");
+    },
+  });
+  if (appMenu) {
+    await appMenu.insert(prefsItem, 2);
+  } else {
+    const editMenu = await findOrCreateEditSubmenu(menu, Submenu);
+    await editMenu.append(prefsItem);
+  }
+
+  const checkUpdateItem = await MenuItem.new({
+    id: "check-update",
+    text: checkUpdateText,
+    action: () => {
+      emit("menu:check-update");
+    },
+  });
+  if (appMenu) {
+    await appMenu.insert(checkUpdateItem, 3);
+  } else {
+    const editMenu = await findOrCreateEditSubmenu(menu, Submenu);
+    await editMenu.append(checkUpdateItem);
+  }
+
+  const viewMenu = await findOrCreateViewSubmenu(menu, Submenu);
+
+  const devToolsAccelerator = isMac() ? "Cmd+Option+I" : "Ctrl+Shift+I";
+  const devToolsItem = await MenuItem.new({
+    id: "developer-tools",
+    text: devToolsText,
+    accelerator: devToolsAccelerator,
+    action: async () => {
+      const { invoke } = await import("@tauri-apps/api/core");
+      await invoke("toggle_devtools").catch(console.error);
+    },
+  });
+  await viewMenu.append(devToolsItem);
+
+  const accelerator = isMac() ? "Cmd+R" : "Ctrl+R";
+  const reloadItem = await MenuItem.new({
+    id: "reload",
+    text: reloadText,
+    accelerator,
+    action: () => {
+      window.location.reload();
+    },
+  });
+
+  await viewMenu.append(reloadItem);
+  await menu.setAsAppMenu();
+}
+
+type TauriMenu = import("@tauri-apps/api/menu").Menu;
+type TauriSubmenu = import("@tauri-apps/api/menu").Submenu;
+
+async function findAppSubmenu(menu: TauriMenu): Promise<TauriSubmenu | null> {
+  const items = await menu.items();
+  const first = items[0];
+  if (first && first.kind === "Submenu") {
+    return first as TauriSubmenu;
+  }
+  return null;
+}
+
+async function findOrCreateEditSubmenu(
+  menu: TauriMenu,
+  Submenu: typeof import("@tauri-apps/api/menu").Submenu
+): Promise<TauriSubmenu> {
+  const items = await menu.items();
+  for (const item of items) {
+    if (item.kind === "Submenu") {
+      const text = await (item as TauriSubmenu).text();
+      if (text === "Edit" || text === "编辑") {
+        return item as TauriSubmenu;
+      }
+    }
+  }
+  return await Submenu.new({ text: "Edit" });
+}
+
+async function findOrCreateViewSubmenu(
+  menu: TauriMenu,
+  Submenu: typeof import("@tauri-apps/api/menu").Submenu
+): Promise<TauriSubmenu> {
+  const items = await menu.items();
+  for (const item of items) {
+    if (item.kind === "Submenu") {
+      const text = await (item as TauriSubmenu).text();
+      if (text === "View" || text === "视图") {
+        return item as TauriSubmenu;
+      }
+    }
+  }
+  return await Submenu.new({ text: "View" });
+}

@@ -746,6 +746,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check For Update */
+        get: operations["check_for_update_api_update_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1362,6 +1379,39 @@ export interface components {
             ticket: string;
             /** Expires */
             expires: number;
+        };
+        /** UpdateAsset */
+        UpdateAsset: {
+            /** Name */
+            name: string;
+            /** Url */
+            url: string;
+        };
+        /** UpdateCheckOut */
+        UpdateCheckOut: {
+            /** Current */
+            current: string;
+            /** Latest */
+            latest: string;
+            /** Have New */
+            have_new: boolean;
+            /** Name */
+            name: string;
+            /** Tag Name */
+            tag_name: string;
+            /** Published At */
+            published_at: string;
+            /** Html Url */
+            html_url: string;
+            /** Body */
+            body: string;
+            /** Download Url */
+            download_url?: string | null;
+            /**
+             * Assets
+             * @default []
+             */
+            assets: components["schemas"]["UpdateAsset"][];
         };
         /** ValidateResponse */
         ValidateResponse: {
@@ -3075,6 +3125,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsData"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_for_update_api_update_get: {
+        parameters: {
+            query?: {
+                force?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateCheckOut"];
                 };
             };
             /** @description Validation Error */

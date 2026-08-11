@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api import auth, container, image, network, settings, stack, system, volume
+from app.api import auth, container, image, network, settings, stack, system, update, volume
 from app.schemas.common import StatusResponse
 
 router = APIRouter()
@@ -19,3 +19,4 @@ router.include_router(volume.router)
 router.include_router(stack.router)
 router.include_router(system.router)
 router.include_router(settings.router)
+router.include_router(update.router)

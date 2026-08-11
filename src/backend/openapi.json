@@ -2545,6 +2545,54 @@
           }
         ]
       }
+    },
+    "/api/update": {
+      "get": {
+        "tags": [
+          "update"
+        ],
+        "summary": "Check For Update",
+        "operationId": "check_for_update_api_update_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Force"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateCheckOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4168,6 +4216,91 @@
           "expires"
         ],
         "title": "TerminalTicket"
+      },
+      "UpdateAsset": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "url"
+        ],
+        "title": "UpdateAsset"
+      },
+      "UpdateCheckOut": {
+        "properties": {
+          "current": {
+            "type": "string",
+            "title": "Current"
+          },
+          "latest": {
+            "type": "string",
+            "title": "Latest"
+          },
+          "have_new": {
+            "type": "boolean",
+            "title": "Have New"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "tag_name": {
+            "type": "string",
+            "title": "Tag Name"
+          },
+          "published_at": {
+            "type": "string",
+            "title": "Published At"
+          },
+          "html_url": {
+            "type": "string",
+            "title": "Html Url"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/UpdateAsset"
+            },
+            "type": "array",
+            "title": "Assets",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "current",
+          "latest",
+          "have_new",
+          "name",
+          "tag_name",
+          "published_at",
+          "html_url",
+          "body"
+        ],
+        "title": "UpdateCheckOut"
       },
       "ValidateResponse": {
         "properties": {

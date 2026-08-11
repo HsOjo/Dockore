@@ -9,15 +9,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, watch, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { theme as antdTheme } from "ant-design-vue";
+import { message, theme as antdTheme } from "ant-design-vue";
 import zhCN from "ant-design-vue/es/locale/zh_CN";
 import enUS from "ant-design-vue/es/locale/en_US";
 import { useConnectionStore } from "@/stores";
-import { getUISettings, saveUISettings, getEffectiveTheme } from "@/platform";
+import { getUISettings, saveUISettings, getEffectiveTheme, detectTauri, setupAppMenu, openExternal } from "@/platform";
+import { checkForUpdate } from "@/utils/updater";
+import type { UnlistenFn } from "@tauri-apps/api/event";
 
 const { t } = useI18n();
+const router = useRouter();
 const conn = useConnectionStore();
 const loading = computed(() => conn.isInitializing);
 
@@ -55,6 +59,36 @@ mediaQuery.addEventListener("change", () => {
   if (ui.value.theme === "auto") {
     applyThemeClass("auto");
   }
+});
+
+let unlistenSettings: UnlistenFn | undefined;
+let unlistenUpdate: UnlistenFn | undefined;
+
+onMounted(async () => {
+  if (!(await detectTauri())) return;
+  await setupAppMenu(t("reload"), t("preferences"), t("developerTools"), t("checkUpdate"));
+  const { listen } = await import("@tauri-apps/api/event");
+  unlistenSettings = await listen("menu:open-settings", () => {
+    router.push("/settings");
+  });
+  unlistenUpdate = await listen("menu:check-update", async () => {
+    try {
+      const result = await checkForUpdate();
+      if (result.haveNew) {
+        message.success(t("updateFound", { version: result.latest }));
+        await openExternal(result.htmlUrl);
+      } else {
+        message.success(t("noUpdate"));
+      }
+    } catch {
+      message.error(t("networkError"));
+    }
+  });
+});
+
+onUnmounted(() => {
+  unlistenSettings?.();
+  unlistenUpdate?.();
 });
 </script>
 
