@@ -6,6 +6,7 @@ from app.models import Setting
 
 DEFAULT_SETTINGS = {
     "docker_host": "unix:///var/run/docker.sock",
+    "docker_cli_path": "auto",
 }
 
 

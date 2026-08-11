@@ -6,6 +6,7 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
+    "dialog:default",
     "notification:default",
     "core:window:allow-start-dragging",
     "updater:default",

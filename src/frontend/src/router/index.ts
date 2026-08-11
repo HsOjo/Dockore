@@ -14,6 +14,7 @@ const routes = [
       { path: "containers/:id/terminal", component: () => import("@/views/container/Terminal.vue") },
       { path: "images", component: () => import("@/views/image/Index.vue") },
       { path: "images/:id", component: () => import("@/views/image/Detail.vue") },
+      { path: "stacks", component: () => import("@/views/stack/Index.vue") },
       { path: "networks", component: () => import("@/views/network/Index.vue") },
       { path: "networks/:id", component: () => import("@/views/network/Detail.vue") },
       { path: "volumes", component: () => import("@/views/volume/Index.vue") },

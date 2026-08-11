@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import shlex
 import threading
 from typing import Optional
@@ -8,9 +9,11 @@ from docker.errors import NotFound
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from app.api.deps import get_docker
+from app.api.deps import StackContext, get_stack_ctx
 from app.core import config
 from app.core.broadcast import manager
 from app.core.security import verify_terminal_ticket, verify_token
+from app.services.compose import stack_tasks
 from app.services.docker.client import Docker
 
 router = APIRouter()
@@ -52,7 +55,10 @@ async def events_ws(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             try:
-                json.loads(data)
+                msg = json.loads(data)
+                msg_type = msg.get("type")
+                if msg_type == "stack.resize":
+                    await _handle_stack_resize(msg)
                 await websocket.send_json({"type": "pong"})
             except json.JSONDecodeError:
                 pass
@@ -60,6 +66,15 @@ async def events_ws(websocket: WebSocket):
         manager.disconnect(websocket)
     except Exception:
         manager.disconnect(websocket)
+
+
+async def _handle_stack_resize(msg: dict) -> None:
+    task_id = msg.get("task_id")
+    rows = msg.get("rows")
+    cols = msg.get("cols")
+    if not task_id or rows is None or cols is None:
+        return
+    stack_tasks.resize(task_id, int(rows), int(cols))
 
 
 @router.websocket("/ws/containers/{id}/logs")
@@ -105,6 +120,88 @@ async def container_logs_ws(
         await websocket.close()
     except (WebSocketDisconnect, RuntimeError):
         pass
+
+
+@router.websocket("/ws/stacks/{name}/logs")
+async def stack_logs_ws(
+    websocket: WebSocket, name: str, ctx: StackContext = Depends(get_stack_ctx),
+):
+    if not await _ws_auth(websocket):
+        return
+
+    follow = websocket.query_params.get("follow", "").lower() in ("1", "true", "yes")
+
+    if not ctx.compose:
+        await websocket.close(code=1008, reason="compose CLI not available")
+        return
+
+    from app.core import stack_registry
+
+    registrations = await stack_registry.list_all(ctx.session)
+    stack = await ctx.stack.get(name, registrations)
+    if not stack:
+        await websocket.close(code=1008, reason="stack not found")
+        return
+
+    await websocket.accept()
+    queue: asyncio.Queue = asyncio.Queue()
+
+    async def on_data(task, data: bytes):
+        await queue.put(data)
+
+    async def on_done(task):
+        # Sentinel: lets the sender drain queued output before finishing.
+        await queue.put(None)
+
+    # Prefer compose file labels / registry data. If the recorded working_dir
+    # does not exist on this host (e.g. Docker Desktop paths), fall back to
+    # project-name discovery.
+    files = stack.get("config_files") or None
+    cwd = stack.get("working_dir") or None
+    if cwd and not os.path.isdir(cwd):
+        files = cwd = None
+    if files and not all(os.path.isfile(f) for f in files):
+        files = cwd = None
+
+    task = await ctx.compose.logs(
+        name,
+        on_data,
+        files=files,
+        cwd=cwd,
+        follow=follow,
+        on_done=on_done,
+    )
+
+    async def _sender():
+        while True:
+            data = await queue.get()
+            if data is None:
+                return
+            await websocket.send_bytes(data)
+
+    async def _receiver():
+        while True:
+            msg = await websocket.receive()
+            if msg.get("type") == "websocket.disconnect":
+                return
+
+    sender = asyncio.create_task(_sender())
+    receiver = asyncio.create_task(_receiver())
+    try:
+        done, pending = await asyncio.wait(
+            {sender, receiver}, return_when=asyncio.FIRST_COMPLETED,
+        )
+        for t in pending:
+            t.cancel()
+        if sender in done:
+            if task.status == "error" and task.error:
+                await websocket.send_text(f"[error] {task.error}\n")
+    finally:
+        await ctx.compose.executor.cancel(task.id)
+        try:
+            await websocket.close()
+        except (RuntimeError, WebSocketDisconnect):
+            pass
 
 
 @router.websocket("/ws/terminal")

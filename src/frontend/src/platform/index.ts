@@ -121,6 +121,24 @@ export async function openExternal(url: string) {
   }
 }
 
+export async function pickDirectory(title?: string): Promise<string | null> {
+  if (!(await detectTauri())) return null;
+  const { open } = await import("@tauri-apps/plugin-dialog");
+  const selected = await open({ directory: true, title });
+  return typeof selected === "string" ? selected : null;
+}
+
+const LAST_STACK_DIR_KEY = "dockore_last_stack_dir";
+
+export function getLastStackDir(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(LAST_STACK_DIR_KEY) || "";
+}
+
+export function saveLastStackDir(dir: string) {
+  localStorage.setItem(LAST_STACK_DIR_KEY, dir);
+}
+
 let _windowApi: any = null;
 
 async function getWindowApi() {

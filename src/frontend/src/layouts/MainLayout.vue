@@ -3,6 +3,14 @@
     <a-layout-sider :width="200" theme="light" class="sider">
       <div class="logo" :class="{ 'mac-inset': macInset }" data-tauri-drag-region>{{ t("appName") }}</div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" class="menu">
+        <a-menu-item key="/system">
+          <router-link to="/system">{{ t("menu.system") }}</router-link>
+        </a-menu-item>
+        <a-menu-divider />
+        <a-menu-item key="/stacks">
+          <router-link to="/stacks">{{ t("menu.stacks") }}</router-link>
+        </a-menu-item>
+        <a-menu-divider />
         <a-menu-item key="/containers">
           <router-link to="/containers">{{ t("menu.containers") }}</router-link>
         </a-menu-item>
@@ -14,9 +22,6 @@
         </a-menu-item>
         <a-menu-item key="/volumes">
           <router-link to="/volumes">{{ t("menu.volumes") }}</router-link>
-        </a-menu-item>
-        <a-menu-item key="/system">
-          <router-link to="/system">{{ t("menu.system") }}</router-link>
         </a-menu-item>
       </a-menu>
       <div class="sider-footer">

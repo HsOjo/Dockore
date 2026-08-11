@@ -213,6 +213,7 @@ fn show_notification(app: &tauri::AppHandle, body_key: &str) {
 fn main() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
         // TODO: tauri.conf.json 中的 updater 端点与 pubkey 为占位值，

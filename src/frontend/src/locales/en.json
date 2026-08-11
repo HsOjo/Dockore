@@ -38,9 +38,10 @@
   "menu": {
     "containers": "Containers",
     "images": "Images",
+    "stacks": "Stacks",
     "networks": "Networks",
     "volumes": "Volumes",
-    "system": "System",
+    "system": "System Info",
     "settings": "Settings"
   },
   "connection": {
@@ -259,6 +260,64 @@
       "bind": "Bind",
       "volume": "Volume",
       "tmpfs": "Tmpfs"
+    }
+  },
+   "stack": {
+     "title": "Stacks",
+     "create": "Create Stack",
+     "logs": "Logs",
+     "down": "Down",
+     "destroy": "Destroy",
+     "pull": "Pull Images",
+     "up": "Apply Changes",
+     "import": "Import",
+    "unregister": "Unregister",
+    "removeVolumes": "Also remove volumes",
+    "deleteFiles": "Also delete local directory and files",
+    "downConfirm": "Bring down stack \"{name}\"? Its containers will be stopped and removed.",
+    "destroyConfirm": "Destroy stack \"{name}\"? This will down containers, unregister, and delete local files.",
+    "importConfirm": "Import discovered stack \"{name}\" into the registry?",
+    "unregisterConfirm": "Unregister stack \"{name}\"? No containers or files will be deleted.",
+    "namePlaceholder": "my-stack",
+    "nameInvalid": "Name must start with a lowercase letter or digit and only contain lowercase letters, digits, - and _",
+    "containerModeHint": "Container mode: will be created under the fixed directory {dir}",
+    "directoryHint": "Will create {path}",
+    "directoryPickPlaceholder": "Click the button on the right to pick a directory",
+    "browse": "Browse…",
+    "cliUnavailable": "Compose CLI is unavailable; all stack operations are disabled",
+     "fileInaccessible": "The compose file of this stack is not accessible in this environment; pull/up/edit are disabled",
+     "field": {
+      "name": "Stack Name",
+      "directory": "Directory",
+      "content": "Compose Content",
+      "containers": "Containers",
+      "source": "Source",
+      "workingDir": "Working Dir"
+    },
+    "status": {
+      "running": "Running",
+      "partial": "Partial",
+      "stopped": "Stopped",
+      "inactive": "Inactive",
+      "missing": "Missing"
+    },
+    "source": {
+      "discovered": "Discovered",
+      "registered": "Registered"
+    },
+    "kind": {
+      "create": "Create",
+      "up": "Apply Changes",
+      "pull": "Pull Images",
+      "down": "Down"
+    },
+    "task": {
+      "running": "Running",
+      "done": "Done",
+      "error": "Failed",
+      "cancelled": "Cancelled",
+      "cancel": "Cancel Task",
+      "confirmCancel": "Cancel this task?"
     }
   },
   "system": {

@@ -22,6 +22,10 @@ export type NetworkItem = components["schemas"]["NetworkItem"];
 export type NetworkCreate = components["schemas"]["NetworkCreate"];
 export type VolumeItem = components["schemas"]["VolumeItem"];
 export type VolumeCreate = components["schemas"]["VolumeCreate"];
+export type StackItem = components["schemas"]["StackItem"];
+export type StackMeta = components["schemas"]["StackMeta"];
+export type StackTaskItem = components["schemas"]["StackTaskItem"];
+export type StackCreate = components["schemas"]["StackCreate"];
 export type SystemVersion = components["schemas"]["SystemVersion"];
 export type SettingsData = components["schemas"]["SettingsData"];
 export type ExecResult = components["schemas"]["ExecResult"];
@@ -70,6 +74,12 @@ function registerWebSocketHandlers() {
     if (data?.status === "done") {
       const imageStore = useImageStore();
       imageStore.fetchAll().catch(() => {});
+    }
+  });
+  wsClient.on("stack.action", (data: any) => {
+    if (data?.status === "done" || data?.status === "error" || data?.status === "cancelled") {
+      const stackStore = useStackStore();
+      stackStore.fetchAll().catch(() => {});
     }
   });
 }
@@ -506,6 +516,106 @@ export const useVolumeStore = defineStore("volume", () => {
   return { volumes, loading, fetchAll, fetch, create, remove, reset };
 });
 
+export const useStackStore = defineStore("stack", () => {
+  const stacks = ref<StackItem[]>([]);
+  const meta = ref<StackMeta | null>(null);
+  const loading = ref(false);
+
+  async function fetchAll() {
+    loading.value = true;
+    try {
+      stacks.value = await must(api.GET("/api/stacks"));
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchMeta() {
+    meta.value = await must(api.GET("/api/stacks/meta"));
+  }
+
+  async function fetch(name: string) {
+    return await must(api.GET("/api/stacks/{name}", { params: { path: { name } } }));
+  }
+
+  async function create(body: StackCreate) {
+    return await must(api.POST("/api/stacks", { body }));
+  }
+
+  async function importStack(name: string) {
+    await must(api.POST("/api/stacks/import", { body: { name } }));
+    await fetchAll().catch(() => {});
+  }
+
+  async function unregister(name: string) {
+    await must(
+      api.DELETE("/api/stacks/{name}/registration", { params: { path: { name } } })
+    );
+    await fetchAll().catch(() => {});
+  }
+
+  async function destroy(name: string, removeVolumes: boolean, deleteFiles: boolean) {
+    return await must(
+      api.POST("/api/stacks/{name}/destroy", {
+        params: { path: { name } },
+        body: { remove_volumes: removeVolumes, delete_files: deleteFiles },
+      })
+    );
+  }
+
+  async function down(name: string, removeVolumes: boolean) {
+    return await must(
+      api.POST("/api/stacks/{name}/down", {
+        params: { path: { name } },
+        body: { remove_volumes: removeVolumes },
+      })
+    );
+  }
+
+  async function pull(name: string) {
+    return await must(api.POST("/api/stacks/{name}/pull", { params: { path: { name } } }));
+  }
+
+  async function up(name: string) {
+    return await must(api.POST("/api/stacks/{name}/up", { params: { path: { name } } }));
+  }
+
+  async function listTasks() {
+    return await must(api.GET("/api/stacks/tasks"));
+  }
+
+  async function cancelTask(taskId: string) {
+    await must(
+      api.POST("/api/stacks/tasks/{task_id}/cancel", { params: { path: { task_id: taskId } } })
+    );
+  }
+
+  function reset() {
+    stacks.value = [];
+    meta.value = null;
+    loading.value = false;
+  }
+
+  return {
+    stacks,
+    meta,
+    loading,
+    fetchAll,
+    fetchMeta,
+    fetch,
+    create,
+    importStack,
+    unregister,
+    destroy,
+    down,
+    pull,
+    up,
+    listTasks,
+    cancelTask,
+    reset,
+  };
+});
+
 export const useSystemStore = defineStore("system", () => {
   const version = ref<SystemVersion | null>(null);
 
@@ -543,6 +653,7 @@ export function resetAllStores() {
   useImageStore().reset();
   useNetworkStore().reset();
   useVolumeStore().reset();
+  useStackStore().reset();
   useSystemStore().reset();
   useSettingsStore().reset();
 }

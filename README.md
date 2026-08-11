@@ -77,6 +77,19 @@ docker compose up -d --build
 - Data is persisted in `./data` (SQLite settings); the backend container mounts the host `/var/run/docker.sock` read-only
 - Via the proxy (8002), API/WS share the page origin; when hitting the frontend directly (8001), enter the backend address + token on the onboarding page
 
+### Stack (Compose project) management
+
+The backend image ships the docker CLI with the compose plugin, and `DOCKORE_STACKS_DIR` is pinned to `/app/stacks`. To enable stack management, bind-mount your host stacks directory at the **same path** (relative bind paths inside compose files rely on path identity):
+
+```yaml
+volumes:
+  - /your/host/stacks:/app/stacks
+```
+
+- New stacks are always created at `/app/stacks/<name>/compose.yml`; stacks outside the stacks dir are read-only plus start/stop/restart/down/logs
+- The desktop (Tauri) build leaves `DOCKORE_STACKS_DIR` unset: pick any directory when creating a stack, and import stacks from arbitrary paths
+- The desktop build requires the docker CLI on the host (compose v2 plugin preferred, v1 `docker-compose` as fallback); set `docker_cli_path` on the Settings page to point at a specific binary
+
 ## Release
 
 Desktop releases are built by GitHub Actions (`.github/workflows/release.yml`, manual trigger): macOS arm64/x64 + Windows x64/arm64 installers are uploaded to a draft release.

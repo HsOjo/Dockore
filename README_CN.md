@@ -77,6 +77,19 @@ docker compose up -d --build
 - 数据持久化在 `./data`（SQLite 设置）；backend 容器只读挂载宿主机 `/var/run/docker.sock`
 - 通过 proxy（8002）访问时 API/WS 与页面同源；直连 frontend（8001）时在引导页填写后端地址 + Token
 
+### Stack（Compose 栈）管理
+
+backend 镜像已内置 docker CLI 与 compose 插件，`DOCKORE_STACKS_DIR` 固化为 `/app/stacks`。启用 Stack 管理需将宿主机栈目录**以相同路径**挂载进容器（compose 文件内的相对 bind 路径依赖路径一致）：
+
+```yaml
+volumes:
+  - /your/host/stacks:/app/stacks
+```
+
+- 新建栈固定创建于 `/app/stacks/<name>/compose.yml`；栈目录外已存在的栈仅支持只读查看与 start/stop/restart/down/logs
+- 桌面（Tauri）形态未设置 `DOCKORE_STACKS_DIR`，新建栈时自选目录，导入后可管理任意路径的栈
+- 桌面形态依赖宿主机已安装 docker CLI（compose v2 插件，兼容 v1 `docker-compose` 兜底）；可在设置页通过 `docker_cli_path` 指定二进制路径
+
 ## 发布
 
 桌面端安装包由 GitHub Actions 构建（`.github/workflows/release.yml`，手动触发）：macOS arm64/x64 + Windows x64/arm64 产物上传至 draft Release。

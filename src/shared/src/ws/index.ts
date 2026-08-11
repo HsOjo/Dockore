@@ -176,14 +176,19 @@ export class LogsSocket {
   private listeners: Map<string, Array<(data: any) => void>> = new Map();
 
   connect(url: string, containerId: string, token: string, params: LogsSocketParams = {}) {
+    this.connectPath(url, `/ws/containers/${encodeURIComponent(containerId)}/logs`, token, params);
+  }
+
+  connectPath(url: string, path: string, token: string, params: LogsSocketParams = {}) {
     this.disconnect();
     const query = new URLSearchParams();
     query.set("token", sha256(token));
     if (params.since !== undefined) query.set("since", String(params.since));
     if (params.until !== undefined) query.set("until", String(params.until));
     if (params.follow !== undefined) query.set("follow", params.follow ? "true" : "false");
-    const fullUrl = `${url}/ws/containers/${encodeURIComponent(containerId)}/logs?${query.toString()}`;
+    const fullUrl = `${url}${path}?${query.toString()}`;
     this.ws = new WebSocket(fullUrl);
+    this.ws.binaryType = "arraybuffer";
     this.ws.onopen = () => this.emit("open", {});
     this.ws.onmessage = (ev) => this.emit("data", ev.data);
     this.ws.onclose = (ev) => {

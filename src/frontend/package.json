@@ -15,6 +15,7 @@
     "@ant-design/icons-vue": "^7.0.0",
     "@dockore/shared": "workspace:*",
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.7.2",
     "@tauri-apps/plugin-notification": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.0",
     "@xterm/addon-fit": "^0.10.0",
@@ -26,7 +27,8 @@
     "pinia": "^2.2.0",
     "vue": "^3.5.0",
     "vue-i18n": "^9.14.0",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.0",
+    "xterm": "^5.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

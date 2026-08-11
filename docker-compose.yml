@@ -16,6 +16,9 @@ services:
       - ./data:/app/data
       # Dockore 是 Docker 管理工具，需要访问宿主机 Docker daemon
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Stack 管理：宿主机路径必须与容器内路径一致（DOCKORE_STACKS_DIR=/app/stacks），
+      # 否则 compose 文件中的相对 bind 路径无法解析。取消注释并改为你的宿主机目录：
+      # - /your/host/stacks:/app/stacks
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]

@@ -1580,6 +1580,876 @@
         }
       }
     },
+    "/api/stacks/meta": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Get Meta",
+        "operationId": "get_meta_api_stacks_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackMeta"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/stacks/tasks": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "List Tasks",
+        "operationId": "list_tasks_api_stacks_tasks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StackTaskItem"
+                  },
+                  "type": "array",
+                  "title": "Response List Tasks Api Stacks Tasks Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/stacks/tasks/{task_id}/cancel": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Cancel Task",
+        "operationId": "cancel_task_api_stacks_tasks__task_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "List Stacks",
+        "operationId": "list_stacks_api_stacks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StackItem"
+                  },
+                  "type": "array",
+                  "title": "Response List Stacks Api Stacks Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Create Stack",
+        "operationId": "create_stack_api_stacks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/stacks/import": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Import Stack",
+        "operationId": "import_stack_api_stacks_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackImport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/stacks/{name}": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Get Stack",
+        "operationId": "get_stack_api_stacks__name__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/registration": {
+      "delete": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Unregister Stack",
+        "operationId": "unregister_stack_api_stacks__name__registration_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/start": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Start Stack",
+        "operationId": "start_stack_api_stacks__name__start_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/stop": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Stop Stack",
+        "operationId": "stop_stack_api_stacks__name__stop_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/restart": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Restart Stack",
+        "operationId": "restart_stack_api_stacks__name__restart_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/down": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Down Stack",
+        "operationId": "down_stack_api_stacks__name__down_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/destroy": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Destroy Stack",
+        "operationId": "destroy_stack_api_stacks__name__destroy_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestroyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/pull": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Pull Stack",
+        "operationId": "pull_stack_api_stacks__name__pull_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/up": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Up Stack",
+        "operationId": "up_stack_api_stacks__name__up_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/file": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Read Stack File",
+        "operationId": "read_stack_file_api_stacks__name__file_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackFile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Write Stack File",
+        "operationId": "write_stack_file_api_stacks__name__file_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileContent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileSaveResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/env": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Read Stack Env",
+        "operationId": "read_stack_env_api_stacks__name__env_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackFile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Write Stack Env",
+        "operationId": "write_stack_env_api_stacks__name__env_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileContent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileSaveResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/system/version": {
       "get": {
         "tags": [
@@ -2037,6 +2907,22 @@
         "title": "DeleteResult",
         "description": "Failed ids mapped to their error message; empty means fully succeeded."
       },
+      "DestroyRequest": {
+        "properties": {
+          "remove_volumes": {
+            "type": "boolean",
+            "title": "Remove Volumes",
+            "default": false
+          },
+          "delete_files": {
+            "type": "boolean",
+            "title": "Delete Files",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "DestroyRequest"
+      },
       "DisconnectRequest": {
         "properties": {
           "container_id": {
@@ -2049,6 +2935,17 @@
           "container_id"
         ],
         "title": "DisconnectRequest"
+      },
+      "DownRequest": {
+        "properties": {
+          "remove_volumes": {
+            "type": "boolean",
+            "title": "Remove Volumes",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "DownRequest"
       },
       "ExecRequest": {
         "properties": {
@@ -2113,6 +3010,43 @@
           "protocol"
         ],
         "title": "ExposedPort"
+      },
+      "FileContent": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "FileContent"
+      },
+      "FileSaveResult": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid"
+        ],
+        "title": "FileSaveResult"
       },
       "HTTPValidationError": {
         "properties": {
@@ -2787,6 +3721,11 @@
             "type": "string",
             "title": "Docker Host",
             "default": "unix:///var/run/docker.sock"
+          },
+          "docker_cli_path": {
+            "type": "string",
+            "title": "Docker Cli Path",
+            "default": "auto"
           }
         },
         "additionalProperties": true,
@@ -2805,10 +3744,316 @@
               }
             ],
             "title": "Docker Host"
+          },
+          "docker_cli_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Docker Cli Path"
           }
         },
         "type": "object",
         "title": "SettingsUpdate"
+      },
+      "StackContainerItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "default": ""
+          },
+          "state": {
+            "type": "string",
+            "title": "State",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "StackContainerItem"
+      },
+      "StackCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "directory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Directory"
+          },
+          "env": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Env"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "content"
+        ],
+        "title": "StackCreate"
+      },
+      "StackFile": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "content"
+        ],
+        "title": "StackFile"
+      },
+      "StackImport": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "StackImport"
+      },
+      "StackItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "running": {
+            "type": "integer",
+            "title": "Running",
+            "default": 0
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          },
+          "containers": {
+            "items": {
+              "$ref": "#/components/schemas/StackContainerItem"
+            },
+            "type": "array",
+            "title": "Containers",
+            "default": []
+          },
+          "working_dir": {
+            "type": "string",
+            "title": "Working Dir",
+            "default": ""
+          },
+          "config_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Config Files",
+            "default": []
+          },
+          "registered": {
+            "type": "boolean",
+            "title": "Registered",
+            "default": false
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "discovered"
+          },
+          "file_accessible": {
+            "type": "boolean",
+            "title": "File Accessible",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "status"
+        ],
+        "title": "StackItem"
+      },
+      "StackMeta": {
+        "properties": {
+          "cli_available": {
+            "type": "boolean",
+            "title": "Cli Available"
+          },
+          "cli_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Version"
+          },
+          "cli_major": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Major"
+          },
+          "cli_binary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cli Binary"
+          },
+          "progress": {
+            "type": "boolean",
+            "title": "Progress",
+            "default": false
+          },
+          "container_mode": {
+            "type": "boolean",
+            "title": "Container Mode"
+          },
+          "stacks_dir": {
+            "type": "string",
+            "title": "Stacks Dir",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "cli_available",
+          "container_mode"
+        ],
+        "title": "StackMeta"
+      },
+      "StackTaskItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "stack": {
+            "type": "string",
+            "title": "Stack"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "returncode": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Returncode"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "started_at": {
+            "type": "number",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "stack",
+          "status",
+          "started_at"
+        ],
+        "title": "StackTaskItem"
       },
       "StatusResponse": {
         "properties": {
@@ -2875,6 +4120,19 @@
           "success"
         ],
         "title": "TagResult"
+      },
+      "TaskCreated": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "title": "TaskCreated"
       },
       "TerminalRequest": {
         "properties": {

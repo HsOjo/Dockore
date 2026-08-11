@@ -38,9 +38,10 @@
   "menu": {
     "containers": "容器",
     "images": "镜像",
+    "stacks": "栈",
     "networks": "网络",
     "volumes": "存储卷",
-    "system": "系统",
+    "system": "系统信息",
     "settings": "设置"
   },
   "connection": {
@@ -259,6 +260,64 @@
       "bind": "目录挂载",
       "volume": "存储卷",
       "tmpfs": "临时文件"
+    }
+  },
+  "stack": {
+    "title": "栈管理",
+    "create": "新建栈",
+    "logs": "日志",
+    "down": "下线",
+    "destroy": "销毁",
+    "pull": "拉取镜像",
+    "up": "部署",
+    "import": "导入",
+    "unregister": "移除登记",
+    "removeVolumes": "同时删除数据卷（volumes）",
+    "deleteFiles": "同时删除本地目录及文件",
+    "downConfirm": "确定下线栈「{name}」吗？将停止并移除其容器。",
+    "destroyConfirm": "确定销毁栈「{name}」吗？将下线容器、移除登记并删除本地文件。",
+    "importConfirm": "确定将发现的栈「{name}」导入注册表吗？",
+    "unregisterConfirm": "确定移除栈「{name}」的登记吗？不会删除任何容器或文件。",
+    "namePlaceholder": "my-stack",
+    "nameInvalid": "名称需以小写字母或数字开头，仅可包含小写字母、数字、- 和 _",
+    "containerModeHint": "容器模式：将在固定目录 {dir} 下创建",
+    "directoryHint": "将创建 {path}",
+    "directoryPickPlaceholder": "点击右侧按钮选择目录",
+    "browse": "浏览…",
+    "cliUnavailable": "Compose CLI 不可用，所有栈操作已禁用",
+    "fileInaccessible": "当前环境无法访问该栈的 Compose 文件，无法拉取/应用/编辑",
+    "field": {
+      "name": "栈名称",
+      "directory": "目录",
+      "content": "Compose 内容",
+      "containers": "容器数",
+      "source": "来源",
+      "workingDir": "路径"
+    },
+    "status": {
+      "running": "运行中",
+      "partial": "部分运行",
+      "stopped": "已停止",
+      "inactive": "未激活",
+      "missing": "文件缺失"
+    },
+    "source": {
+      "discovered": "自动发现",
+      "registered": "已登记"
+    },
+    "kind": {
+      "create": "创建",
+      "up": "部署",
+      "pull": "拉取镜像",
+      "down": "下线"
+    },
+    "task": {
+      "running": "执行中",
+      "done": "已完成",
+      "error": "失败",
+      "cancelled": "已取消",
+      "cancel": "取消任务",
+      "confirmCancel": "确定取消该任务吗？"
     }
   },
   "system": {

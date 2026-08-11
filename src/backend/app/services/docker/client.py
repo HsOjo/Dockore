@@ -8,6 +8,7 @@ from .container import ContainerService
 from .convertors import dict_to_lower, remove_empty_obj
 from .image import ImageService
 from .network import NetworkService
+from .stack import StackDiscovery
 from .volume import VolumeService
 
 
@@ -20,6 +21,7 @@ class Docker:
         self.image = ImageService(client.images, client.api)
         self.network = NetworkService(client.networks)
         self.volume = VolumeService(client.volumes)
+        self.stack = StackDiscovery(client.api)
 
     @property
     def api(self):
