@@ -41,7 +41,7 @@ import { useStackStore, errorMessage } from "@/stores";
 import TerminalView from "@/components/common/TerminalView.vue";
 
 const props = defineProps<{ open: boolean; taskId: string; stack: string; kind: string }>();
-const emit = defineEmits<{ "update:open": [boolean] }>();
+const emit = defineEmits<{ "update:open": [boolean]; finished: [string] }>();
 
 const { t, te } = useI18n();
 const store = useStackStore();
@@ -111,6 +111,7 @@ function onActionEvent(data: any) {
     status.value = data.status;
     writeTaskFailure(data);
     cleanup();
+    emit("finished", data.status);
   }
 }
 
@@ -142,6 +143,7 @@ async function onDrawerOpenChange(open: boolean) {
     if (task && task.status !== "running") {
       status.value = task.status;
       writeTaskFailure(task);
+      emit("finished", task.status);
       return;
     }
     wsClient.on("stack.action", onActionEvent);

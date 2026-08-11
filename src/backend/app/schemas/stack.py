@@ -34,6 +34,15 @@ class StackMeta(BaseModel):
     progress: bool = False
     container_mode: bool
     stacks_dir: str = ""
+    git_available: bool = False
+
+
+def _valid_stack_name(v: str) -> str:
+    if not STACK_NAME_RE.match(v):
+        raise ValueError(
+            "name must match [a-z0-9][a-z0-9_-]* (compose project name)"
+        )
+    return v
 
 
 class StackCreate(BaseModel):
@@ -45,11 +54,49 @@ class StackCreate(BaseModel):
     @field_validator("name")
     @classmethod
     def valid_name(cls, v: str) -> str:
-        if not STACK_NAME_RE.match(v):
-            raise ValueError(
-                "name must match [a-z0-9][a-z0-9_-]* (compose project name)"
-            )
-        return v
+        return _valid_stack_name(v)
+
+
+class GitCloneRequest(BaseModel):
+    name: str
+    repo_url: str
+    branch: Optional[str] = None
+    directory: Optional[str] = None
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str) -> str:
+        return _valid_stack_name(v)
+
+
+class GitCloneResult(BaseModel):
+    name: str
+    compose_files: List[str]
+    env_templates: List[str]
+
+
+class GitCreateRequest(BaseModel):
+    name: str
+    compose_path: str
+    env_template_path: Optional[str] = None
+    content: Optional[str] = None
+    env: Optional[str] = None
+    directory: Optional[str] = None
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str) -> str:
+        return _valid_stack_name(v)
+
+
+class GitCancelRequest(BaseModel):
+    name: str
+    directory: Optional[str] = None
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str) -> str:
+        return _valid_stack_name(v)
 
 
 class StackImport(BaseModel):

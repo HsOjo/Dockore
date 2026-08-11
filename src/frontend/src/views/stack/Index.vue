@@ -376,7 +376,7 @@ async function handleAction(record: StackItem, cmd: string) {
       downOpen.value = true;
       break;
     case "destroy": {
-      const canDelete = record.source === "created";
+      const canDelete = record.source === "created" || record.source === "git";
       destroyRemoveVolumes.value = false;
       destroyDeleteFiles.value = canDelete;
       destroyCanDeleteFiles.value = canDelete;

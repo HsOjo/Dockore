@@ -26,6 +26,10 @@ export type StackItem = components["schemas"]["StackItem"];
 export type StackMeta = components["schemas"]["StackMeta"];
 export type StackTaskItem = components["schemas"]["StackTaskItem"];
 export type StackCreate = components["schemas"]["StackCreate"];
+export type GitCloneRequest = components["schemas"]["GitCloneRequest"];
+export type GitCloneResult = components["schemas"]["GitCloneResult"];
+export type GitCreateRequest = components["schemas"]["GitCreateRequest"];
+export type GitCancelRequest = components["schemas"]["GitCancelRequest"];
 export type SystemVersion = components["schemas"]["SystemVersion"];
 export type SettingsData = components["schemas"]["SettingsData"];
 export type ExecResult = components["schemas"]["ExecResult"];
@@ -542,6 +546,34 @@ export const useStackStore = defineStore("stack", () => {
     return await must(api.POST("/api/stacks", { body }));
   }
 
+  async function gitClone(body: GitCloneRequest) {
+    return await must(api.POST("/api/stacks/git/clone", { body }));
+  }
+
+  async function gitCandidates(name: string, directory: string | null) {
+    return await must(
+      api.GET("/api/stacks/git/candidates", {
+        params: { query: { name, directory: directory ?? undefined } },
+      })
+    );
+  }
+
+  async function gitReadFile(name: string, path: string, directory: string | null) {
+    return await must(
+      api.GET("/api/stacks/git/file", {
+        params: { query: { name, path, directory: directory ?? undefined } },
+      })
+    );
+  }
+
+  async function gitCreate(body: GitCreateRequest) {
+    return await must(api.POST("/api/stacks/git/create", { body }));
+  }
+
+  async function gitCancel(body: GitCancelRequest) {
+    await must(api.POST("/api/stacks/git/cancel", { body }));
+  }
+
   async function importStack(name: string) {
     await must(api.POST("/api/stacks/import", { body: { name } }));
     await fetchAll().catch(() => {});
@@ -639,6 +671,11 @@ export const useStackStore = defineStore("stack", () => {
     fetchMeta,
     fetch,
     create,
+    gitClone,
+    gitCandidates,
+    gitReadFile,
+    gitCreate,
+    gitCancel,
     importStack,
     unregister,
     start,

@@ -505,6 +505,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stacks/git/clone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Git Clone Stack */
+        post: operations["git_clone_stack_api_stacks_git_clone_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stacks/git/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Git Clone Candidates */
+        get: operations["git_clone_candidates_api_stacks_git_candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stacks/git/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Git Read File */
+        get: operations["git_read_file_api_stacks_git_file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stacks/git/create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Git Create Stack */
+        post: operations["git_create_stack_api_stacks_git_create_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stacks/git/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Git Cancel Stack
+         * @description Remove a cloned repo when the user abandons the git create flow.
+         */
+        post: operations["git_cancel_stack_api_stacks_git_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stacks/import": {
         parameters: {
             query?: never;
@@ -971,6 +1059,48 @@ export interface components {
             /** Error */
             error?: string | null;
         };
+        /** GitCancelRequest */
+        GitCancelRequest: {
+            /** Name */
+            name: string;
+            /** Directory */
+            directory?: string | null;
+        };
+        /** GitCloneRequest */
+        GitCloneRequest: {
+            /** Name */
+            name: string;
+            /** Repo Url */
+            repo_url: string;
+            /** Branch */
+            branch?: string | null;
+            /** Directory */
+            directory?: string | null;
+        };
+        /** GitCloneResult */
+        GitCloneResult: {
+            /** Name */
+            name: string;
+            /** Compose Files */
+            compose_files: string[];
+            /** Env Templates */
+            env_templates: string[];
+        };
+        /** GitCreateRequest */
+        GitCreateRequest: {
+            /** Name */
+            name: string;
+            /** Compose Path */
+            compose_path: string;
+            /** Env Template Path */
+            env_template_path?: string | null;
+            /** Content */
+            content?: string | null;
+            /** Env */
+            env?: string | null;
+            /** Directory */
+            directory?: string | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1315,6 +1445,11 @@ export interface components {
              * @default
              */
             stacks_dir: string;
+            /**
+             * Git Available
+             * @default false
+             */
+            git_available: boolean;
         };
         /** StackTaskItem */
         StackTaskItem: {
@@ -2600,6 +2735,170 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    git_clone_stack_api_stacks_git_clone_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GitCloneRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    git_clone_candidates_api_stacks_git_candidates_get: {
+        parameters: {
+            query: {
+                name: string;
+                directory?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitCloneResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    git_read_file_api_stacks_git_file_get: {
+        parameters: {
+            query: {
+                name: string;
+                path: string;
+                directory?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StackFile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    git_create_stack_api_stacks_git_create_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GitCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    git_cancel_stack_api_stacks_git_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GitCancelRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusResponse"];
                 };
             };
             /** @description Validation Error */

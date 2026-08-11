@@ -1,4 +1,8 @@
 import asyncio
+import os
+import shutil
+import subprocess
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -12,6 +16,7 @@ from app.api.deps import StackContext, get_stack_ctx
 from app.core.database import async_session, get_db
 from app.core import stack_registry
 from app.main import app
+from app.services import git as git_service
 from app.services.cli import CliError, CliExecutor, CliInfo
 from app.services.compose.service import parse_json_output
 from app.services.docker.stack import StackDiscovery
@@ -499,3 +504,248 @@ def test_stack_logs_ws_streams_bytes(tmp_path):
     finally:
         app.dependency_overrides.pop(get_stack_ctx, None)
         asyncio.run(_cleanup_stack_ws(compose, session))
+
+
+def test_git_scan_candidates_nested(tmp_path):
+    (tmp_path / "docker-compose.yml").write_text("services: {}")
+    deploy = tmp_path / "deploy" / "app"
+    deploy.mkdir(parents=True)
+    (deploy / "compose.yaml").write_text("services: {}")
+    (deploy / ".env.example").write_text("A=1\n")
+    (deploy / "app.env.template").write_text("B=2\n")
+    (tmp_path / "README.md").write_text("hi")
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".git" / "compose.yml").write_text("ignored")
+
+    composes, env_templates = git_service.scan_candidates(tmp_path)
+    assert composes == ["deploy/app/compose.yaml", "docker-compose.yml"]
+    assert env_templates == ["deploy/app/.env.example", "deploy/app/app.env.template"]
+
+
+def test_git_resolve_in_repo_blocks_traversal(tmp_path):
+    assert git_service.resolve_in_repo(tmp_path, "a/b.yml") == tmp_path / "a/b.yml"
+    with pytest.raises(ValueError):
+        git_service.resolve_in_repo(tmp_path, "../outside.yml")
+    with pytest.raises(ValueError):
+        git_service.resolve_in_repo(tmp_path, "/etc/passwd")
+
+
+GIT_REQUIRED = pytest.mark.skipif(
+    shutil.which("git") is None, reason="git CLI required",
+)
+
+
+def _init_git_repo(path: Path) -> None:
+    path.mkdir(parents=True)
+    env = {
+        "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@test",
+        "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@test",
+        "PATH": os.environ.get("PATH", ""),
+    }
+
+    def run(*args):
+        subprocess.run(
+            ["git", "-C", str(path), *args], check=True,
+            capture_output=True, env=env,
+        )
+
+    run("init", "-b", "main")
+    deploy = path / "deploy"
+    deploy.mkdir()
+    (deploy / "compose.yml").write_text("services:\n  app:\n    image: nginx\n")
+    (deploy / ".env.example").write_text("A=1\n")
+    (path / "docker-compose.yml").write_text("services:\n  root:\n    image: nginx\n")
+    run("add", "-A")
+    run("commit", "-m", "init")
+
+
+@pytest.fixture
+async def git_client(tmp_path):
+    compose = FakeComposeService()
+    session = async_session()
+    stacks_base = tmp_path / "stacks"
+    stacks_base.mkdir()
+    app.dependency_overrides[get_stack_ctx] = lambda: StackContext(
+        stack=StackService(fake_docker({})), compose=compose, session=session,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
+        c.compose = compose
+        c.stacks_base = stacks_base
+        yield c
+    app.dependency_overrides.pop(get_stack_ctx, None)
+    await compose.close()
+    await session.close()
+
+
+async def _run_clone(client, name, repo, directory):
+    resp = await client.post("/api/stacks/git/clone", headers=AUTH, json={
+        "name": name, "repo_url": str(repo), "directory": directory,
+    })
+    assert resp.status_code == 200
+    task = client.compose.executor.get_task(resp.json()["task_id"])
+    for _ in range(50):
+        if task.status != "running":
+            break
+        await asyncio.sleep(0.1)
+    return task
+
+
+async def _wait_dir_gone(path):
+    for _ in range(30):
+        if not path.exists():
+            break
+        await asyncio.sleep(0.1)
+
+
+@GIT_REQUIRED
+async def test_api_git_clone_and_create(git_client, tmp_path):
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    directory = str(git_client.stacks_base)
+
+    task = await _run_clone(git_client, "gitapp", repo, directory)
+    assert task.status == "done"
+    assert (git_client.stacks_base / "gitapp" / ".git").is_dir()
+
+    resp = await git_client.get(
+        "/api/stacks/git/candidates", headers=AUTH,
+        params={"name": "gitapp", "directory": directory},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["compose_files"] == ["deploy/compose.yml", "docker-compose.yml"]
+    assert data["env_templates"] == ["deploy/.env.example"]
+
+    resp = await git_client.get(
+        "/api/stacks/git/file", headers=AUTH,
+        params={"name": "gitapp", "path": "deploy/compose.yml",
+                "directory": directory},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["content"].startswith("services:")
+
+    try:
+        resp = await git_client.post("/api/stacks/git/create", headers=AUTH, json={
+            "name": "gitapp",
+            "compose_path": "deploy/compose.yml",
+            "content": "services:\n  app:\n    image: nginx:alpine\n",
+            "env": "A=9\n",
+            "directory": directory,
+        })
+        assert resp.status_code == 201
+        assert resp.json()["task_id"]
+        stack_dir = git_client.stacks_base / "gitapp"
+        compose_file = stack_dir / "deploy" / "compose.yml"
+        assert compose_file.read_text() == "services:\n  app:\n    image: nginx:alpine\n"
+        assert (stack_dir / "deploy" / ".env").read_text() == "A=9\n"
+        async with async_session() as session:
+            reg = await stack_registry.get(session, "gitapp")
+        assert reg is not None and reg.source == "git"
+        assert reg.config_files == str(compose_file)
+        assert ("up", "gitapp", [str(compose_file)],
+                str(compose_file.parent)) in git_client.compose.calls
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "gitapp")
+
+
+@GIT_REQUIRED
+async def test_api_git_create_copies_env_template(git_client, tmp_path):
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    directory = str(git_client.stacks_base)
+    task = await _run_clone(git_client, "gitapp", repo, directory)
+    assert task.status == "done"
+
+    try:
+        resp = await git_client.post("/api/stacks/git/create", headers=AUTH, json={
+            "name": "gitapp",
+            "compose_path": "deploy/compose.yml",
+            "env_template_path": "deploy/.env.example",
+            "directory": directory,
+        })
+        assert resp.status_code == 201
+        stack_dir = git_client.stacks_base / "gitapp"
+        assert (stack_dir / "deploy" / ".env").read_text() == "A=1\n"
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "gitapp")
+
+
+@GIT_REQUIRED
+async def test_api_git_clone_invalid_repo_cleans_up(git_client, tmp_path):
+    resp = await git_client.post("/api/stacks/git/clone", headers=AUTH, json={
+        "name": "badrepo", "repo_url": str(tmp_path / "nope"),
+        "directory": str(git_client.stacks_base),
+    })
+    assert resp.status_code == 200
+    task = git_client.compose.executor.get_task(resp.json()["task_id"])
+    for _ in range(50):
+        if task.status != "running":
+            break
+        await asyncio.sleep(0.1)
+    assert task.status == "error"
+    await _wait_dir_gone(git_client.stacks_base / "badrepo")
+    assert not (git_client.stacks_base / "badrepo").exists()
+
+
+@GIT_REQUIRED
+async def test_api_git_create_rejects_traversal(git_client, tmp_path):
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    directory = str(git_client.stacks_base)
+    task = await _run_clone(git_client, "gitapp", repo, directory)
+    assert task.status == "done"
+
+    resp = await git_client.post("/api/stacks/git/create", headers=AUTH, json={
+        "name": "gitapp", "compose_path": "../repo/docker-compose.yml",
+        "directory": directory,
+    })
+    assert resp.status_code == 400
+
+    resp = await git_client.get(
+        "/api/stacks/git/file", headers=AUTH,
+        params={"name": "gitapp", "path": "../repo/docker-compose.yml",
+                "directory": directory},
+    )
+    assert resp.status_code == 400
+
+
+@GIT_REQUIRED
+async def test_api_git_cancel_removes_clone(git_client, tmp_path):
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    directory = str(git_client.stacks_base)
+    task = await _run_clone(git_client, "gitapp", repo, directory)
+    assert task.status == "done"
+
+    resp = await git_client.post("/api/stacks/git/cancel", headers=AUTH, json={
+        "name": "gitapp", "directory": directory,
+    })
+    assert resp.status_code == 200
+    assert not (git_client.stacks_base / "gitapp").exists()
+
+
+@GIT_REQUIRED
+async def test_api_git_cancel_refuses_registered(git_client, tmp_path):
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    directory = str(git_client.stacks_base)
+    task = await _run_clone(git_client, "gitapp", repo, directory)
+    assert task.status == "done"
+    async with async_session() as session:
+        await stack_registry.register(
+            session, "gitapp", str(git_client.stacks_base / "gitapp"),
+            str(git_client.stacks_base / "gitapp" / "docker-compose.yml"), "git",
+        )
+    try:
+        resp = await git_client.post("/api/stacks/git/cancel", headers=AUTH, json={
+            "name": "gitapp", "directory": directory,
+        })
+        assert resp.status_code == 409
+        assert (git_client.stacks_base / "gitapp").exists()
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "gitapp")

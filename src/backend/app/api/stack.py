@@ -1,7 +1,7 @@
 import asyncio
 import shutil
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -15,6 +15,10 @@ from app.schemas.stack import (
     DownRequest,
     FileContent,
     FileSaveResult,
+    GitCancelRequest,
+    GitCloneRequest,
+    GitCloneResult,
+    GitCreateRequest,
     StackCreate,
     StackImport,
     StackFile,
@@ -23,6 +27,7 @@ from app.schemas.stack import (
     StackTaskItem,
     TaskCreated,
 )
+from app.services import git as git_service
 from app.services.cli import CliError, CliTask
 from app.services.compose import stack_tasks
 
@@ -78,6 +83,7 @@ async def get_meta(ctx: StackContext = Depends(get_stack_ctx)):
         progress=cli.progress if cli else False,
         container_mode=ctx.stack.container_mode,
         stacks_dir=ctx.stack.stacks_dir,
+        git_available=git_service.git_available(),
     )
 
 
@@ -132,6 +138,150 @@ async def create_stack(body: StackCreate, ctx: StackContext = Depends(get_stack_
     return await _launch(ctx, "up", body.name, lambda on_data, on_done: compose.up(
         body.name, [str(compose_file)], str(stack_dir), on_data, on_done=on_done,
     ))
+
+
+async def _git_stack_dir(ctx: StackContext, name: str, directory: Optional[str]) -> Path:
+    registrations = await stack_registry.list_all(ctx.session)
+    if await ctx.stack.get(name, registrations):
+        raise HTTPException(status_code=409, detail="Stack name already exists")
+    try:
+        stack_dir, _ = ctx.stack.resolve_create_target(name, directory)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return stack_dir
+
+
+@router.post("/git/clone", response_model=TaskCreated)
+async def git_clone_stack(
+    body: GitCloneRequest, ctx: StackContext = Depends(get_stack_ctx),
+):
+    compose = _require_compose(ctx)
+    stack_dir = await _git_stack_dir(ctx, body.name, body.directory)
+    if stack_dir.exists() and any(stack_dir.iterdir()):
+        raise HTTPException(status_code=409, detail=f"Directory not empty: {stack_dir}")
+    if not git_service.git_available():
+        raise HTTPException(status_code=503, detail="git CLI not available")
+
+    async def _cleanup(task: CliTask, broadcast_done) -> None:
+        await broadcast_done(task)
+        if task.status != "done":
+            await asyncio.to_thread(shutil.rmtree, stack_dir, ignore_errors=True)
+
+    return await _launch(ctx, "clone", body.name, lambda on_data, on_done: (
+        git_service.clone_stream(
+            compose.executor, body.repo_url, body.branch, stack_dir, on_data,
+            on_done=lambda task: _cleanup(task, on_done),
+        )
+    ))
+
+
+def _cloned_repo_dir(ctx: StackContext, name: str, directory: Optional[str]) -> Path:
+    try:
+        stack_dir, _ = ctx.stack.resolve_create_target(name, directory)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not (stack_dir / ".git").is_dir():
+        raise HTTPException(status_code=400, detail="Repository not cloned yet")
+    return stack_dir
+
+
+@router.get("/git/candidates", response_model=GitCloneResult)
+async def git_clone_candidates(
+    name: str,
+    directory: Optional[str] = None,
+    ctx: StackContext = Depends(get_stack_ctx),
+):
+    registrations = await stack_registry.list_all(ctx.session)
+    if await ctx.stack.get(name, registrations):
+        raise HTTPException(status_code=409, detail="Stack name already exists")
+    stack_dir = _cloned_repo_dir(ctx, name, directory)
+    compose_files, env_templates = git_service.scan_candidates(stack_dir)
+    if not compose_files:
+        shutil.rmtree(stack_dir, ignore_errors=True)
+        raise HTTPException(status_code=400, detail="No compose file found in repository")
+    return GitCloneResult(
+        name=name, compose_files=compose_files, env_templates=env_templates,
+    )
+
+
+@router.get("/git/file", response_model=StackFile)
+async def git_read_file(
+    name: str,
+    path: str,
+    directory: Optional[str] = None,
+    ctx: StackContext = Depends(get_stack_ctx),
+):
+    stack_dir = _cloned_repo_dir(ctx, name, directory)
+    try:
+        file_path = git_service.resolve_in_repo(stack_dir, path)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail=f"File not found: {path}")
+    return await _read_stack_file(file_path)
+
+
+@router.post("/git/create", response_model=TaskCreated, status_code=201)
+async def git_create_stack(
+    body: GitCreateRequest, ctx: StackContext = Depends(get_stack_ctx),
+):
+    compose = _require_compose(ctx)
+    stack_dir = await _git_stack_dir(ctx, body.name, body.directory)
+    if not (stack_dir / ".git").is_dir():
+        raise HTTPException(status_code=400, detail="Repository not cloned yet")
+    try:
+        compose_file = git_service.resolve_in_repo(stack_dir, body.compose_path)
+        template = (
+            git_service.resolve_in_repo(stack_dir, body.env_template_path)
+            if body.env_template_path else None
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not compose_file.is_file():
+        raise HTTPException(
+            status_code=400, detail=f"Compose file not found: {body.compose_path}",
+        )
+    if template is not None and not template.is_file():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Env template not found: {body.env_template_path}",
+        )
+    if body.content is not None:
+        await asyncio.to_thread(compose_file.write_text, body.content)
+    env_target = compose_file.parent / ".env"
+    if body.env is not None:
+        if body.env.strip():
+            await asyncio.to_thread(env_target.write_text, body.env)
+    elif template is not None and not env_target.exists():
+        await asyncio.to_thread(shutil.copy2, template, env_target)
+    try:
+        await compose.validate([str(compose_file)], cwd=str(compose_file.parent))
+    except CliError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid compose file:\n{e.output}")
+
+    await stack_registry.register(
+        ctx.session, body.name, str(stack_dir), str(compose_file), "git",
+    )
+    return await _launch(ctx, "up", body.name, lambda on_data, on_done: compose.up(
+        body.name, [str(compose_file)], str(compose_file.parent),
+        on_data, on_done=on_done,
+    ))
+
+
+@router.post("/git/cancel", response_model=StatusResponse)
+async def git_cancel_stack(
+    body: GitCancelRequest, ctx: StackContext = Depends(get_stack_ctx),
+):
+    """Remove a cloned repo when the user abandons the git create flow."""
+    if await stack_registry.get(ctx.session, body.name):
+        raise HTTPException(status_code=409, detail="Stack already registered")
+    try:
+        stack_dir, _ = ctx.stack.resolve_create_target(body.name, body.directory)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if (stack_dir / ".git").is_dir():
+        await asyncio.to_thread(shutil.rmtree, stack_dir, ignore_errors=True)
+    return StatusResponse()
 
 
 @router.post("/import", response_model=StatusResponse)
@@ -232,7 +382,7 @@ async def destroy_stack(
             return
         async with async_session() as session:
             await stack_registry.unregister(session, name)
-        if body.delete_files and item["source"] == "created":
+        if body.delete_files and item["source"] in ("created", "git"):
             path = Path(item["working_dir"])
             if path.exists():
                 await asyncio.to_thread(shutil.rmtree, path, ignore_errors=True)

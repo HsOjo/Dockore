@@ -297,6 +297,19 @@
     "nameInvalid": "名称需以小写字母或数字开头，仅可包含小写字母、数字、- 和 _",
     "containerModeHint": "容器模式：将在固定目录 {dir} 下创建",
     "directoryHint": "将创建 {path}",
+    "gitDirectoryHint": "将克隆到 {path}",
+    "methodManual": "手动编写",
+    "methodGit": "Git 仓库",
+    "repoUrl": "仓库地址",
+    "repoUrlPlaceholder": "https://github.com/user/repo.git（私有仓库可在 URL 中携带 Token）",
+    "branch": "分支",
+    "branchPlaceholder": "留空使用默认分支",
+    "clone": "克隆",
+    "composeFile": "Compose 文件",
+    "envTemplate": ".env 模版",
+    "envTemplateNone": "不使用",
+    "gitUnavailable": "git CLI 不可用，无法从 Git 仓库创建",
+    "gitRepoCloned": "已克隆：{url}",
     "directoryPickPlaceholder": "点击右侧按钮选择目录",
     "browse": "浏览…",
     "cliUnavailable": "Compose CLI 不可用，所有栈操作已禁用",
@@ -321,10 +334,12 @@
     },
     "source": {
       "discovered": "自动发现",
-      "registered": "已登记"
+      "registered": "已登记",
+      "git": "Git"
     },
     "kind": {
       "create": "创建",
+      "clone": "克隆",
       "up": "部署",
       "pull": "拉取镜像",
       "down": "下线"

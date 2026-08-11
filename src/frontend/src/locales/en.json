@@ -297,6 +297,19 @@
     "nameInvalid": "Name must start with a lowercase letter or digit and only contain lowercase letters, digits, - and _",
     "containerModeHint": "Container mode: will be created under the fixed directory {dir}",
     "directoryHint": "Will create {path}",
+    "gitDirectoryHint": "Will clone into {path}",
+    "methodManual": "Manual",
+    "methodGit": "Git Repository",
+    "repoUrl": "Repository URL",
+    "repoUrlPlaceholder": "https://github.com/user/repo.git (embed a token in the URL for private repos)",
+    "branch": "Branch",
+    "branchPlaceholder": "Leave empty for the default branch",
+    "clone": "Clone",
+    "composeFile": "Compose File",
+    "envTemplate": ".env Template",
+    "envTemplateNone": "None",
+    "gitUnavailable": "git CLI is unavailable; cannot create from a Git repository",
+    "gitRepoCloned": "Cloned: {url}",
     "directoryPickPlaceholder": "Click the button on the right to pick a directory",
     "browse": "Browse…",
     "cliUnavailable": "Compose CLI is unavailable; all stack operations are disabled",
@@ -321,10 +334,12 @@
     },
     "source": {
       "discovered": "Discovered",
-      "registered": "Registered"
+      "registered": "Registered",
+      "git": "Git"
     },
     "kind": {
       "create": "Create",
+      "clone": "Clone",
       "up": "Apply Changes",
       "pull": "Pull Images",
       "down": "Down"
