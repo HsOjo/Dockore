@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <a-table
+    <DataTable
       :data-source="tableData"
       :columns="columns"
       :loading="store.loading"
@@ -47,7 +47,7 @@
         </template>
         <template v-else-if="column.key === 'image'">
           <router-link :to="`/images/${encodeURIComponent(record.image.id)}`">
-            {{ imageDisplayName(record.image) }}
+            <EllipsisText :text="imageDisplayName(record.image)" />
           </router-link>
         </template>
         <template v-else-if="column.key === 'create_time'">
@@ -107,7 +107,7 @@
           </a-space>
         </template>
       </template>
-    </a-table>
+    </DataTable>
 
     <CreateDrawer v-model:open="createOpen" />
     <LogsDrawer v-model:open="logsOpen" :container-id="activeId" />
@@ -137,6 +137,8 @@ import DiffModal from "@/components/container/DiffModal.vue";
 import CommitModal from "@/components/container/CommitModal.vue";
 import RenameModal from "@/components/container/RenameModal.vue";
 import ExecModal from "@/components/container/ExecModal.vue";
+import DataTable from "@/components/common/DataTable.vue";
+import EllipsisText from "@/components/common/EllipsisText.vue";
 
 const { t, te, locale } = useI18n();
 const router = useRouter();
@@ -156,8 +158,14 @@ const activeName = ref("");
 
 const columns = computed(() => [
   { title: "ID", key: "id", dataIndex: "id", width: 120 },
-  { title: t("name"), key: "name", dataIndex: "name", width: 180 },
-  { title: t("container.field.image"), key: "image", dataIndex: "image" },
+  { title: t("name"), key: "name", dataIndex: "name", width: 200, ellipsis: true },
+  {
+    title: t("container.field.image"),
+    key: "image",
+    dataIndex: "image",
+    width: 280,
+    ellipsis: { showTitle: false },
+  },
   { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 160 },
   { title: t("status"), key: "status", dataIndex: "status", width: 120 },
   { title: t("actions"), key: "actions", width: 380, fixed: "right" as const },

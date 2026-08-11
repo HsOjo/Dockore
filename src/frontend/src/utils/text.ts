@@ -25,6 +25,11 @@ export function shortId(id: string | null | undefined, len = 12): string {
   return stripped.length > len ? stripped.slice(0, len) : stripped;
 }
 
+export function volumeDisplayName(name: string | null | undefined): string {
+  if (!name) return "";
+  return /^[0-9a-f]{64}$/.test(name) ? shortId(name) : name;
+}
+
 export function imageDisplayName(image: { id: string; tags: string[] } | null | undefined): string {
   if (!image) return "";
   if (image.tags && image.tags.length > 0) return image.tags.join(", ");

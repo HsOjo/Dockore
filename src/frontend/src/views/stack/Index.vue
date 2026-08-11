@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <a-table
+    <DataTable
       :data-source="tableData"
       :columns="columns"
       :loading="store.loading"
@@ -47,7 +47,7 @@
           {{ sourceText(record) }}
         </template>
         <template v-else-if="column.key === 'working_dir'">
-          <span class="mono">{{ record.working_dir || t("none") }}</span>
+          <EllipsisText :text="record.working_dir || t('none')" mono />
         </template>
         <template v-else-if="column.key === 'actions'">
           <a-space :size="4" wrap>
@@ -115,7 +115,7 @@
           </a-space>
         </template>
       </template>
-    </a-table>
+    </DataTable>
 
       <a-modal
       :open="destroyOpen"
@@ -169,6 +169,8 @@ import CreateDrawer from "@/components/stack/CreateDrawer.vue";
 import ProgressDrawer from "@/components/stack/ProgressDrawer.vue";
 import FileEditorDrawer from "@/components/stack/FileEditorDrawer.vue";
 import LogsDrawer from "@/components/stack/LogsDrawer.vue";
+import DataTable from "@/components/common/DataTable.vue";
+import EllipsisText from "@/components/common/EllipsisText.vue";
 
 const { t, te } = useI18n();
 const store = useStackStore();
@@ -196,11 +198,17 @@ const progressKind = ref("");
 const cliAvailable = computed(() => store.meta?.cli_available ?? false);
 
 const columns = computed(() => [
-  { title: t("name"), key: "name", dataIndex: "name", width: 180 },
+  { title: t("name"), key: "name", dataIndex: "name", width: 200, ellipsis: true },
   { title: t("status"), key: "status", dataIndex: "status", width: 110 },
   { title: t("stack.field.containers"), key: "containers", width: 90 },
   { title: t("stack.field.source"), key: "source", dataIndex: "source", width: 110 },
-  { title: t("stack.field.workingDir"), key: "working_dir", dataIndex: "working_dir" },
+  {
+    title: t("stack.field.workingDir"),
+    key: "working_dir",
+    dataIndex: "working_dir",
+    width: 320,
+    ellipsis: { showTitle: false },
+  },
   { title: t("actions"), key: "actions", width: 320, fixed: "right" as const },
 ]);
 
@@ -397,9 +405,5 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.mono {
-  font-family: monospace;
 }
 </style>

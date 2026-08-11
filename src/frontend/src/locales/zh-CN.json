@@ -166,7 +166,8 @@
       "command": "启动命令",
       "os": "操作系统",
       "arch": "架构",
-      "ports": "暴露端口"
+      "ports": "暴露端口",
+      "features": "特性"
     },
     "confirmDelete": "确定删除镜像「{name}」吗？",
     "confirmBatchDelete": "确定删除选中的 {n} 个镜像吗？",

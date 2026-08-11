@@ -16,16 +16,19 @@
             <span class="mono">{{ item.id }}</span>
           </a-descriptions-item>
           <a-descriptions-item :label="t('image.field.tags')">
-            <a-popconfirm
-              v-for="tag in item.tags"
-              :key="tag"
-              :title="t('image.confirmDeleteTag', { tag })"
-              :ok-text="t('ok')"
-              :cancel-text="t('cancel')"
-              @confirm="deleteTag(tag)"
-            >
-              <a-tag closable @close.prevent>{{ tag }}</a-tag>
-            </a-popconfirm>
+            <a-tag v-for="tag in item.tags" :key="tag" closable @close.prevent>
+              {{ tag }}
+              <template #closeIcon>
+                <a-popconfirm
+                  :title="t('image.confirmDeleteTag', { tag })"
+                  :ok-text="t('ok')"
+                  :cancel-text="t('cancel')"
+                  @confirm="deleteTag(tag)"
+                >
+                  <CloseOutlined />
+                </a-popconfirm>
+              </template>
+            </a-tag>
             <template v-if="!item.tags.length">{{ t("none") }}</template>
           </a-descriptions-item>
           <a-descriptions-item :label="t('image.field.os')">
@@ -43,8 +46,9 @@
           <a-descriptions-item :label="t('image.field.size')">
             {{ formatBytes(item.size) }}
           </a-descriptions-item>
-          <a-descriptions-item :label="t('container.field.tty')">
-            <a-checkbox :checked="item.tty ?? false" disabled />
+          <a-descriptions-item :label="t('image.field.features')">
+            <span>{{ t("container.field.tty") }}</span>
+            <a-checkbox :checked="item.tty ?? false" disabled style="margin-left: 8px" />
             <span style="margin-left: 16px">{{ t("container.field.interactive") }}</span>
             <a-checkbox :checked="item.interactive ?? false" disabled style="margin-left: 8px" />
           </a-descriptions-item>
@@ -70,7 +74,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { message } from "ant-design-vue";
-import { ReloadOutlined } from "@ant-design/icons-vue";
+import { CloseOutlined, ReloadOutlined } from "@ant-design/icons-vue";
 import { formatBytes, formatTime } from "@dockore/shared";
 import { useImageStore, errorMessage, type ImageItem } from "@/stores";
 import { imageDisplayName } from "@/utils/text";

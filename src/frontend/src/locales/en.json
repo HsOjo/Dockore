@@ -166,7 +166,8 @@
       "command": "Command",
       "os": "OS",
       "arch": "Architecture",
-      "ports": "Exposed Ports"
+      "ports": "Exposed Ports",
+      "features": "Features"
     },
     "confirmDelete": "Delete image \"{name}\"?",
     "confirmBatchDelete": "Delete the selected {n} images?",

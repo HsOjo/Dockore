@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <a-table
+    <DataTable
       :data-source="tableData"
       :columns="columns"
       :loading="store.loading"
@@ -42,16 +42,19 @@
           <span class="mono">{{ shortId(record.id) }}</span>
         </template>
         <template v-else-if="column.key === 'tags'">
-          <a-popconfirm
-            v-for="tag in record.tags"
-            :key="tag"
-            :title="t('image.confirmDeleteTag', { tag })"
-            :ok-text="t('ok')"
-            :cancel-text="t('cancel')"
-            @confirm="deleteTag(tag)"
-          >
-            <a-tag closable @close.prevent>{{ tag }}</a-tag>
-          </a-popconfirm>
+          <a-tag v-for="tag in record.tags" :key="tag" closable @close.prevent>
+            {{ tag }}
+            <template #closeIcon>
+              <a-popconfirm
+                :title="t('image.confirmDeleteTag', { tag })"
+                :ok-text="t('ok')"
+                :cancel-text="t('cancel')"
+                @confirm="deleteTag(tag)"
+              >
+                <CloseOutlined />
+              </a-popconfirm>
+            </template>
+          </a-tag>
         </template>
         <template v-else-if="column.key === 'create_time'">
           {{ relativeTime(record.create_time, locale) }}
@@ -81,7 +84,7 @@
           </a-space>
         </template>
       </template>
-    </a-table>
+    </DataTable>
 
     <PullModal v-model:open="pullOpen" />
     <TagModal v-model:open="tagOpen" :image-id="activeId" />
@@ -93,13 +96,14 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { message } from "ant-design-vue";
-import { ReloadOutlined } from "@ant-design/icons-vue";
+import { CloseOutlined, ReloadOutlined } from "@ant-design/icons-vue";
 import { formatBytes, relativeTime } from "@dockore/shared";
 import { useImageStore, errorMessage, type ImageItem } from "@/stores";
 import { shortId, imageDisplayName } from "@/utils/text";
 import PullModal from "@/components/image/PullModal.vue";
 import TagModal from "@/components/image/TagModal.vue";
 import HistoryModal from "@/components/image/HistoryModal.vue";
+import DataTable from "@/components/common/DataTable.vue";
 
 const { t, locale } = useI18n();
 const store = useImageStore();
@@ -114,7 +118,7 @@ const activeId = ref("");
 
 const columns = computed(() => [
   { title: "ID", key: "id", dataIndex: "id", width: 120 },
-  { title: t("image.field.tags"), key: "tags", dataIndex: "tags" },
+  { title: t("image.field.tags"), key: "tags", dataIndex: "tags", width: 320 },
   { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 160 },
   { title: t("image.field.size"), key: "size", dataIndex: "size", width: 110 },
   { title: t("actions"), key: "actions", width: 300, fixed: "right" as const },

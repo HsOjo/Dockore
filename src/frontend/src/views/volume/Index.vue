@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <a-table
+    <DataTable
       :data-source="tableData"
       :columns="columns"
       :loading="store.loading"
@@ -36,11 +36,14 @@
       size="middle"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'create_time'">
+        <template v-if="column.key === 'name'">
+          <EllipsisText :text="record.name" :display-text="volumeDisplayName(record.name)" mono />
+        </template>
+        <template v-else-if="column.key === 'create_time'">
           {{ relativeTime(record.create_time, locale) }}
         </template>
         <template v-else-if="column.key === 'mount_point'">
-          <span class="mono">{{ record.mount_point }}</span>
+          <EllipsisText :text="record.mount_point" mono />
         </template>
         <template v-else-if="column.key === 'actions'">
           <a-space :size="4">
@@ -58,7 +61,7 @@
           </a-space>
         </template>
       </template>
-    </a-table>
+    </DataTable>
 
     <CreateModal v-model:open="createOpen" />
   </div>
@@ -71,7 +74,10 @@ import { message } from "ant-design-vue";
 import { ReloadOutlined } from "@ant-design/icons-vue";
 import { relativeTime } from "@dockore/shared";
 import { useVolumeStore, errorMessage } from "@/stores";
+import { volumeDisplayName } from "@/utils/text";
 import CreateModal from "@/components/volume/CreateModal.vue";
+import DataTable from "@/components/common/DataTable.vue";
+import EllipsisText from "@/components/common/EllipsisText.vue";
 
 const { t, locale } = useI18n();
 const store = useVolumeStore();
@@ -81,9 +87,15 @@ const selectedRowKeys = ref<string[]>([]);
 const createOpen = ref(false);
 
 const columns = computed(() => [
-  { title: t("volume.field.name"), key: "name", dataIndex: "name", width: 200 },
-  { title: t("volume.field.driver"), key: "driver", dataIndex: "driver", width: 140 },
-  { title: t("volume.field.mountPoint"), key: "mount_point", dataIndex: "mount_point" },
+  { title: t("volume.field.name"), key: "name", dataIndex: "name", width: 200, ellipsis: { showTitle: false } },
+  { title: t("volume.field.driver"), key: "driver", dataIndex: "driver", width: 120 },
+  {
+    title: t("volume.field.mountPoint"),
+    key: "mount_point",
+    dataIndex: "mount_point",
+    width: 360,
+    ellipsis: { showTitle: false },
+  },
   { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 180 },
   { title: t("actions"), key: "actions", width: 160, fixed: "right" as const },
 ]);
@@ -135,9 +147,5 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.mono {
-  font-family: monospace;
 }
 </style>

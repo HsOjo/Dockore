@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <a-table
+    <DataTable
       :data-source="tableData"
       :columns="columns"
       :loading="store.loading"
@@ -67,7 +67,7 @@
           </a-space>
         </template>
       </template>
-    </a-table>
+    </DataTable>
 
     <CreateModal v-model:open="createOpen" />
     <ConnectModal v-model:open="connectOpen" :network-id="activeId" />
@@ -84,6 +84,7 @@ import { useNetworkStore, errorMessage, type NetworkItem } from "@/stores";
 import { shortId } from "@/utils/text";
 import CreateModal from "@/components/network/CreateModal.vue";
 import ConnectModal from "@/components/network/ConnectModal.vue";
+import DataTable from "@/components/common/DataTable.vue";
 
 const { t, te, locale } = useI18n();
 const store = useNetworkStore();
@@ -97,10 +98,10 @@ const activeId = ref("");
 
 const columns = computed(() => [
   { title: "ID", key: "id", dataIndex: "id", width: 120 },
-  { title: t("name"), key: "name", dataIndex: "name", width: 180 },
-  { title: t("network.field.driver"), key: "driver", dataIndex: "driver", width: 140 },
-  { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 180 },
-  { title: t("network.field.containerNum"), key: "container_num", dataIndex: "container_num", width: 140 },
+  { title: t("name"), key: "name", dataIndex: "name", width: 220, ellipsis: true },
+  { title: t("network.field.driver"), key: "driver", dataIndex: "driver", width: 120 },
+  { title: t("createTime"), key: "create_time", dataIndex: "create_time", width: 160 },
+  { title: t("network.field.containerNum"), key: "container_num", dataIndex: "container_num", width: 120 },
   { title: t("actions"), key: "actions", width: 260, fixed: "right" as const },
 ]);
 
