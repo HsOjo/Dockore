@@ -554,6 +554,21 @@ export const useStackStore = defineStore("stack", () => {
     await fetchAll().catch(() => {});
   }
 
+  async function start(name: string) {
+    await must(api.POST("/api/stacks/{name}/start", { params: { path: { name } } }));
+    await fetchAll().catch(() => {});
+  }
+
+  async function stop(name: string) {
+    await must(api.POST("/api/stacks/{name}/stop", { params: { path: { name } } }));
+    await fetchAll().catch(() => {});
+  }
+
+  async function restart(name: string) {
+    await must(api.POST("/api/stacks/{name}/restart", { params: { path: { name } } }));
+    await fetchAll().catch(() => {});
+  }
+
   async function destroy(name: string, removeVolumes: boolean, deleteFiles: boolean) {
     return await must(
       api.POST("/api/stacks/{name}/destroy", {
@@ -578,6 +593,26 @@ export const useStackStore = defineStore("stack", () => {
 
   async function up(name: string) {
     return await must(api.POST("/api/stacks/{name}/up", { params: { path: { name } } }));
+  }
+
+  async function readFile(name: string) {
+    return await must(api.GET("/api/stacks/{name}/file", { params: { path: { name } } }));
+  }
+
+  async function writeFile(name: string, content: string) {
+    return await must(
+      api.PUT("/api/stacks/{name}/file", { params: { path: { name } }, body: { content } })
+    );
+  }
+
+  async function readEnv(name: string) {
+    return await must(api.GET("/api/stacks/{name}/env", { params: { path: { name } } }));
+  }
+
+  async function writeEnv(name: string, content: string) {
+    return await must(
+      api.PUT("/api/stacks/{name}/env", { params: { path: { name } }, body: { content } })
+    );
   }
 
   async function listTasks() {
@@ -606,10 +641,17 @@ export const useStackStore = defineStore("stack", () => {
     create,
     importStack,
     unregister,
+    start,
+    stop,
+    restart,
     destroy,
     down,
     pull,
     up,
+    readFile,
+    writeFile,
+    readEnv,
+    writeEnv,
     listTasks,
     cancelTask,
     reset,

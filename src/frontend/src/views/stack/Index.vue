@@ -60,6 +60,18 @@
                   type="link"
                   size="small"
                   :disabled="fileActionDisabled(record)"
+                  @click="openEditor(record)"
+                >
+                  {{ t("stack.editFile") }}
+                </a-button>
+              </span>
+            </a-tooltip>
+            <a-tooltip :title="fileActionDisabled(record) ? disabledReason(record) : ''">
+              <span>
+                <a-button
+                  type="link"
+                  size="small"
+                  :disabled="fileActionDisabled(record)"
                   @click="triggerTask(record, 'up')"
                 >
                   {{ t("stack.up") }}
@@ -73,6 +85,15 @@
               </a-button>
               <template #overlay>
                 <a-menu @click="(info: any) => handleAction(record, String(info.key))">
+                  <a-menu-item key="start" :disabled="!cliAvailable">
+                    {{ t("stack.start") }}
+                  </a-menu-item>
+                  <a-menu-item key="stop" :disabled="!cliAvailable">
+                    {{ t("stack.stop") }}
+                  </a-menu-item>
+                  <a-menu-item key="restart" :disabled="!cliAvailable">
+                    {{ t("stack.restart") }}
+                  </a-menu-item>
                   <a-menu-item key="pull" :disabled="fileActionDisabled(record)">
                     {{ t("stack.pull") }}
                   </a-menu-item>
@@ -133,6 +154,7 @@
       :stack="progressStack"
       :kind="progressKind"
     />
+    <FileEditorDrawer v-model:open="editorOpen" :stack-name="activeName" />
     <LogsDrawer v-model:open="logsOpen" :stack-name="activeName" />
   </div>
 </template>
@@ -145,6 +167,7 @@ import { DownOutlined, ReloadOutlined } from "@ant-design/icons-vue";
 import { useStackStore, errorMessage, type StackItem } from "@/stores";
 import CreateDrawer from "@/components/stack/CreateDrawer.vue";
 import ProgressDrawer from "@/components/stack/ProgressDrawer.vue";
+import FileEditorDrawer from "@/components/stack/FileEditorDrawer.vue";
 import LogsDrawer from "@/components/stack/LogsDrawer.vue";
 
 const { t, te } = useI18n();
@@ -154,6 +177,7 @@ const keyword = ref("");
 
 const createOpen = ref(false);
 const progressOpen = ref(false);
+const editorOpen = ref(false);
 const logsOpen = ref(false);
 const downOpen = ref(false);
 const downRemoveVolumes = ref(false);
@@ -267,6 +291,11 @@ function openLogs(record: StackItem) {
   logsOpen.value = true;
 }
 
+function openEditor(record: StackItem) {
+  activeName.value = record.name;
+  editorOpen.value = true;
+}
+
 function confirmDown() {
   downStarting.value = true;
   store
@@ -316,6 +345,15 @@ function confirmImport(record: StackItem) {
 async function handleAction(record: StackItem, cmd: string) {
   activeName.value = record.name;
   switch (cmd) {
+    case "start":
+      await runWithError(() => store.start(record.name));
+      break;
+    case "stop":
+      await runWithError(() => store.stop(record.name));
+      break;
+    case "restart":
+      await runWithError(() => store.restart(record.name));
+      break;
     case "pull":
       await triggerTask(record, "pull");
       break;

@@ -299,6 +299,17 @@ async def test_api_list_stacks(stack_client):
             await stack_registry.unregister(session, "webapp")
 
 
+async def test_api_lifecycle_calls_compose(stack_client):
+    resp = await stack_client.post("/api/stacks/webapp/restart", headers=AUTH)
+    assert resp.status_code == 200
+    assert stack_client.compose.calls == [("webapp", "restart")]
+
+
+async def test_api_file_guard_blocks_unregistered(stack_client):
+    resp = await stack_client.get("/api/stacks/webapp/file", headers=AUTH)
+    assert resp.status_code == 403
+
+
 async def test_api_stack_not_found(stack_client):
     resp = await stack_client.get("/api/stacks/nope", headers=AUTH)
     assert resp.status_code == 404
@@ -343,6 +354,33 @@ async def env_client(tmp_path):
     await session.close()
 
 
+async def test_api_env_read_missing_returns_empty(env_client):
+    resp = await env_client.get("/api/stacks/realapp/env", headers=AUTH)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["content"] == ""
+    assert data["path"].endswith(".env")
+
+
+async def test_api_env_write_creates_and_backs_up(env_client):
+    resp = await env_client.put(
+        "/api/stacks/realapp/env", headers=AUTH, json={"content": "A=1\n"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["valid"] is True
+    assert env_client.env_path.read_text() == "A=1\n"
+    backup = env_client.env_path.parent / ".env.bak"
+    assert not backup.exists()
+
+    resp = await env_client.put(
+        "/api/stacks/realapp/env", headers=AUTH, json={"content": "A=2\n"},
+    )
+    assert resp.status_code == 200
+    assert backup.read_text() == "A=1\n"
+    assert ("validate", ["{}".format(env_client.env_path.parent / "compose.yml")],
+            str(env_client.env_path.parent)) in env_client.compose.calls
+
+
 async def test_api_destroy_registered_stack(env_client):
     resp = await env_client.post(
         "/api/stacks/realapp/destroy", headers=AUTH,
@@ -380,6 +418,11 @@ async def test_api_destroy_failed_down_keeps_registration_and_files(env_client):
     async with async_session() as session:
         assert await stack_registry.get(session, "realapp") is not None
     assert env_client.env_path.parent.exists()
+
+
+async def test_api_env_guard_blocks_unregistered(stack_client):
+    resp = await stack_client.get("/api/stacks/webapp/env", headers=AUTH)
+    assert resp.status_code == 403
 
 
 async def test_api_create_stack_writes_compose_and_env(tmp_path):

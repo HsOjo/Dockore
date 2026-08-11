@@ -65,6 +65,20 @@ class DestroyRequest(BaseModel):
     delete_files: bool = True
 
 
+class FileContent(BaseModel):
+    content: str
+
+
+class StackFile(BaseModel):
+    path: str
+    content: str
+
+
+class FileSaveResult(BaseModel):
+    valid: bool
+    error: Optional[str] = None
+
+
 class TaskCreated(BaseModel):
     task_id: str
 

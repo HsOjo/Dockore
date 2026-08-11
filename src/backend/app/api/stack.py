@@ -13,8 +13,11 @@ from app.schemas.common import StatusResponse
 from app.schemas.stack import (
     DestroyRequest,
     DownRequest,
+    FileContent,
+    FileSaveResult,
     StackCreate,
     StackImport,
+    StackFile,
     StackItem,
     StackMeta,
     StackTaskItem,
@@ -167,6 +170,34 @@ async def unregister_stack(name: str, ctx: StackContext = Depends(get_stack_ctx)
     return StatusResponse()
 
 
+@router.post("/{name}/start", response_model=StatusResponse)
+async def start_stack(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    return await _lifecycle(ctx, name, "start")
+
+
+@router.post("/{name}/stop", response_model=StatusResponse)
+async def stop_stack(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    return await _lifecycle(ctx, name, "stop")
+
+
+@router.post("/{name}/restart", response_model=StatusResponse)
+async def restart_stack(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    return await _lifecycle(ctx, name, "restart")
+
+
+async def _lifecycle(ctx: StackContext, name: str, action: str) -> StatusResponse:
+    compose = _require_compose(ctx)
+    lock = await stack_tasks.stack_lock(name)
+    if lock.locked():
+        raise HTTPException(status_code=409, detail="Operation already in progress")
+    async with lock:
+        try:
+            await compose.lifecycle(name, action)
+        except CliError as e:
+            raise HTTPException(status_code=400, detail=e.output.strip() or str(e))
+    return StatusResponse()
+
+
 @router.post("/{name}/down", response_model=TaskCreated)
 async def down_stack(
     name: str, body: DownRequest, ctx: StackContext = Depends(get_stack_ctx),
@@ -239,3 +270,71 @@ def _guard_files(ctx: StackContext, item: dict) -> None:
         ctx.stack.check_file_allowed(item["config_files"], item["registered"])
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
+
+
+def _env_path(item: dict) -> Path:
+    return Path(item["config_files"][0]).parent / ".env"
+
+
+async def _read_stack_file(path: Path, allow_missing: bool = False) -> StackFile:
+    try:
+        content = await asyncio.to_thread(path.read_text)
+    except FileNotFoundError:
+        if not allow_missing:
+            raise HTTPException(status_code=404, detail=f"File not found: {path}")
+        content = ""
+    except OSError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return StackFile(path=str(path), content=content)
+
+
+async def _write_stack_file(
+    ctx: StackContext, item: dict, path: Path, content: str,
+) -> FileSaveResult:
+    try:
+        if path.exists():
+            backup = Path(str(path) + ".bak")
+            await asyncio.to_thread(backup.write_text, path.read_text())
+        await asyncio.to_thread(path.write_text, content)
+    except OSError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if ctx.compose:
+        try:
+            await ctx.compose.validate(item["config_files"], cwd=str(path.parent))
+        except CliError as e:
+            return FileSaveResult(valid=False, error=e.output.strip())
+    return FileSaveResult(valid=True)
+
+
+@router.get("/{name}/file", response_model=StackFile)
+async def read_stack_file(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    item = await _get_item(ctx, name)
+    _guard_files(ctx, item)
+    return await _read_stack_file(Path(item["config_files"][0]))
+
+
+@router.put("/{name}/file", response_model=FileSaveResult)
+async def write_stack_file(
+    name: str, body: FileContent, ctx: StackContext = Depends(get_stack_ctx),
+):
+    item = await _get_item(ctx, name)
+    _guard_files(ctx, item)
+    return await _write_stack_file(
+        ctx, item, Path(item["config_files"][0]), body.content,
+    )
+
+
+@router.get("/{name}/env", response_model=StackFile)
+async def read_stack_env(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    item = await _get_item(ctx, name)
+    _guard_files(ctx, item)
+    return await _read_stack_file(_env_path(item), allow_missing=True)
+
+
+@router.put("/{name}/env", response_model=FileSaveResult)
+async def write_stack_env(
+    name: str, body: FileContent, ctx: StackContext = Depends(get_stack_ctx),
+):
+    item = await _get_item(ctx, name)
+    _guard_files(ctx, item)
+    return await _write_stack_file(ctx, item, _env_path(item), body.content)
