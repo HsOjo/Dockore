@@ -384,6 +384,8 @@
   },
   "terminal": {
     "title": "Container Terminal",
+    "launch": "Launch Shell",
+    "hostTitle": "Host Terminal",
     "networkDown": "\r\n[Terminal] Session closed.\r\n"
   }
 }

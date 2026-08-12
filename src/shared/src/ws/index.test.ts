@@ -106,6 +106,12 @@ describe("TerminalSocket", () => {
     expect(MockWebSocket.instances[0].url).toBe("ws://localhost:8000/ws/terminal?ticket=ticket%20abc");
   });
 
+  it("connects to a custom path", () => {
+    const ts = new TerminalSocket();
+    ts.connect("ws://localhost:8000", "t", "/ws/terminal/host");
+    expect(MockWebSocket.instances[0].url).toBe("ws://localhost:8000/ws/terminal/host?ticket=t");
+  });
+
   it("uses arraybuffer binary type", () => {
     const ts = new TerminalSocket();
     ts.connect("ws://localhost:8000", "t");

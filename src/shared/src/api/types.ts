@@ -816,6 +816,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/system/terminal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Host Terminal Ticket Endpoint */
+        post: operations["create_host_terminal_ticket_endpoint_api_system_terminal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings": {
         parameters: {
             query?: never;
@@ -3380,6 +3397,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SystemVersion"];
+                };
+            };
+        };
+    };
+    create_host_terminal_ticket_endpoint_api_system_terminal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TerminalTicket"];
                 };
             };
         };

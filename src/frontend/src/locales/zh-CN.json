@@ -384,6 +384,8 @@
   },
   "terminal": {
     "title": "容器终端",
+    "launch": "启动 Shell",
+    "hostTitle": "主机终端",
     "networkDown": "\r\n[终端] 会话已断开。\r\n"
   }
 }

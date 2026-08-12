@@ -97,9 +97,9 @@ export class TerminalSocket {
   private ws: WebSocket | null = null;
   private listeners: Map<string, Array<(data: any) => void>> = new Map();
 
-  connect(url: string, ticket: string) {
+  connect(url: string, ticket: string, path = "/ws/terminal") {
     this.disconnect();
-    const fullUrl = `${url}/ws/terminal?ticket=${encodeURIComponent(ticket)}`;
+    const fullUrl = `${url}${path}?ticket=${encodeURIComponent(ticket)}`;
     this.ws = new WebSocket(fullUrl);
     this.ws.binaryType = "arraybuffer";
     this.ws.onopen = () => this.emit("open", {});

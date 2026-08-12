@@ -44,6 +44,11 @@
           <a-tag v-if="conn.isBuiltIn" color="blue">{{ t("connection.builtInTag") }}</a-tag>
         </div>
         <div class="header-right" data-tauri-drag-region="no-drag">
+          <a-tooltip :title="t('terminal.launch')">
+            <a-button type="text" @click="shellOpen = true">
+              <CodeOutlined />
+            </a-button>
+          </a-tooltip>
           <a-tooltip :title="t('theme')">
             <a-button type="text" @click="toggleTheme">
               <BulbFilled v-if="ui.theme === 'dark'" />
@@ -68,6 +73,7 @@
         <img class="logo-watermark" :src="logoUrl" alt="" draggable="false" />
       </a-layout-content>
     </a-layout>
+    <ShellModal v-model:open="shellOpen" />
   </a-layout>
 </template>
 
@@ -75,7 +81,8 @@
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { BulbFilled, BulbOutlined, GlobalOutlined } from "@ant-design/icons-vue";
+import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined } from "@ant-design/icons-vue";
+import ShellModal from "@/components/system/ShellModal.vue";
 import { useConnectionStore } from "@/stores";
 import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
 import logoUrl from "@/assets/logo.png";
@@ -87,6 +94,7 @@ const ui = getUISettings();
 const macInset = needsMacTitleInset();
 
 const selectedKeys = ref<string[]>([]);
+const shellOpen = ref(false);
 const settingsKey = computed(() => (route.path.startsWith("/settings") ? ["/settings"] : []));
 
 watch(

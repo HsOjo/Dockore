@@ -6,7 +6,7 @@ from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
 from app.api.deps import get_docker
-from app.core.security import create_terminal_ticket
+from app.core.security import create_host_terminal_ticket, create_terminal_ticket
 from app.main import app
 from tests.conftest import TOKEN_HASH
 from tests.fakes import CONTAINER, FakeDocker
@@ -173,3 +173,45 @@ def test_terminal_ws_default_command(ws_client):
         assert executor.streams[0]["args"] == [
             "docker", "exec", "-it", CID, "/bin/sh",
         ]
+
+
+def test_host_terminal_ws_rejects_bad_ticket(ws_client):
+    tc, _ = ws_client
+    with pytest.raises(WebSocketDisconnect) as exc:
+        with tc.websocket_connect("/ws/terminal/host?ticket=bad"):
+            pass
+    assert exc.value.code == 1008
+
+
+def test_host_terminal_ws_rejects_container_ticket(ws_client):
+    tc, _ = ws_client
+    ticket = create_terminal_ticket(CID, None)
+    with pytest.raises(WebSocketDisconnect) as exc:
+        with tc.websocket_connect(f"/ws/terminal/host?ticket={ticket}"):
+            pass
+    assert exc.value.code == 1008
+
+
+def test_host_terminal_ws_session(ws_client):
+    tc, fake = ws_client
+    executor = fake.cli.executor
+    ticket = create_host_terminal_ticket()
+    with tc.websocket_connect(f"/ws/terminal/host?ticket={ticket}") as ws:
+        assert wait_for(lambda: len(executor.streams) == 1)
+        stream = executor.streams[0]
+        task = stream["task"]
+        assert stream["kind"] == "host.terminal"
+        assert stream["args"] == ["bash", "-l"]
+
+        executor.feed(task, b"$ ")
+        assert ws.receive_bytes() == b"$ "
+
+        ws.send_text("docker ps\n")
+        assert wait_for(lambda: task.written == [b"docker ps\n"])
+
+        ws.send_text(json.dumps({"rows": 24, "cols": 80}))
+        assert wait_for(lambda: task.resizes == [(24, 80)])
+
+        executor.finish(task)
+        with pytest.raises(WebSocketDisconnect):
+            ws.receive_bytes()

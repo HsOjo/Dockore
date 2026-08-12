@@ -14,13 +14,14 @@ import { SearchAddon } from "@xterm/addon-search";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import "@xterm/xterm/css/xterm.css";
 import { TerminalSocket, toWSURL } from "@dockore/shared";
-import { useConnectionStore, useContainerStore, errorMessage } from "@/stores";
+import { useConnectionStore, useContainerStore, useSystemStore, errorMessage } from "@/stores";
 
-const props = defineProps<{ containerId: string; command?: string | null }>();
+const props = defineProps<{ containerId?: string; command?: string | null; host?: boolean }>();
 
 const { t } = useI18n();
 const conn = useConnectionStore();
 const store = useContainerStore();
+const systemStore = useSystemStore();
 
 const termEl = ref<HTMLElement | null>(null);
 
@@ -37,7 +38,9 @@ async function connect() {
   try {
     socket?.disconnect();
     term.reset();
-    const ticket = await store.createTerminalTicket(props.containerId, props.command);
+    const ticket = props.host
+      ? await systemStore.createHostTerminalTicket()
+      : await store.createTerminalTicket(props.containerId!, props.command);
     socket = new TerminalSocket();
     socket.on("data", (data: string | ArrayBuffer) => {
       if (typeof data === "string") {
@@ -49,7 +52,11 @@ async function connect() {
     socket.on("close", () => {
       term.write(t("terminal.networkDown"));
     });
-    socket.connect(toWSURL(conn.baseURL), ticket.ticket);
+    socket.connect(
+      toWSURL(conn.baseURL),
+      ticket.ticket,
+      props.host ? "/ws/terminal/host" : undefined,
+    );
   } catch (e: any) {
     message.error(errorMessage(e));
   }

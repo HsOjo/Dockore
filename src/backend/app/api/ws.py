@@ -11,7 +11,7 @@ from app.api.deps import StackContext, get_stack_ctx
 from app.core import config
 from app.core.broadcast import manager
 from app.core.security import verify_terminal_ticket, verify_token
-from app.services.cli import Docker, DockerNotFound
+from app.services.cli import CliExecutor, Docker, DockerNotFound
 from app.services.compose import stack_tasks
 
 router = APIRouter()
@@ -236,6 +236,32 @@ async def terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)
     cmd = shlex.split(command) if command else ["/bin/sh"]
     args = ["docker", "exec", "-it", container_id, *cmd]
 
+    await _terminal_session(
+        websocket, docker.cli.executor, "container.terminal", container_id, args,
+    )
+
+
+@router.websocket("/ws/terminal/host")
+async def host_terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)):
+    ticket = websocket.query_params.get("ticket")
+    payload = (
+        verify_terminal_ticket(ticket, config.settings.dockore_terminal_expires)
+        if ticket else None
+    )
+    if not payload or not payload.get("host"):
+        await websocket.close(code=1008, reason="Invalid or expired ticket")
+        return
+
+    await _terminal_session(websocket, docker.cli.executor, "host.terminal", "-", ["bash", "-l"])
+
+
+async def _terminal_session(
+    websocket: WebSocket,
+    executor: CliExecutor,
+    kind: str,
+    stack: str,
+    args: list[str],
+):
     await websocket.accept()
     queue: asyncio.Queue = asyncio.Queue()
 
@@ -245,10 +271,7 @@ async def terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)
     async def on_done(task):
         await queue.put(None)
 
-    executor = docker.cli.executor
-    task = await executor.stream(
-        "container.terminal", container_id, args, on_data, on_done=on_done,
-    )
+    task = await executor.stream(kind, stack, args, on_data, on_done=on_done)
 
     async def _sender():
         while True:

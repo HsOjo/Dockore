@@ -2750,6 +2750,32 @@
         ]
       }
     },
+    "/api/system/terminal": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Create Host Terminal Ticket Endpoint",
+        "operationId": "create_host_terminal_ticket_endpoint_api_system_terminal_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerminalTicket"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/settings": {
       "get": {
         "tags": [

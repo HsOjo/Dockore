@@ -78,6 +78,17 @@ async def test_system_version(client):
     assert "docker" in data
 
 
+async def test_system_terminal_ticket(client):
+    resp = await client.post("/api/system/terminal", headers=AUTH)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ticket"]
+    assert data["expires"] > 0
+
+    resp = await client.post("/api/system/terminal")
+    assert resp.status_code == 401
+
+
 async def test_query_token_auth(client):
     from tests.conftest import TOKEN_HASH
 

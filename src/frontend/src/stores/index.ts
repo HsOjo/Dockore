@@ -702,11 +702,15 @@ export const useSystemStore = defineStore("system", () => {
     version.value = await must(api.GET("/api/system/version"));
   }
 
+  async function createHostTerminalTicket() {
+    return await must(api.POST("/api/system/terminal"));
+  }
+
   function reset() {
     version.value = null;
   }
 
-  return { version, fetchVersion, reset };
+  return { version, fetchVersion, createHostTerminalTicket, reset };
 });
 
 export const useSettingsStore = defineStore("settings", () => {

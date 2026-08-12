@@ -32,13 +32,20 @@ def create_terminal_ticket(container_id: str, command: Optional[str]) -> str:
     return _serializer().dumps({"container_id": container_id, "command": command})
 
 
+def create_host_terminal_ticket() -> str:
+    """Sign a terminal session ticket for a shell on the Dockore host."""
+    return _serializer().dumps({"host": True})
+
+
 def verify_terminal_ticket(ticket: str, max_age: int) -> Optional[dict]:
     """Verify a terminal ticket, returning its payload or None if invalid/expired."""
     try:
         payload = _serializer().loads(ticket, max_age=max_age)
     except (BadSignature, SignatureExpired):
         return None
-    if not isinstance(payload, dict) or not payload.get("container_id"):
+    if not isinstance(payload, dict):
+        return None
+    if not payload.get("container_id") and not payload.get("host"):
         return None
     return payload
 
