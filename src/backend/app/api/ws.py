@@ -262,7 +262,11 @@ async def host_terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_do
         await websocket.close(code=1008, reason="Invalid or expired ticket")
         return
 
-    await _terminal_session(websocket, docker.cli.executor, "host.terminal", "-", ["bash", "-l"])
+    stacks_dir = config.settings.dockore_stacks_dir
+    cwd = stacks_dir if stacks_dir and os.path.isdir(stacks_dir) else None
+    await _terminal_session(
+        websocket, docker.cli.executor, "host.terminal", "-", ["bash", "-l"], cwd=cwd,
+    )
 
 
 async def _terminal_session(
@@ -271,6 +275,7 @@ async def _terminal_session(
     kind: str,
     stack: str,
     args: list[str],
+    cwd: Optional[str] = None,
 ):
     await websocket.accept()
     queue: asyncio.Queue = asyncio.Queue()
@@ -281,7 +286,7 @@ async def _terminal_session(
     async def on_done(task):
         await queue.put(None)
 
-    task = await executor.stream(kind, stack, args, on_data, on_done=on_done)
+    task = await executor.stream(kind, stack, args, on_data, cwd=cwd, on_done=on_done)
 
     async def _sender():
         while True:
