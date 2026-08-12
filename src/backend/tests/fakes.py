@@ -1,156 +1,193 @@
-from collections import deque
-import threading
-from types import SimpleNamespace
+import asyncio
+import itertools
 
-from docker.errors import APIError, NotFound
-
-from app.services.docker.convertors import (
-    ContainerConvertor,
-    ImageConvertor,
-    NetworkConvertor,
-    VolumeConvertor,
-)
+from app.services.cli.container import container_item_from_inspect
+from app.services.cli.errors import DockerApiError, DockerNotFound
+from app.services.cli.image import image_item_from_inspect
+from app.services.cli.network import network_item_from_inspect
+from app.services.cli.volume import volume_item_from_inspect
 
 
-def make_image_obj():
-    return SimpleNamespace(
-        short_id="sha256:0123456789ab",
-        tags=["nginx:latest"],
-        attrs={
-            "Author": "nginx",
-            "Created": "2024-01-01T00:00:00.000000000Z",
-            "Size": 12345,
-            "Config": {
-                "Cmd": ["nginx", "-g", "daemon off;"],
-                "Tty": False,
-                "OpenStdin": False,
-                "ExposedPorts": {"80/tcp": {}},
-            },
-            "Architecture": "amd64",
-            "Os": "linux",
+def make_image_attrs():
+    return {
+        "Id": "sha256:" + "0123456789ab" + "0" * 52,
+        "RepoTags": ["nginx:latest"],
+        "Author": "nginx",
+        "Created": "2024-01-01T00:00:00.000000000Z",
+        "Size": 12345,
+        "Config": {
+            "Cmd": ["nginx", "-g", "daemon off;"],
+            "Tty": False,
+            "OpenStdin": False,
+            "ExposedPorts": {"80/tcp": {}},
         },
-    )
+        "Architecture": "amd64",
+        "Os": "linux",
+    }
 
 
-def make_container_obj():
-    return SimpleNamespace(
-        short_id="abcdef1234",
-        name="web",
-        image=make_image_obj(),
-        status="running",
-        attrs={
-            "Created": "2024-01-01T00:00:00.000000000Z",
-            "Config": {"Cmd": ["nginx"], "Tty": True, "OpenStdin": True},
-            "NetworkSettings": {
-                "IPAddress": "172.17.0.2",
-                "IPPrefixLen": 16,
-                "Gateway": "172.17.0.1",
-                "MacAddress": "02:42:ac:11:00:02",
+def make_container_attrs():
+    return {
+        "Id": "abcdef123456" + "0" * 52,
+        "Name": "/web",
+        "Created": "2024-01-01T00:00:00.000000000Z",
+        "Image": "sha256:" + "0123456789ab" + "0" * 52,
+        "State": {"Status": "running"},
+        "Config": {
+            "Cmd": ["nginx"],
+            "Tty": True,
+            "OpenStdin": True,
+            "Image": "nginx:latest",
+        },
+        "NetworkSettings": {
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "Gateway": "172.17.0.1",
+            "MacAddress": "02:42:ac:11:00:02",
+        },
+        "HostConfig": {
+            "PortBindings": {
+                "80/tcp": [{"HostIp": "0.0.0.0", "HostPort": "8080"}],
             },
-            "HostConfig": {
-                "PortBindings": {
-                    "80/tcp": [{"HostIp": "0.0.0.0", "HostPort": "8080"}],
-                },
+        },
+        "Mounts": [
+            {
+                "Name": "data",
+                "Type": "volume",
+                "Driver": "local",
+                "Mode": "rw",
+                "Source": "/var/lib/docker/volumes/data/_data",
+                "Destination": "/data",
             },
-            "Mounts": [
+        ],
+    }
+
+
+def make_network_attrs(containers=None):
+    return {
+        "Id": "net1234abcdef" + "0" * 52,
+        "Name": "bridge",
+        "Driver": "bridge",
+        "Scope": "local",
+        "Created": "2024-01-01T00:00:00.000000000Z",
+        "Containers": containers or {},
+        "IPAM": {
+            "Driver": "default",
+            "Config": [
                 {
-                    "Name": "data",
-                    "Type": "volume",
-                    "Driver": "local",
-                    "Mode": "rw",
-                    "Source": "/var/lib/docker/volumes/data/_data",
-                    "Destination": "/data",
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1",
+                    "IPRange": None,
                 },
             ],
         },
-    )
+        "Internal": False,
+        "Attachable": True,
+        "Options": {},
+    }
 
 
-def make_network_obj(containers=None):
-    return SimpleNamespace(
-        short_id="net1234abc",
-        name="bridge",
-        containers=containers or [],
-        attrs={
-            "Driver": "bridge",
-            "Scope": "local",
-            "Created": "2024-01-01T00:00:00.000000000Z",
-            "IPAM": {
-                "Driver": "default",
-                "Config": [
-                    {
-                        "Subnet": "172.17.0.0/16",
-                        "Gateway": "172.17.0.1",
-                        "IPRange": None,
-                    },
-                ],
-            },
-            "Internal": False,
-            "Attachable": True,
-            "Options": {},
-        },
-    )
+def make_volume_attrs():
+    return {
+        "Name": "data",
+        "Driver": "local",
+        "Mountpoint": "/var/lib/docker/volumes/data/_data",
+        "Scope": "local",
+        "CreatedAt": "2024-01-01T00:00:00Z",
+        "Options": {},
+    }
 
 
-def make_volume_obj():
-    return SimpleNamespace(
-        id="vol1234",
-        name="data",
-        attrs={
-            "Driver": "local",
-            "Mountpoint": "/var/lib/docker/volumes/data/_data",
-            "Scope": "local",
-            "CreatedAt": "2024-01-01T00:00:00Z",
-            "Options": {},
-        },
-    )
+IMAGE = image_item_from_inspect(make_image_attrs(), verbose=True)
+CONTAINER = container_item_from_inspect(make_container_attrs(), IMAGE, verbose=True)
+NETWORK = network_item_from_inspect(make_network_attrs(), verbose=True)
+VOLUME = volume_item_from_inspect(make_volume_attrs(), verbose=True)
 
 
-CONTAINER = ContainerConvertor.from_docker(make_container_obj(), verbose=True)
-IMAGE = ImageConvertor.from_docker(make_image_obj(), verbose=True)
-NETWORK = NetworkConvertor.from_docker(make_network_obj(), verbose=True)
-VOLUME = VolumeConvertor.from_docker(make_volume_obj(), verbose=True)
+class FakeCliTask:
+    """CliTask stand-in: records stdin/winsize, exposes callbacks for feeding."""
 
-
-class FakeSocket:
-    """SocketIO-like fake (read/write/close) with thread-safe blocking read."""
-
-    def __init__(self, chunks=None):
-        self._chunks = deque(chunks or [])
+    def __init__(self, id, kind, stack, args):
+        self.id = id
+        self.kind = kind
+        self.stack = stack
+        self.args = args
+        self.status = "running"
+        self.returncode = None
+        self.error = None
         self.written = []
-        self.closed = False
-        self._cv = threading.Condition()
+        self.resizes = []
+        self.on_data = None
+        self.on_done = None
 
-    def feed(self, data: bytes):
-        with self._cv:
-            self._chunks.append(data)
-            self._cv.notify_all()
-
-    def read(self, n: int = 4096) -> bytes:
-        with self._cv:
-            while not self._chunks and not self.closed:
-                self._cv.wait(timeout=5)
-            if self._chunks:
-                return self._chunks.popleft()
-            return b""
-
-    def write(self, data: bytes) -> int:
+    def write(self, data: bytes) -> None:
         self.written.append(data)
-        return len(data)
 
-    def close(self):
-        with self._cv:
-            self.closed = True
-            self._cv.notify_all()
+    def resize(self, rows: int, cols: int) -> None:
+        self.resizes.append((rows, cols))
+
+
+class FakeExecutor:
+    """CliExecutor stand-in: stream() captures callbacks; feed/finish drive them.
+
+    feed/finish are called from the sync test thread and hop into the app loop.
+    """
+
+    _ids = itertools.count(1)
+
+    def __init__(self):
+        self.tasks = {}
+        self.streams = []
+        self.loop = None
+
+    async def stream(self, kind, stack, args, on_data, cwd=None,
+                     on_done=None, line_mode=False):
+        task = FakeCliTask(f"fake-task-{next(self._ids)}", kind, stack, args)
+        task.on_data = on_data
+        task.on_done = on_done
+        self.tasks[task.id] = task
+        self.streams.append(dict(
+            task=task, kind=kind, stack=stack, args=args,
+            cwd=cwd, line_mode=line_mode,
+        ))
+        self.loop = asyncio.get_running_loop()
+        return task
+
+    def feed(self, task, data: bytes):
+        asyncio.run_coroutine_threadsafe(
+            task.on_data(task, data), self.loop,
+        ).result(timeout=5)
+
+    def finish(self, task, error=None):
+        if error:
+            task.status = "error"
+            task.error = error
+            task.returncode = -1
+        else:
+            task.status = "done"
+            task.returncode = 0
+        asyncio.run_coroutine_threadsafe(
+            task.on_done(task), self.loop,
+        ).result(timeout=5)
+
+    async def cancel(self, task_id):
+        task = self.tasks.get(task_id)
+        if not task or task.status != "running":
+            return False
+        task.status = "cancelled"
+        return True
+
+    def get_task(self, task_id):
+        return self.tasks.get(task_id)
+
+
+class FakeCli:
+    def __init__(self, docker_host=""):
+        self.docker_host = docker_host
+        self.executor = FakeExecutor()
 
 
 class FakeContainerService:
-    def __init__(self):
-        self.terminal_socket = FakeSocket()
-        self.exec_created = []
-        self.resized = []
-        self.log_stream_calls = []
-
     async def list(self, all=False, verbose=False):
         return [CONTAINER]
 
@@ -159,12 +196,14 @@ class FakeContainerService:
 
     async def remove(self, id):
         if id == "bad":
-            raise APIError(f"cannot remove {id}")
+            raise DockerApiError(f"cannot remove {id}")
 
-    async def create(self, **kwargs):
+    async def create(self, name, image, command, interactive=False, tty=False,
+                     privileged=False, ports=None, volumes=None):
         return CONTAINER
 
-    async def run(self, **kwargs):
+    async def run(self, name, image, command, interactive=False, tty=False,
+                  privileged=False, ports=None, volumes=None):
         return CONTAINER
 
     async def start(self, id):
@@ -179,7 +218,8 @@ class FakeContainerService:
     async def rename(self, id, name):
         pass
 
-    async def exec(self, id, command, **kwargs):
+    async def exec(self, id, command, interactive=False, tty=False,
+                   privileged=False, binary=False):
         return {"exit_code": 0, "output": "ok\n"}
 
     async def logs(self, id, since=None, until=None):
@@ -193,24 +233,8 @@ class FakeContainerService:
 
     async def get_status(self, id):
         if id != CONTAINER["id"]:
-            raise NotFound(f"no such container: {id}")
+            raise DockerNotFound(f"no such container: {id}")
         return "running"
-
-    async def exec_create_tty(self, id, cmd):
-        self.exec_created.append((id, cmd))
-        return "exec123"
-
-    async def exec_start_socket(self, exec_id):
-        return self.terminal_socket
-
-    async def exec_resize(self, exec_id, rows, cols):
-        self.resized.append((exec_id, rows, cols))
-
-    async def open_log_stream(self, id, since=None, until=None, follow=False):
-        if id != CONTAINER["id"]:
-            raise NotFound(f"no such container: {id}")
-        self.log_stream_calls.append(dict(since=since, until=until, follow=follow))
-        return iter([b"log line 1\n", b"log line 2\n"])
 
 
 class FakeImageService:
@@ -233,15 +257,9 @@ class FakeImageService:
 
     async def remove(self, id, tag_only=False):
         if id == "bad":
-            raise APIError(f"cannot remove {id}")
+            raise DockerApiError(f"cannot remove {id}")
 
-    def pull_stream(self, name, tag):
-        return iter([
-            {"status": "Pulling from library/nginx", "id": None, "progress": None},
-            {"status": "Download complete", "id": "abc", "progress": "100%"},
-        ])
-
-    async def tag(self, id, name, tag):
+    async def tag(self, id, name, tag=None):
         return True
 
     async def history(self, id):
@@ -251,7 +269,6 @@ class FakeImageService:
                 "created_by": "/bin/sh -c #(nop) CMD",
                 "created_time": "2024-01-01T00:00:00.000000Z",
                 "size": 0,
-                "tags": None,
                 "comment": "",
             },
         ]
@@ -266,9 +283,10 @@ class FakeNetworkService:
 
     async def remove(self, id):
         if id == "bad":
-            raise APIError(f"cannot remove {id}")
+            raise DockerApiError(f"cannot remove {id}")
 
-    async def create(self, **kwargs):
+    async def create(self, name, driver, attachable=True, options=None,
+                     subnet=None, gateway=None, ip_range=None):
         return NETWORK
 
     async def connect(self, id, container_id, ipv4_address=None):
@@ -287,14 +305,15 @@ class FakeVolumeService:
 
     async def remove(self, id):
         if id == "bad":
-            raise APIError(f"cannot remove {id}")
+            raise DockerApiError(f"cannot remove {id}")
 
-    async def create(self, **kwargs):
+    async def create(self, name, driver=None, driver_opts=None):
         return VOLUME
 
 
 class FakeDocker:
-    def __init__(self):
+    def __init__(self, docker_host=""):
+        self.cli = FakeCli(docker_host)
         self.container = FakeContainerService()
         self.image = FakeImageService()
         self.network = FakeNetworkService()

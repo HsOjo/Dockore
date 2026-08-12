@@ -6,7 +6,7 @@ from app.api.deps import get_docker
 from app.core.security import get_current_token
 from app.core.version import APP_VERSION
 from app.schemas.system import ProjectInfo, SystemVersion
-from app.services.docker.client import Docker
+from app.services.cli import Docker
 
 router = APIRouter(
     prefix="/system",

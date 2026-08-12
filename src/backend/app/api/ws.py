@@ -2,10 +2,8 @@ import asyncio
 import json
 import os
 import shlex
-import threading
 from typing import Optional
 
-from docker.errors import NotFound
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from app.api.deps import get_docker
@@ -13,8 +11,8 @@ from app.api.deps import StackContext, get_stack_ctx
 from app.core import config
 from app.core.broadcast import manager
 from app.core.security import verify_terminal_ticket, verify_token
+from app.services.cli import Docker, DockerNotFound
 from app.services.compose import stack_tasks
-from app.services.docker.client import Docker
 
 router = APIRouter()
 
@@ -25,24 +23,6 @@ async def _ws_auth(websocket: WebSocket) -> bool:
         await websocket.close(code=1008)
         return False
     return True
-
-
-def _sock_recv(sock, n: int) -> bytes:
-    if hasattr(sock, "recv"):
-        return sock.recv(n)
-    return sock.read(n)
-
-
-def _sock_send(sock, data: bytes) -> None:
-    # docker-py may return a raw socket (send/recv) or a read-only SocketIO
-    # whose underlying writable socket lives on the `_sock` attribute.
-    raw = getattr(sock, "_sock", None)
-    if raw is not None and hasattr(raw, "send"):
-        raw.send(data)
-    elif hasattr(sock, "send"):
-        sock.send(data)
-    else:
-        sock.write(data)
 
 
 @router.websocket("/ws")
@@ -89,37 +69,64 @@ async def container_logs_ws(
     follow = websocket.query_params.get("follow", "").lower() in ("1", "true", "yes")
 
     try:
-        stream = await docker.container.open_log_stream(id, since, until, follow)
-    except NotFound:
+        await docker.container.get_status(id)
+    except DockerNotFound:
         await websocket.close(code=1008, reason="Container not found")
         return
 
+    args = ["docker", "logs"]
+    if since:
+        args += ["--since", since]
+    if until:
+        args += ["--until", until]
+    if follow:
+        args.append("-f")
+    args.append(id)
+
     await websocket.accept()
-    loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
 
-    def _stream():
-        try:
-            for chunk in stream:
-                loop.call_soon_threadsafe(queue.put_nowait, chunk)
-        except Exception as e:
-            loop.call_soon_threadsafe(queue.put_nowait, e)
-        finally:
-            loop.call_soon_threadsafe(queue.put_nowait, None)
+    async def on_data(task, data: bytes):
+        await queue.put(data.decode(errors="ignore"))
 
-    threading.Thread(target=_stream, daemon=True).start()
-    try:
+    async def on_done(task):
+        await queue.put(None)
+
+    executor = docker.cli.executor
+    task = await executor.stream(
+        "container.logs", id, args, on_data, on_done=on_done, line_mode=True,
+    )
+
+    async def _sender():
         while True:
-            chunk = await queue.get()
-            if chunk is None:
-                break
-            if isinstance(chunk, Exception):
-                await websocket.close(code=1011, reason=str(chunk))
+            data = await queue.get()
+            if data is None:
                 return
-            await websocket.send_text(chunk.decode(errors="ignore"))
-        await websocket.close()
-    except (WebSocketDisconnect, RuntimeError):
-        pass
+            await websocket.send_text(data)
+
+    async def _receiver():
+        while True:
+            msg = await websocket.receive()
+            if msg.get("type") == "websocket.disconnect":
+                return
+
+    sender = asyncio.create_task(_sender())
+    receiver = asyncio.create_task(_receiver())
+    try:
+        done, pending = await asyncio.wait(
+            {sender, receiver}, return_when=asyncio.FIRST_COMPLETED,
+        )
+        for t in pending:
+            t.cancel()
+        if sender in done and task.status == "error" and task.error:
+            await websocket.close(code=1011, reason=task.error)
+            return
+    finally:
+        await executor.cancel(task.id)
+        try:
+            await websocket.close()
+        except (RuntimeError, WebSocketDisconnect):
+            pass
 
 
 @router.websocket("/ws/stacks/{name}/logs")
@@ -218,7 +225,7 @@ async def terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)
     container_id = payload["container_id"]
     try:
         status = await docker.container.get_status(container_id)
-    except NotFound:
+    except DockerNotFound:
         await websocket.close(code=1008, reason="Container not found")
         return
     if status != "running":
@@ -227,38 +234,21 @@ async def terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)
 
     command: Optional[str] = payload.get("command")
     cmd = shlex.split(command) if command else ["/bin/sh"]
-    try:
-        exec_id = await docker.container.exec_create_tty(container_id, cmd)
-    except Exception as e:
-        await websocket.close(code=1011, reason=f"exec_create failed: {e}")
-        return
+    args = ["docker", "exec", "-it", container_id, *cmd]
 
-    sock = await docker.container.exec_start_socket(exec_id)
     await websocket.accept()
-
-    loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
-    stop = threading.Event()
 
-    def _reader():
-        try:
-            while not stop.is_set():
-                data = _sock_recv(sock, 4096)
-                if not data:
-                    break
-                loop.call_soon_threadsafe(queue.put_nowait, data)
-        except Exception:
-            pass
-        finally:
-            loop.call_soon_threadsafe(queue.put_nowait, None)
+    async def on_data(task, data: bytes):
+        await queue.put(data)
 
-    threading.Thread(target=_reader, daemon=True).start()
+    async def on_done(task):
+        await queue.put(None)
 
-    async def _resize(rows: int, cols: int):
-        try:
-            await docker.container.exec_resize(exec_id, rows, cols)
-        except Exception:
-            pass
+    executor = docker.cli.executor
+    task = await executor.stream(
+        "container.terminal", container_id, args, on_data, on_done=on_done,
+    )
 
     async def _sender():
         while True:
@@ -276,17 +266,17 @@ async def terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)
             data = msg.get("bytes")
             if text is not None:
                 # JSON control frames ({rows, cols} or {type: resize, ...}) resize the
-                # exec TTY; anything else is terminal input.
+                # pty; anything else is terminal input.
                 try:
                     ctrl = json.loads(text)
                 except json.JSONDecodeError:
                     ctrl = None
                 if isinstance(ctrl, dict) and "rows" in ctrl and "cols" in ctrl:
-                    await _resize(int(ctrl["rows"]), int(ctrl["cols"]))
+                    task.resize(int(ctrl["rows"]), int(ctrl["cols"]))
                     continue
                 data = text.encode()
             if data:
-                await asyncio.to_thread(_sock_send, sock, data)
+                task.write(data)
 
     sender = asyncio.create_task(_sender())
     receiver = asyncio.create_task(_receiver())
@@ -294,15 +284,14 @@ async def terminal_ws(websocket: WebSocket, docker: Docker = Depends(get_docker)
         done, pending = await asyncio.wait(
             {sender, receiver}, return_when=asyncio.FIRST_COMPLETED,
         )
-        for task in pending:
-            task.cancel()
+        for t in pending:
+            t.cancel()
+        if sender in done and task.status == "error" and task.error:
+            await websocket.close(code=1011, reason=task.error)
+            return
     finally:
-        stop.set()
-        try:
-            sock.close()
-        except Exception:
-            pass
+        await executor.cancel(task.id)
         try:
             await websocket.close()
-        except RuntimeError:
+        except (RuntimeError, WebSocketDisconnect):
             pass

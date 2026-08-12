@@ -1,8 +1,8 @@
-from docker.errors import APIError, DockerException, NotFound
 from httpx import ASGITransport, AsyncClient
 
 from app.api.deps import get_docker
 from app.main import app
+from app.services.cli import DockerApiError, DockerError, DockerNotFound
 from tests.conftest import AUTH
 
 
@@ -30,19 +30,19 @@ async def _request_with(exc):
         app.dependency_overrides.clear()
 
 
-async def test_docker_exception_maps_to_502():
-    resp = await _request_with(DockerException("cannot connect"))
+async def test_docker_error_maps_to_502():
+    resp = await _request_with(DockerError("cannot connect"))
     assert resp.status_code == 502
     assert "cannot connect" in resp.json()["detail"]
 
 
 async def test_docker_api_error_maps_to_400():
-    resp = await _request_with(APIError("bad request"))
+    resp = await _request_with(DockerApiError("bad request"))
     assert resp.status_code == 400
 
 
 async def test_docker_not_found_maps_to_404():
-    resp = await _request_with(NotFound("gone"))
+    resp = await _request_with(DockerNotFound("gone"))
     assert resp.status_code == 404
 
 

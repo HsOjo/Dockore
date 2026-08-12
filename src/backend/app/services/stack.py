@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from app.models import StackRegistration
-from app.services.docker.client import Docker
+from app.services.cli import Docker
 
 STACK_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 

@@ -19,7 +19,7 @@ from app.schemas.container import (
     TerminalTicket,
 )
 from app.schemas.image import ImageItem
-from app.services.docker.client import Docker
+from app.services.cli import Docker
 
 router = APIRouter(
     prefix="/containers",

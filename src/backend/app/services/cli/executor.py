@@ -51,6 +51,16 @@ class CliTask:
         except OSError:
             pass
 
+    def write(self, data: bytes) -> None:
+        """Send stdin to the task: pty master on posix, stdin pipe on Windows."""
+        if self._master_fd is not None:
+            try:
+                os.write(self._master_fd, data)
+            except OSError:
+                pass
+        elif self._proc is not None and self._proc.stdin is not None:
+            self._proc.stdin.write(data)
+
 
 BytesCallback = Callable[[CliTask, bytes], Awaitable[None]]
 DoneCallback = Callable[[CliTask], Awaitable[None]]
@@ -148,6 +158,7 @@ class CliExecutor:
         try:
             task._proc = await asyncio.create_subprocess_exec(
                 *args, cwd=cwd, env=self._env,
+                stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 start_new_session=True,
@@ -237,6 +248,13 @@ class CliExecutor:
 
     def get_task(self, task_id: str) -> Optional[CliTask]:
         return self.tasks.get(task_id)
+
+    def write(self, task_id: str, data: bytes) -> bool:
+        task = self.tasks.get(task_id)
+        if task is None or task.status != "running":
+            return False
+        task.write(data)
+        return True
 
     def active_tasks(self) -> list[CliTask]:
         return [t for t in self.tasks.values() if t.status == "running"]

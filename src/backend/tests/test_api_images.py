@@ -1,4 +1,4 @@
-import asyncio
+from types import SimpleNamespace
 
 from tests.conftest import AUTH
 from tests.fakes import IMAGE
@@ -36,14 +36,33 @@ async def test_delete_images(client):
     assert IID not in failed
 
 
-async def test_pull_image(client):
+async def test_pull_image(client, monkeypatch):
+    started = []
+
+    class _PullTasks:
+        async def start(self, docker_host, name, tag):
+            started.append((docker_host, name, tag))
+            return SimpleNamespace(id="pull-1")
+
+    monkeypatch.setattr("app.api.image.pull_tasks", _PullTasks())
     resp = await client.post(
         "/api/images/pull", headers=AUTH, json={"name": "nginx", "tag": "latest"}
     )
     assert resp.status_code == 200
-    assert resp.json()["pull_id"]
-    # let the background pull thread finish broadcasting
-    await asyncio.sleep(0.1)
+    assert resp.json()["pull_id"] == "pull-1"
+    assert started == [("", "nginx", "latest")]
+
+
+async def test_pull_image_conflict_when_busy(client, monkeypatch):
+    class _BusyPullTasks:
+        async def start(self, docker_host, name, tag):
+            return None
+
+    monkeypatch.setattr("app.api.image.pull_tasks", _BusyPullTasks())
+    resp = await client.post(
+        "/api/images/pull", headers=AUTH, json={"name": "nginx", "tag": "latest"}
+    )
+    assert resp.status_code == 409
 
 
 async def test_tag_image(client):

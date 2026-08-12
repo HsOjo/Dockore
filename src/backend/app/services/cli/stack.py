@@ -1,5 +1,6 @@
-import asyncio
 from typing import Any
+
+from .docker_cli import DockerCli
 
 LABEL_PROJECT = "com.docker.compose.project"
 LABEL_WORKING_DIR = "com.docker.compose.project.working_dir"
@@ -7,22 +8,31 @@ LABEL_CONFIG_FILES = "com.docker.compose.project.config_files"
 LABEL_SERVICE = "com.docker.compose.service"
 
 
+def parse_labels(raw: str) -> dict[str, str]:
+    labels: dict[str, str] = {}
+    key = ""
+    for part in raw.split(","):
+        if "=" in part:
+            key, value = part.split("=", 1)
+            labels[key] = value
+        elif key:
+            labels[key] += "," + part
+    return labels
+
+
 class StackDiscovery:
-    """Group containers by compose project labels.
+    """Group containers by compose project labels via `docker ps`."""
 
-    This is the fallback discovery path when no compose CLI is available (or
-    only a v1 binary, which lacks --format json); it also works without a CLI
-    for read-only listing.
-    """
-
-    def __init__(self, api):
-        self._api = api
+    def __init__(self, cli: DockerCli):
+        self._cli = cli
 
     async def scan(self) -> dict[str, dict[str, Any]]:
-        containers = await asyncio.to_thread(self._api.containers, all=True)
+        rows = await self._cli.run_json_lines(
+            "ps", "-a", "--no-trunc", "--format", "{{json .}}",
+        )
         stacks: dict[str, dict[str, Any]] = {}
-        for c in containers:
-            labels = c.get("Labels") or {}
+        for row in rows:
+            labels = parse_labels(row.get("Labels") or "")
             name = labels.get(LABEL_PROJECT)
             if not name:
                 continue
@@ -33,11 +43,11 @@ class StackDiscovery:
                 "containers": [],
             })
             entry["containers"].append({
-                "id": c.get("Id", "")[:12],
-                "name": (c.get("Names") or [""])[0].lstrip("/"),
+                "id": row.get("ID", "")[:12],
+                "name": (row.get("Names") or "").split(",")[0],
                 "service": labels.get(LABEL_SERVICE, ""),
-                "state": c.get("State", ""),
-                "status": c.get("Status", ""),
+                "state": row.get("State", ""),
+                "status": row.get("Status", ""),
             })
             if not entry["working_dir"]:
                 entry["working_dir"] = labels.get(LABEL_WORKING_DIR, "")

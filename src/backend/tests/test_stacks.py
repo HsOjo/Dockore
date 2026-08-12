@@ -18,8 +18,8 @@ from app.core import stack_registry
 from app.main import app
 from app.services import git as git_service
 from app.services.cli import CliError, CliExecutor, CliInfo
+from app.services.cli.stack import StackDiscovery, parse_labels
 from app.services.compose.service import parse_json_output
-from app.services.docker.stack import StackDiscovery
 from app.services.stack import StackService, derive_status
 from tests.conftest import AUTH, TOKEN_HASH
 
@@ -36,42 +36,68 @@ def test_derive_status():
     assert derive_status([{"state": "running"}, {"state": "exited"}]) == "partial"
 
 
-class FakeApi:
-    def containers(self, all=False):
-        return [
-            {
-                "Id": "a" * 64, "Names": ["/web-1"], "State": "running",
-                "Status": "Up 2 hours",
-                "Labels": {
-                    "com.docker.compose.project": "webapp",
-                    "com.docker.compose.project.working_dir": "/srv/webapp",
-                    "com.docker.compose.project.config_files": "/srv/webapp/compose.yml",
-                    "com.docker.compose.service": "web",
-                },
-            },
-            {
-                "Id": "b" * 64, "Names": ["/web-2"], "State": "exited",
-                "Status": "Exited (0)",
-                "Labels": {
-                    "com.docker.compose.project": "webapp",
-                    "com.docker.compose.project.working_dir": "/srv/webapp",
-                    "com.docker.compose.project.config_files": "/srv/webapp/compose.yml",
-                    "com.docker.compose.service": "worker",
-                },
-            },
-            {"Id": "c" * 64, "Names": ["/plain"], "State": "running",
-             "Status": "Up", "Labels": {}},
-        ]
+def test_parse_labels():
+    labels = parse_labels(
+        "com.docker.compose.project=webapp,com.docker.compose.service=web"
+    )
+    assert labels == {
+        "com.docker.compose.project": "webapp",
+        "com.docker.compose.service": "web",
+    }
+    assert parse_labels("") == {}
+    # 值中含逗号时续接到上一个 key
+    labels = parse_labels("a=x,y,b=1")
+    assert labels == {"a": "x,y", "b": "1"}
+
+
+class FakePsCli:
+    def __init__(self, rows):
+        self.rows = rows
+        self.calls = []
+
+    async def run_json_lines(self, *args):
+        self.calls.append(args)
+        return self.rows
+
+
+def make_ps_cli():
+    return FakePsCli([
+        {
+            "ID": "a" * 64, "Names": "web-1", "State": "running",
+            "Status": "Up 2 hours",
+            "Labels": (
+                "com.docker.compose.project=webapp,"
+                "com.docker.compose.project.working_dir=/srv/webapp,"
+                "com.docker.compose.project.config_files=/srv/webapp/compose.yml,"
+                "com.docker.compose.service=web"
+            ),
+        },
+        {
+            "ID": "b" * 64, "Names": "web-2", "State": "exited",
+            "Status": "Exited (0)",
+            "Labels": (
+                "com.docker.compose.project=webapp,"
+                "com.docker.compose.project.working_dir=/srv/webapp,"
+                "com.docker.compose.project.config_files=/srv/webapp/compose.yml,"
+                "com.docker.compose.service=worker"
+            ),
+        },
+        {"ID": "c" * 64, "Names": "plain", "State": "running",
+         "Status": "Up", "Labels": ""},
+    ])
 
 
 async def test_discovery_scan_groups_by_project():
-    stacks = await StackDiscovery(FakeApi()).scan()
+    cli = make_ps_cli()
+    stacks = await StackDiscovery(cli).scan()
+    assert cli.calls == [("ps", "-a", "--no-trunc", "--format", "{{json .}}")]
     assert set(stacks) == {"webapp"}
     entry = stacks["webapp"]
     assert entry["working_dir"] == "/srv/webapp"
     assert entry["config_files"] == "/srv/webapp/compose.yml"
     assert len(entry["containers"]) == 2
     assert entry["containers"][0]["service"] == "web"
+    assert entry["containers"][0]["id"] == "a" * 12
     assert entry["containers"][1]["state"] == "exited"
 
 

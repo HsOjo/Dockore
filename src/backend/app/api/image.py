@@ -16,8 +16,8 @@ from app.schemas.image import (
     TagRequest,
     TagResult,
 )
-from app.services.docker.client import Docker
-from app.services.pull_task import pull_manager
+from app.services.cli import Docker
+from app.services.pull import pull_tasks
 
 router = APIRouter(
     prefix="/images",
@@ -52,10 +52,10 @@ async def delete_images(body: DeleteImagesRequest, docker: Docker = Depends(get_
 
 @router.post("/pull", response_model=PullCreated)
 async def pull_image(body: PullRequest, docker: Docker = Depends(get_docker)):
-    pull_id = pull_manager.start(
-        docker, body.name, body.tag, asyncio.get_running_loop(),
-    )
-    return PullCreated(pull_id=pull_id)
+    task = await pull_tasks.start(docker.cli.docker_host, body.name, body.tag)
+    if task is None:
+        raise HTTPException(status_code=409, detail="Pull already in progress")
+    return PullCreated(pull_id=task.id)
 
 
 @router.post("/{id}/tag", response_model=TagResult)

@@ -74,14 +74,46 @@ def test_logs_ws_container_not_found(ws_client):
 
 def test_logs_ws_streams_chunks(ws_client):
     tc, fake = ws_client
+    executor = fake.cli.executor
     with tc.websocket_connect(
         f"/ws/containers/{CID}/logs?token={TOKEN_HASH}&follow=true"
     ) as ws:
+        assert wait_for(lambda: len(executor.streams) == 1)
+        stream = executor.streams[0]
+        assert stream["kind"] == "container.logs"
+        assert stream["stack"] == CID
+        assert stream["args"] == ["docker", "logs", "-f", CID]
+        assert stream["line_mode"] is True
+
+        executor.feed(stream["task"], b"log line 1\n")
         assert ws.receive_text() == "log line 1\n"
+        executor.feed(stream["task"], b"log line 2\n")
         assert ws.receive_text() == "log line 2\n"
-    assert fake.container.log_stream_calls == [
-        dict(since=None, until=None, follow=True),
-    ]
+
+
+def test_logs_ws_since_until_args(ws_client):
+    tc, fake = ws_client
+    executor = fake.cli.executor
+    with tc.websocket_connect(
+        f"/ws/containers/{CID}/logs?token={TOKEN_HASH}&since=10&until=20"
+    ):
+        assert wait_for(lambda: len(executor.streams) == 1)
+        assert executor.streams[0]["args"] == [
+            "docker", "logs", "--since", "10", "--until", "20", CID,
+        ]
+
+
+def test_logs_ws_error_closes_with_1011(ws_client):
+    tc, fake = ws_client
+    executor = fake.cli.executor
+    with pytest.raises(WebSocketDisconnect) as exc:
+        with tc.websocket_connect(
+            f"/ws/containers/{CID}/logs?token={TOKEN_HASH}"
+        ) as ws:
+            assert wait_for(lambda: len(executor.streams) == 1)
+            executor.finish(executor.streams[0]["task"], error="daemon gone")
+            ws.receive_text()
+    assert exc.value.code == 1011
 
 
 def test_terminal_ws_rejects_bad_ticket(ws_client):
@@ -103,57 +135,41 @@ def test_terminal_ws_rejects_missing_container(ws_client):
 
 def test_terminal_ws_full_session(ws_client):
     tc, fake = ws_client
-    sock = fake.container.terminal_socket
+    executor = fake.cli.executor
     ticket = create_terminal_ticket(CID, "/bin/bash")
     with tc.websocket_connect(f"/ws/terminal?ticket={ticket}") as ws:
-        sock.feed(b"$ ")
+        assert wait_for(lambda: len(executor.streams) == 1)
+        stream = executor.streams[0]
+        task = stream["task"]
+        assert stream["kind"] == "container.terminal"
+        assert stream["args"] == ["docker", "exec", "-it", CID, "/bin/bash"]
+
+        executor.feed(task, b"$ ")
         assert ws.receive_bytes() == b"$ "
 
         ws.send_text("ls\n")
-        assert wait_for(lambda: sock.written == [b"ls\n"])
+        assert wait_for(lambda: task.written == [b"ls\n"])
 
         ws.send_text(json.dumps({"rows": 24, "cols": 80}))
-        assert wait_for(lambda: fake.container.resized == [("exec123", 24, 80)])
+        assert wait_for(lambda: task.resizes == [(24, 80)])
 
-        sock.feed(b"file1 file2\n$ ")
+        executor.feed(task, b"file1 file2\n$ ")
         assert ws.receive_bytes() == b"file1 file2\n$ "
 
         ws.send_bytes(b"\x03")
-        assert wait_for(lambda: sock.written[-1] == b"\x03")
+        assert wait_for(lambda: task.written[-1] == b"\x03")
 
-        sock.close()
+        executor.finish(task)
         with pytest.raises(WebSocketDisconnect):
             ws.receive_bytes()
-
-    assert fake.container.exec_created == [(CID, ["/bin/bash"])]
 
 
 def test_terminal_ws_default_command(ws_client):
     tc, fake = ws_client
+    executor = fake.cli.executor
     ticket = create_terminal_ticket(CID, None)
-    fake.container.terminal_socket.close()
     with tc.websocket_connect(f"/ws/terminal?ticket={ticket}"):
-        pass
-    assert fake.container.exec_created == [(CID, ["/bin/sh"])]
-
-
-def test_sock_recv_send_compat():
-    import socket as _socket
-
-    from app.api.ws import _sock_recv, _sock_send
-
-    a, b = _socket.socketpair()
-    try:
-        # 原始 socket：send/recv
-        _sock_send(a, b"ping")
-        assert _sock_recv(b, 4096) == b"ping"
-
-        # SocketIO 包装：read-only + _sock 可写（docker-py 返回的形态）
-        sio = _socket.SocketIO(a, "rb")
-        _sock_send(sio, b"pong")
-        assert _sock_recv(b, 4096) == b"pong"
-        b.send(b"read-me")
-        assert _sock_recv(sio, 4096) == b"read-me"
-    finally:
-        a.close()
-        b.close()
+        assert wait_for(lambda: len(executor.streams) == 1)
+        assert executor.streams[0]["args"] == [
+            "docker", "exec", "-it", CID, "/bin/sh",
+        ]

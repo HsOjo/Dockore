@@ -86,7 +86,8 @@
       </template>
     </DataTable>
 
-    <PullModal v-model:open="pullOpen" />
+    <PullModal v-model:open="pullOpen" @started="onPullStarted" />
+    <PullDrawer v-model:open="pullDrawerOpen" :task-id="pullTaskId" :image="pullImage" />
     <TagModal v-model:open="tagOpen" :image-id="activeId" />
     <HistoryModal v-model:open="historyOpen" :image-id="activeId" />
   </div>
@@ -101,6 +102,7 @@ import { formatBytes, relativeTime } from "@dockore/shared";
 import { useImageStore, errorMessage, type ImageItem } from "@/stores";
 import { shortId, imageDisplayName } from "@/utils/text";
 import PullModal from "@/components/image/PullModal.vue";
+import PullDrawer from "@/components/image/PullDrawer.vue";
 import TagModal from "@/components/image/TagModal.vue";
 import HistoryModal from "@/components/image/HistoryModal.vue";
 import DataTable from "@/components/common/DataTable.vue";
@@ -112,6 +114,9 @@ const keyword = ref("");
 const selectedRowKeys = ref<string[]>([]);
 
 const pullOpen = ref(false);
+const pullDrawerOpen = ref(false);
+const pullTaskId = ref("");
+const pullImage = ref("");
 const tagOpen = ref(false);
 const historyOpen = ref(false);
 const activeId = ref("");
@@ -139,6 +144,12 @@ const tableData = computed(() => {
 function handleShowAll(checked: string | number | boolean) {
   store.showAll = Boolean(checked);
   store.fetchAll().catch((e) => message.error(errorMessage(e)));
+}
+
+function onPullStarted(payload: { taskId: string; name: string }) {
+  pullTaskId.value = payload.taskId;
+  pullImage.value = payload.name;
+  pullDrawerOpen.value = true;
 }
 
 async function runWithError(fn: () => Promise<unknown>) {

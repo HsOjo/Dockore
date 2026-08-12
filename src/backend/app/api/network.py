@@ -11,7 +11,7 @@ from app.schemas.network import (
     NetworkCreate,
     NetworkItem,
 )
-from app.services.docker.client import Docker
+from app.services.cli import Docker
 
 router = APIRouter(
     prefix="/networks",

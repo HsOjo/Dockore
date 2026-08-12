@@ -6,7 +6,7 @@ from app.api.deps import get_docker
 from app.core.security import get_current_token
 from app.schemas.common import DeleteResult, IdsRequest
 from app.schemas.volume import VolumeCreate, VolumeItem
-from app.services.docker.client import Docker
+from app.services.cli import Docker
 
 router = APIRouter(
     prefix="/volumes",

@@ -11,7 +11,6 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr = open(os.devnull, "w")
 
-from docker.errors import APIError, DockerException, NotFound
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,6 +24,7 @@ from app.core.database import engine
 from app.core.process import monitor_parent
 from app.core.version import APP_VERSION
 from app.models import Base
+from app.services.cli import DockerApiError, DockerError, DockerNotFound
 
 
 @asynccontextmanager
@@ -58,17 +58,17 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(NotFound)
+@app.exception_handler(DockerNotFound)
 async def docker_not_found_handler(request, exc):
     return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 
-@app.exception_handler(APIError)
+@app.exception_handler(DockerApiError)
 async def docker_api_error_handler(request, exc):
     return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
-@app.exception_handler(DockerException)
+@app.exception_handler(DockerError)
 async def docker_error_handler(request, exc):
     return JSONResponse(status_code=502, content={"detail": str(exc)})
 
