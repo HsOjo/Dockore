@@ -20,6 +20,14 @@
         <a-button @click="refresh">
           <ReloadOutlined />
         </a-button>
+        <a-badge :count="unregisteredCount">
+          <a-button @click="importOpen = true">
+            {{ t("stack.import") }}
+          </a-button>
+        </a-badge>
+        <a-button @click="registerOpen = true">
+          {{ t("stack.register") }}
+        </a-button>
         <a-tooltip :title="cliAvailable ? '' : t('stack.cliUnavailable')">
           <a-button type="primary" :disabled="!cliAvailable" @click="createOpen = true">
             {{ t("stack.create") }}
@@ -148,6 +156,8 @@
     </a-modal>
 
     <CreateDrawer v-model:open="createOpen" @created="onCreated" />
+    <RegisterDrawer v-model:open="registerOpen" />
+    <ImportDrawer v-model:open="importOpen" />
     <ProgressDrawer
       v-model:open="progressOpen"
       :task-id="progressTaskId"
@@ -166,6 +176,8 @@ import { message, Modal } from "ant-design-vue";
 import { DownOutlined, ReloadOutlined } from "@ant-design/icons-vue";
 import { useStackStore, errorMessage, type StackItem } from "@/stores";
 import CreateDrawer from "@/components/stack/CreateDrawer.vue";
+import RegisterDrawer from "@/components/stack/RegisterDrawer.vue";
+import ImportDrawer from "@/components/stack/ImportDrawer.vue";
 import ProgressDrawer from "@/components/stack/ProgressDrawer.vue";
 import FileEditorDrawer from "@/components/stack/FileEditorDrawer.vue";
 import LogsDrawer from "@/components/stack/LogsDrawer.vue";
@@ -178,6 +190,8 @@ const store = useStackStore();
 const keyword = ref("");
 
 const createOpen = ref(false);
+const registerOpen = ref(false);
+const importOpen = ref(false);
 const progressOpen = ref(false);
 const editorOpen = ref(false);
 const logsOpen = ref(false);
@@ -196,6 +210,10 @@ const progressStack = ref("");
 const progressKind = ref("");
 
 const cliAvailable = computed(() => store.meta?.cli_available ?? false);
+
+const unregisteredCount = computed(
+  () => store.stacks.filter((s) => !s.registered).length
+);
 
 const columns = computed(() => [
   { title: t("name"), key: "name", dataIndex: "name", width: 200, ellipsis: true },

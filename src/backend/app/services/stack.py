@@ -7,6 +7,7 @@ from typing import Optional
 
 from app.models import StackRegistration
 from app.services.cli import Docker
+from app.services.git import COMPOSE_FILE_NAMES
 
 STACK_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 
@@ -139,3 +140,22 @@ class StackService:
             raise ValueError("directory is required when stacks_dir is not configured")
         stack_dir = base / name
         return stack_dir, stack_dir / "compose.yml"
+
+    def resolve_register_target(self, path: str) -> tuple[Path, list[Path]]:
+        """Validate a registration: dir must exist (and stay under stacks_dir
+        in container mode) and hold at least one compose file."""
+        stack_dir = Path(path).resolve()
+        if self.container_mode:
+            try:
+                stack_dir.relative_to(Path(self._stacks_dir).resolve())
+            except ValueError:
+                raise ValueError("stack directory is outside stacks_dir")
+        if not stack_dir.is_dir():
+            raise ValueError(f"Directory not found: {path}")
+        files = sorted(
+            f for f in stack_dir.iterdir()
+            if f.is_file() and f.name.lower() in COMPOSE_FILE_NAMES
+        )
+        if not files:
+            raise ValueError(f"No compose file found in: {path}")
+        return stack_dir, files

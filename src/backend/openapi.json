@@ -2031,6 +2031,52 @@
         ]
       }
     },
+    "/api/stacks/register": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Register Stack",
+        "operationId": "register_stack_api_stacks_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StackRegister"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/stacks/import": {
       "post": {
         "tags": [
@@ -4496,6 +4542,24 @@
           "container_mode"
         ],
         "title": "StackMeta"
+      },
+      "StackRegister": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "path"
+        ],
+        "title": "StackRegister"
       },
       "StackTaskItem": {
         "properties": {

@@ -24,6 +24,7 @@ from app.schemas.stack import (
     StackFile,
     StackItem,
     StackMeta,
+    StackRegister,
     StackTaskItem,
     TaskCreated,
 )
@@ -281,6 +282,23 @@ async def git_cancel_stack(
         raise HTTPException(status_code=400, detail=str(e))
     if (stack_dir / ".git").is_dir():
         await asyncio.to_thread(shutil.rmtree, stack_dir, ignore_errors=True)
+    return StatusResponse()
+
+
+@router.post("/register", response_model=StatusResponse)
+async def register_stack(
+    body: StackRegister, ctx: StackContext = Depends(get_stack_ctx),
+):
+    if await stack_registry.get(ctx.session, body.name):
+        raise HTTPException(status_code=409, detail="Stack already registered")
+    try:
+        stack_dir, files = ctx.stack.resolve_register_target(body.path)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    await stack_registry.register(
+        ctx.session, body.name, str(stack_dir),
+        ",".join(str(f) for f in files), "registered",
+    )
     return StatusResponse()
 
 

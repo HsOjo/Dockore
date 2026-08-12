@@ -351,7 +351,14 @@
       "cancelled": "已取消",
       "cancel": "取消任务",
       "confirmCancel": "确定取消该任务吗？"
-    }
+    },
+    "register": "注册栈",
+    "registerContainerHint": "容器模式：仅可注册 {dir} 下的现存栈",
+    "registerSuccess": "已注册栈「{name}」",
+    "importTitle": "导入发现的栈",
+    "importSuccess": "已导入栈「{name}」",
+    "registerPathPlaceholder": "/opt/stacks/my-stack",
+    "registerPathHint": "输入或选择包含 Compose 文件的栈目录完整路径"
   },
   "system": {
     "project": "项目信息",

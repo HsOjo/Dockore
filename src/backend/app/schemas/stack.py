@@ -103,6 +103,16 @@ class StackImport(BaseModel):
     name: str
 
 
+class StackRegister(BaseModel):
+    name: str
+    path: str
+
+    @field_validator("name")
+    @classmethod
+    def valid_name(cls, v: str) -> str:
+        return _valid_stack_name(v)
+
+
 class DownRequest(BaseModel):
     remove_volumes: bool = False
 

@@ -30,6 +30,7 @@ export type GitCloneRequest = components["schemas"]["GitCloneRequest"];
 export type GitCloneResult = components["schemas"]["GitCloneResult"];
 export type GitCreateRequest = components["schemas"]["GitCreateRequest"];
 export type GitCancelRequest = components["schemas"]["GitCancelRequest"];
+export type StackRegister = components["schemas"]["StackRegister"];
 export type SystemVersion = components["schemas"]["SystemVersion"];
 export type SettingsData = components["schemas"]["SettingsData"];
 export type ExecResult = components["schemas"]["ExecResult"];
@@ -579,6 +580,11 @@ export const useStackStore = defineStore("stack", () => {
     await fetchAll().catch(() => {});
   }
 
+  async function register(body: StackRegister) {
+    await must(api.POST("/api/stacks/register", { body }));
+    await fetchAll().catch(() => {});
+  }
+
   async function unregister(name: string) {
     await must(
       api.DELETE("/api/stacks/{name}/registration", { params: { path: { name } } })
@@ -677,6 +683,7 @@ export const useStackStore = defineStore("stack", () => {
     gitCreate,
     gitCancel,
     importStack,
+    register,
     unregister,
     start,
     stop,

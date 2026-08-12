@@ -351,7 +351,14 @@
       "cancelled": "Cancelled",
       "cancel": "Cancel Task",
       "confirmCancel": "Cancel this task?"
-    }
+    },
+    "register": "Register Stack",
+    "registerContainerHint": "Container mode: only existing stacks under {dir} can be registered",
+    "registerSuccess": "Stack \"{name}\" registered",
+    "importTitle": "Import Discovered Stacks",
+    "importSuccess": "Stack \"{name}\" imported",
+    "registerPathPlaceholder": "/opt/stacks/my-stack",
+    "registerPathHint": "Full path to the stack directory containing a compose file"
   },
   "system": {
     "project": "Project Info",

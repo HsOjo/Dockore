@@ -176,6 +176,35 @@ def test_resolve_create_target(tmp_path):
         desktop.resolve_create_target("demo")
 
 
+def test_resolve_register_target(tmp_path):
+    stacks_dir = tmp_path / "stacks"
+    stack_dir = stacks_dir / "alpha"
+    stack_dir.mkdir(parents=True)
+    compose = stack_dir / "compose.yml"
+    compose.write_text("services: {}")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "compose.yml").write_text("services: {}")
+    no_compose = stacks_dir / "empty"
+    no_compose.mkdir()
+
+    container = StackService(fake_docker({}), stacks_dir=str(stacks_dir))
+    resolved_dir, files = container.resolve_register_target(str(stack_dir))
+    assert resolved_dir == stack_dir
+    assert files == [compose]
+    with pytest.raises(ValueError, match="outside stacks_dir"):
+        container.resolve_register_target(str(outside))
+    with pytest.raises(ValueError, match="not found"):
+        container.resolve_register_target(str(stacks_dir / "nope"))
+    with pytest.raises(ValueError, match="No compose file"):
+        container.resolve_register_target(str(no_compose))
+
+    desktop = StackService(fake_docker({}))
+    resolved_dir, files = desktop.resolve_register_target(str(outside))
+    assert resolved_dir == outside
+    assert files == [outside / "compose.yml"]
+
+
 def test_parse_json_output():
     assert parse_json_output("") == []
     assert parse_json_output('[{"Name": "a"}]') == [{"Name": "a"}]
@@ -345,6 +374,108 @@ async def test_api_file_guard_blocks_unregistered(stack_client):
 async def test_api_stack_not_found(stack_client):
     resp = await stack_client.get("/api/stacks/nope", headers=AUTH)
     assert resp.status_code == 404
+
+
+@pytest.fixture
+async def register_client(tmp_path):
+    stacks_dir = tmp_path / "stacks"
+    compose_file = stacks_dir / "alpha" / "compose.yml"
+    compose_file.parent.mkdir(parents=True)
+    compose_file.write_text("services: {}")
+    compose = FakeComposeService()
+    session = async_session()
+    app.dependency_overrides[get_stack_ctx] = lambda: make_ctx(
+        compose, session, stacks_dir=str(stacks_dir),
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
+        c.compose = compose
+        c.stacks_dir = stacks_dir
+        c.compose_file = compose_file
+        yield c
+    app.dependency_overrides.pop(get_stack_ctx, None)
+    async with async_session() as cleanup:
+        await stack_registry.unregister(cleanup, "alpha")
+    await compose.close()
+    await session.close()
+
+
+async def test_api_register_candidates_container_mode(register_client):
+    resp = await register_client.get("/api/stacks/register/candidates", headers=AUTH)
+    assert resp.status_code == 404
+
+
+async def test_api_register_stack_container_mode(register_client):
+    stack_dir = register_client.compose_file.parent
+    resp = await register_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "alpha",
+        "path": str(stack_dir),
+    })
+    assert resp.status_code == 200
+    resp = await register_client.get("/api/stacks/alpha", headers=AUTH)
+    assert resp.status_code == 200
+    item = resp.json()
+    assert item["registered"] and item["source"] == "registered"
+    assert item["config_files"] == [str(register_client.compose_file)]
+    assert item["file_accessible"]
+
+    resp = await register_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "alpha",
+        "path": str(stack_dir),
+    })
+    assert resp.status_code == 409
+
+
+async def test_api_register_outside_stacks_dir_rejected(register_client, tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "compose.yml").write_text("services: {}")
+    resp = await register_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "rogue",
+        "path": str(outside),
+    })
+    assert resp.status_code == 400
+    assert "outside stacks_dir" in resp.json()["detail"]
+
+
+async def test_api_register_desktop_mode(stack_client, tmp_path):
+    stack_dir = tmp_path / "anywhere" / "beta"
+    stack_dir.mkdir(parents=True)
+    (stack_dir / "compose.yml").write_text("services: {}")
+
+    resp = await stack_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "beta", "path": str(stack_dir),
+    })
+    assert resp.status_code == 200
+    async with async_session() as cleanup:
+        await stack_registry.unregister(cleanup, "beta")
+
+
+async def test_api_register_missing_file(stack_client, tmp_path):
+    stack_dir = tmp_path / "beta"
+    stack_dir.mkdir()
+    resp = await stack_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "beta",
+        "path": str(stack_dir),
+    })
+    assert resp.status_code == 400
+
+
+async def test_api_register_discovered_unregistered(stack_client, tmp_path):
+    stack_dir = tmp_path / "webapp"
+    stack_dir.mkdir()
+    (stack_dir / "compose.yml").write_text("services: {}")
+    resp = await stack_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "webapp", "path": str(stack_dir),
+    })
+    assert resp.status_code == 200
+    resp = await stack_client.get("/api/stacks/webapp", headers=AUTH)
+    item = resp.json()
+    assert item["registered"] and item["source"] == "registered"
+    assert item["status"] == "running"
+    async with async_session() as cleanup:
+        await stack_registry.unregister(cleanup, "webapp")
 
 
 @pytest.fixture

@@ -593,6 +593,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stacks/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register Stack */
+        post: operations["register_stack_api_stacks_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stacks/import": {
         parameters: {
             query?: never;
@@ -1467,6 +1484,13 @@ export interface components {
              * @default false
              */
             git_available: boolean;
+        };
+        /** StackRegister */
+        StackRegister: {
+            /** Name */
+            name: string;
+            /** Path */
+            path: string;
         };
         /** StackTaskItem */
         StackTaskItem: {
@@ -2906,6 +2930,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["GitCancelRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_stack_api_stacks_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StackRegister"];
             };
         };
         responses: {
