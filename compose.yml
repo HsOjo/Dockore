@@ -10,15 +10,17 @@ services:
       - DOCKORE_HOST=0.0.0.0
       - DOCKORE_PORT=8000
       - DOCKORE_TOKEN=${DOCKORE_TOKEN:-change-me}
-      - DOCKORE_CORS_ORIGINS=${DOCKORE_CORS_ORIGINS:-http://localhost:8001,http://127.0.0.1:8001,http://localhost:8002,http://127.0.0.1:8002}
+      - DOCKORE_CORS_ORIGINS=${DOCKORE_CORS_ORIGINS:-*}
       - DOCKORE_DATA_DIR=/app/data
+      # Stack 管理：宿主机与容器内路径必须一致（DOCKORE_STACKS_DIR 两侧同值），
+      # 否则 stack compose 文件中的相对 bind 路径无法解析
+      - DOCKORE_STACKS_DIR=${DOCKORE_STACKS_DIR:-/app/stacks}
     volumes:
       - ./data:/app/data
-      # Dockore 是 Docker 管理工具，需要访问宿主机 Docker daemon
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # Stack 管理：宿主机路径必须与容器内路径一致（DOCKORE_STACKS_DIR=/app/stacks），
-      # 否则 compose 文件中的相对 bind 路径无法解析。取消注释并改为你的宿主机目录：
-      # - /your/host/stacks:/app/stacks
+      # Dockore 是 Docker 管理工具，需要访问宿主机容器 daemon
+      # Podman 用户改为 podman socket 路径，如 /run/user/1000/podman/podman.sock
+      - ${DOCKORE_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+      - ${DOCKORE_STACKS_DIR:-/app/stacks}:${DOCKORE_STACKS_DIR:-/app/stacks}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
