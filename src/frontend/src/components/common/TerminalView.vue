@@ -1,5 +1,5 @@
 <template>
-  <div ref="termEl" class="xterm-wrapper"></div>
+  <div ref="termEl" class="xterm-wrapper" :class="{ fill: props.fill }"></div>
 </template>
 
 <script setup lang="ts">
@@ -8,6 +8,7 @@ import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "xterm/css/xterm.css";
 
+const props = defineProps<{ fill?: boolean }>();
 const emit = defineEmits<{ resize: [{ cols: number; rows: number }] }>();
 
 const termEl = ref<HTMLElement | null>(null);
@@ -66,7 +67,11 @@ function write(data: string | Uint8Array) {
   term.write(data);
 }
 
-defineExpose({ write, fit, clear, cols: () => term.cols, rows: () => term.rows });
+function scrollToBottom() {
+  term.scrollToBottom();
+}
+
+defineExpose({ write, fit, clear, scrollToBottom, cols: () => term.cols, rows: () => term.rows });
 </script>
 
 <style scoped>
@@ -78,6 +83,12 @@ defineExpose({ write, fit, clear, cols: () => term.cols, rows: () => term.rows }
   padding: 8px;
   background: #000;
   border-radius: 4px;
+}
+
+.xterm-wrapper.fill {
+  height: 100%;
+  min-height: 0;
+  flex: 1;
 }
 
 .xterm-wrapper :deep(.xterm) {
