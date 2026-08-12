@@ -380,8 +380,7 @@
     "dockerHost": "Docker 服务地址",
     "currentServer": "当前服务器",
     "disconnect": "断开连接",
-    "disconnectConfirm": "确定断开当前服务器连接吗？",
-    "frontendVersion": "前端版本"
+    "disconnectConfirm": "确定断开当前服务器连接吗？"
   },
   "terminal": {
     "title": "容器终端",

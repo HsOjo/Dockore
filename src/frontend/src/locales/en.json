@@ -380,8 +380,7 @@
     "dockerHost": "Docker Host",
     "currentServer": "Current Server",
     "disconnect": "Disconnect",
-    "disconnectConfirm": "Disconnect from the current server?",
-    "frontendVersion": "Frontend Version"
+    "disconnectConfirm": "Disconnect from the current server?"
   },
   "terminal": {
     "title": "Container Terminal",

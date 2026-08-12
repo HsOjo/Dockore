@@ -41,9 +41,6 @@
             :text="conn.isReady ? t('connection.connected') : t('connection.disconnected')"
           />
         </a-descriptions-item>
-        <a-descriptions-item :label="t('settings.frontendVersion')">
-          {{ version }}
-        </a-descriptions-item>
       </a-descriptions>
       <div style="margin-top: 16px">
         <a-popconfirm
@@ -73,8 +70,6 @@ const router = useRouter();
 const conn = useConnectionStore();
 const settingsStore = useSettingsStore();
 const ui = getUISettings();
-
-const version = __DOCKORE_VERSION__;
 
 const theme = ref(ui.value.theme);
 const localeValue = ref(locale.value);
