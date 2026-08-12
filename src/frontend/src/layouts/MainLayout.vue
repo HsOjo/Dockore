@@ -4,29 +4,36 @@
       <div class="logo" :class="{ 'mac-inset': macInset }" data-tauri-drag-region>{{ t("appName") }}</div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" class="menu">
         <a-menu-item key="/system">
+          <template #icon><DashboardOutlined /></template>
           <router-link to="/system">{{ t("menu.system") }}</router-link>
         </a-menu-item>
         <a-menu-divider />
         <a-menu-item key="/stacks">
+          <template #icon><BlockOutlined /></template>
           <router-link to="/stacks">{{ t("menu.stacks") }}</router-link>
         </a-menu-item>
         <a-menu-divider />
         <a-menu-item key="/containers">
+          <template #icon><ContainerOutlined /></template>
           <router-link to="/containers">{{ t("menu.containers") }}</router-link>
         </a-menu-item>
         <a-menu-item key="/images">
+          <template #icon><FileImageOutlined /></template>
           <router-link to="/images">{{ t("menu.images") }}</router-link>
         </a-menu-item>
         <a-menu-item key="/networks">
+          <template #icon><NodeIndexOutlined /></template>
           <router-link to="/networks">{{ t("menu.networks") }}</router-link>
         </a-menu-item>
         <a-menu-item key="/volumes">
+          <template #icon><DatabaseOutlined /></template>
           <router-link to="/volumes">{{ t("menu.volumes") }}</router-link>
         </a-menu-item>
       </a-menu>
       <div class="sider-footer">
         <a-menu :selectedKeys="settingsKey" mode="inline">
           <a-menu-item key="/settings">
+            <template #icon><SettingOutlined /></template>
             <router-link to="/settings">{{ t("menu.settings") }}</router-link>
           </a-menu-item>
         </a-menu>
@@ -81,7 +88,7 @@
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined } from "@ant-design/icons-vue";
+import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined, DashboardOutlined, BlockOutlined, ContainerOutlined, FileImageOutlined, NodeIndexOutlined, DatabaseOutlined, SettingOutlined } from "@ant-design/icons-vue";
 import ShellModal from "@/components/system/ShellModal.vue";
 import { useConnectionStore } from "@/stores";
 import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
