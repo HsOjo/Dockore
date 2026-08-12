@@ -68,8 +68,8 @@ function startStream() {
   socket = new LogsSocket();
   const params: { since?: string; until?: string; follow: boolean } = { follow: follow.value };
   if (dtRange.value && dtRange.value[0] && dtRange.value[1]) {
-    params.since = dtRange.value[0].format("YYYY-MM-DD HH:mm:ss");
-    params.until = dtRange.value[1].format("YYYY-MM-DD HH:mm:ss");
+    params.since = dtRange.value[0].format("YYYY-MM-DDTHH:mm:ssZ");
+    params.until = dtRange.value[1].format("YYYY-MM-DDTHH:mm:ssZ");
   }
   socket.on("data", (data: string | ArrayBuffer) => {
     const text = data instanceof ArrayBuffer ? new TextDecoder().decode(data) : data;
