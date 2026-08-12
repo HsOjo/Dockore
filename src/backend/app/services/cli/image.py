@@ -1,6 +1,7 @@
 import re
 from typing import Optional
 
+from app.core.validators import validate_docker_name, validate_image_ref, validate_no_dash
 from .convertors import PortsConvertor
 from .docker_cli import DockerCli
 from .errors import DockerNotFound
@@ -85,6 +86,7 @@ class ImageService:
         return image_item_from_inspect(attrs, verbose=True)
 
     async def search(self, keyword: str):
+        keyword = validate_no_dash(keyword, "keyword")
         rows = await self._cli.run_json_lines('search', '--format', '{{json .}}', keyword)
         return [dict(
             name=row.get('Name'),
@@ -98,7 +100,11 @@ class ImageService:
         await self._cli.run('rmi', id)
 
     async def tag(self, id: str, name: str, tag: Optional[str] = None):
+        name = validate_docker_name(name, "image name")
+        if tag:
+            tag = validate_no_dash(tag, "tag")
         target = f'{name}:{tag}' if tag else name
+        target = validate_image_ref(target, "target")
         await self._cli.run('tag', id, target)
         return True
 

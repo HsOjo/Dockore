@@ -1,6 +1,7 @@
 import shlex
 from typing import Dict, List, Optional
 
+from app.core.validators import validate_docker_name, validate_image_ref, validate_no_dash
 from .convertors import (
     MountsConvertor,
     PortMappingConvertor,
@@ -130,6 +131,9 @@ class ContainerService:
 
     def _create_args(self, name, image, command, interactive, tty,
                      privileged, ports, volumes) -> List[str]:
+        if name:
+            name = validate_docker_name(name, "container name")
+        image = validate_image_ref(image, "image")
         args: List[str] = []
         if name:
             args += ["--name", name]
@@ -181,6 +185,7 @@ class ContainerService:
         await self._cli.run(*args, id)
 
     async def rename(self, id: str, name: str):
+        name = validate_docker_name(name, "container name")
         await self._cli.run("rename", id, name)
 
     async def exec(self, id: str, command, interactive=False, tty=False,
@@ -201,9 +206,9 @@ class ContainerService:
     async def logs(self, id: str, since=None, until=None):
         args = ["logs"]
         if since is not None:
-            args += ["--since", str(since)]
+            args += ["--since", since]
         if until is not None:
-            args += ["--until", str(until)]
+            args += ["--until", until]
         return await self._cli.run(*args, id)
 
     async def get_status(self, id: str):
@@ -223,6 +228,13 @@ class ContainerService:
         return result
 
     async def commit(self, id: str, name, tag, message=None, author=None):
+        name = validate_docker_name(name, "image name")
+        if tag:
+            tag = validate_no_dash(tag, "tag")
+        if message:
+            message = validate_no_dash(message, "message")
+        if author:
+            author = validate_no_dash(author, "author")
         args = ["commit"]
         if message:
             args += ["-m", message]

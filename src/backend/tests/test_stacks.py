@@ -259,7 +259,8 @@ class FakeComposeService:
         return task
 
     async def logs(
-        self, project, on_data, files=None, cwd=None, follow=True, tail="200", on_done=None,
+        self, project, on_data, files=None, cwd=None, follow=True, tail="200",
+        since=None, until=None, on_done=None,
     ):
         self.calls.append(("logs", project, files, cwd))
         return await self.executor.stream(

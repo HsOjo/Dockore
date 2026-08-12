@@ -1,5 +1,6 @@
 from typing import Optional
 
+from app.core.validators import validate_docker_name, validate_no_dash
 from .convertors import OptionConvertor
 from .docker_cli import DockerCli
 from .errors import DockerNotFound
@@ -44,6 +45,9 @@ class VolumeService:
         await self._cli.run('volume', 'rm', id)
 
     async def create(self, name, driver: Optional[str] = None, driver_opts=None):
+        name = validate_docker_name(name, "volume name")
+        if driver:
+            driver = validate_no_dash(driver, "driver")
         args = ['volume', 'create']
         if driver:
             args += ['--driver', driver]

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from app.core.validators import validate_docker_name, validate_no_dash
 from .convertors import OptionConvertor
 from .docker_cli import DockerCli
 from .errors import DockerNotFound
@@ -83,6 +84,15 @@ class NetworkService:
 
     async def create(self, name, driver, attachable=True, options=None,
                      subnet=None, gateway=None, ip_range=None):
+        name = validate_docker_name(name, "network name")
+        if driver:
+            driver = validate_no_dash(driver, "driver")
+        if subnet:
+            subnet = validate_no_dash(subnet, "subnet")
+        if gateway:
+            gateway = validate_no_dash(gateway, "gateway")
+        if ip_range:
+            ip_range = validate_no_dash(ip_range, "ip_range")
         args = ['network', 'create']
         if driver:
             args += ['--driver', driver]
@@ -103,6 +113,7 @@ class NetworkService:
     async def connect(self, id: str, container_id: str, ipv4_address: Optional[str] = None):
         args = ['network', 'connect']
         if ipv4_address:
+            ipv4_address = validate_no_dash(ipv4_address, "ipv4_address")
             args += ['--ip', ipv4_address]
         args += [id, container_id]
         await self._cli.run(*args)

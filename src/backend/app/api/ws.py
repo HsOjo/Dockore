@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import shlex
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
@@ -11,6 +12,7 @@ from app.api.deps import StackContext, get_stack_ctx
 from app.core import config
 from app.core.broadcast import manager
 from app.core.security import verify_terminal_ticket, verify_token
+from app.core.validators import validate_since_until
 from app.services.cli import CliExecutor, Docker, DockerNotFound
 from app.services.compose import stack_tasks
 
@@ -64,8 +66,10 @@ async def container_logs_ws(
     if not await _ws_auth(websocket):
         return
 
-    since = websocket.query_params.get("since")
-    until = websocket.query_params.get("until")
+    since, until = validate_since_until(
+        websocket.query_params.get("since"),
+        websocket.query_params.get("until"),
+    )
     follow = websocket.query_params.get("follow", "").lower() in ("1", "true", "yes")
 
     try:
@@ -136,6 +140,10 @@ async def stack_logs_ws(
     if not await _ws_auth(websocket):
         return
 
+    since, until = validate_since_until(
+        websocket.query_params.get("since"),
+        websocket.query_params.get("until"),
+    )
     follow = websocket.query_params.get("follow", "").lower() in ("1", "true", "yes")
 
     if not ctx.compose:
@@ -176,6 +184,8 @@ async def stack_logs_ws(
         files=files,
         cwd=cwd,
         follow=follow,
+        since=since,
+        until=until,
         on_done=on_done,
     )
 

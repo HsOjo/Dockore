@@ -97,9 +97,15 @@ class ComposeService:
         cwd: Optional[str] = None,
         follow: bool = True,
         tail: str = "200",
+        since: Optional[str] = None,
+        until: Optional[str] = None,
         on_done=None,
     ):
         args = self._args("logs", "--no-color", "--tail", tail, project=project, files=files)
+        if since:
+            args += ["--since", since]
+        if until:
+            args += ["--until", until]
         if follow:
             args.append("-f")
         return await self._exec.stream(

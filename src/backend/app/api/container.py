@@ -6,6 +6,7 @@ from fastapi.responses import PlainTextResponse
 from app.api.deps import get_docker
 from app.core.config import settings
 from app.core.security import create_terminal_ticket, get_current_token
+from app.core.validators import validate_since_until
 from app.schemas.common import DeleteResult, IdsRequest, StatusResponse
 from app.schemas.container import (
     CommitRequest,
@@ -108,6 +109,7 @@ async def container_logs(
     until: Optional[str] = None,
     docker: Docker = Depends(get_docker),
 ):
+    since, until = validate_since_until(since, until)
     return await docker.container.logs(id, since=since, until=until)
 
 

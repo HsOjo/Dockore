@@ -95,11 +95,11 @@ def test_logs_ws_since_until_args(ws_client):
     tc, fake = ws_client
     executor = fake.cli.executor
     with tc.websocket_connect(
-        f"/ws/containers/{CID}/logs?token={TOKEN_HASH}&since=10&until=20"
+        f"/ws/containers/{CID}/logs?token={TOKEN_HASH}&since=10s&until=20s"
     ):
         assert wait_for(lambda: len(executor.streams) == 1)
         assert executor.streams[0]["args"] == [
-            "docker", "logs", "--since", "10", "--until", "20", CID,
+            "docker", "logs", "--since", "10s", "--until", "20s", CID,
         ]
 
 

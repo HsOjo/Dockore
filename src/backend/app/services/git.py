@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
+from app.core.validators import validate_no_dash
 from app.services.cli import CliExecutor, CliTask, augmented_path
 
 COMPOSE_FILE_NAMES = frozenset({
@@ -35,6 +36,9 @@ async def clone_stream(
     on_data,
     on_done=None,
 ) -> CliTask:
+    url = validate_no_dash(url, "git url")
+    if branch:
+        branch = validate_no_dash(branch, "branch")
     args = ["git", "clone", "--progress"]
     if branch:
         args += ["--branch", branch]
