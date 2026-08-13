@@ -282,6 +282,8 @@
     "down": "Down",
     "destroy": "Destroy",
     "pull": "Pull Images",
+    "pullRepo": "Pull Repository",
+    "pullRepoDone": "Repository updated. Redeploy (up) the stack to apply the changes.",
     "up": "Apply Changes",
     "editFile": "Edit File",
     "tabCompose": "Compose File",
@@ -343,6 +345,7 @@
       "clone": "Clone",
       "up": "Apply Changes",
       "pull": "Pull Images",
+      "pull-repo": "Pull Repository",
       "down": "Down"
     },
     "task": {

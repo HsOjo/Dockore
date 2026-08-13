@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from app.core.validators import validate_no_dash
-from app.services.cli import CliExecutor, CliTask, augmented_path
+from app.services.cli import CliError, CliExecutor, CliTask, augmented_path
 
 COMPOSE_FILE_NAMES = frozenset({
     "compose.yml",
@@ -28,6 +28,22 @@ def git_available() -> bool:
     return shutil.which("git", path=augmented_path()) is not None
 
 
+async def detect_git_repo(executor: CliExecutor, path: Path) -> Optional[bool]:
+    """Whether path sits inside a git work tree (subdir-aware via rev-parse).
+
+    None when git CLI is missing, so callers can defer to a runtime check.
+    """
+    if not git_available():
+        return None
+    try:
+        await executor.run(
+            ["git", "-C", str(path), "rev-parse", "--is-inside-work-tree"],
+        )
+        return True
+    except CliError:
+        return False
+
+
 async def clone_stream(
     executor: CliExecutor,
     url: str,
@@ -44,6 +60,16 @@ async def clone_stream(
         args += ["--branch", branch]
     args += [url, str(target)]
     return await executor.stream("clone", target.name, args, on_data, on_done=on_done)
+
+
+async def pull_stream(
+    executor: CliExecutor,
+    workdir: Path,
+    on_data,
+    on_done=None,
+) -> CliTask:
+    args = ["git", "-C", str(workdir), "pull", "--progress"]
+    return await executor.stream("pull-repo", workdir.name, args, on_data, on_done=on_done)
 
 
 def _is_env_template(name: str) -> bool:

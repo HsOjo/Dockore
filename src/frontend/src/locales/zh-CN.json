@@ -282,6 +282,8 @@
     "down": "下线",
     "destroy": "销毁",
     "pull": "拉取镜像",
+    "pullRepo": "拉取仓库",
+    "pullRepoDone": "仓库已更新，如需生效请重新部署（up）。",
     "up": "部署",
     "editFile": "编辑文件",
     "tabCompose": "compose 文件",
@@ -343,6 +345,7 @@
       "clone": "克隆",
       "up": "部署",
       "pull": "拉取镜像",
+      "pull-repo": "拉取仓库",
       "down": "下线"
     },
     "task": {

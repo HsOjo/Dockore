@@ -2519,6 +2519,53 @@
         }
       }
     },
+    "/api/stacks/{name}/pull-repo": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Pull Repo",
+        "operationId": "pull_repo_api_stacks__name__pull_repo_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/stacks/{name}/up": {
       "post": {
         "tags": [
@@ -4467,6 +4514,11 @@
           "file_accessible": {
             "type": "boolean",
             "title": "File Accessible",
+            "default": false
+          },
+          "is_git_repo": {
+            "type": "boolean",
+            "title": "Is Git Repo",
             "default": false
           }
         },

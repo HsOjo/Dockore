@@ -105,6 +105,9 @@
                   <a-menu-item key="pull" :disabled="fileActionDisabled(record)">
                     {{ t("stack.pull") }}
                   </a-menu-item>
+                  <a-menu-item v-if="record.is_git_repo" key="pullRepo">
+                    {{ t("stack.pullRepo") }}
+                  </a-menu-item>
                   <a-menu-item v-if="!record.registered" key="import">
                     {{ t("stack.import") }}
                   </a-menu-item>
@@ -163,6 +166,7 @@
       :task-id="progressTaskId"
       :stack="progressStack"
       :kind="progressKind"
+      @finished="onProgressFinished"
     />
     <FileEditorDrawer v-model:open="editorOpen" :stack-name="activeName" />
     <LogsDrawer v-model:open="logsOpen" :stack-name="activeName" />
@@ -308,6 +312,21 @@ async function triggerTask(record: StackItem, kind: "up" | "pull") {
   }
 }
 
+async function triggerPullRepo(record: StackItem) {
+  try {
+    const created = await store.pullRepo(record.name);
+    openProgress(created.task_id, record.name, "pull-repo");
+  } catch (e: any) {
+    message.error(errorMessage(e));
+  }
+}
+
+function onProgressFinished(status: string) {
+  if (progressKind.value === "pull-repo" && status === "done") {
+    message.success(t("stack.pullRepoDone"));
+  }
+}
+
 function onCreated(payload: { taskId: string; stack: string }) {
   openProgress(payload.taskId, payload.stack, "create");
 }
@@ -382,6 +401,9 @@ async function handleAction(record: StackItem, cmd: string) {
       break;
     case "pull":
       await triggerTask(record, "pull");
+      break;
+    case "pullRepo":
+      await triggerPullRepo(record);
       break;
     case "import":
       confirmImport(record);

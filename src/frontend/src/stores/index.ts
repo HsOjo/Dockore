@@ -629,6 +629,12 @@ export const useStackStore = defineStore("stack", () => {
     return await must(api.POST("/api/stacks/{name}/pull", { params: { path: { name } } }));
   }
 
+  async function pullRepo(name: string) {
+    return await must(
+      api.POST("/api/stacks/{name}/pull-repo", { params: { path: { name } } })
+    );
+  }
+
   async function up(name: string) {
     return await must(api.POST("/api/stacks/{name}/up", { params: { path: { name } } }));
   }
@@ -691,6 +697,7 @@ export const useStackStore = defineStore("stack", () => {
     destroy,
     down,
     pull,
+    pullRepo,
     up,
     readFile,
     writeFile,

@@ -119,9 +119,10 @@ SCAN_DATA = {
 }
 
 
-def make_reg(name, path, config_files, source="created"):
+def make_reg(name, path, config_files, source="created", is_git_repo=None):
     return SimpleNamespace(
         name=name, path=path, config_files=config_files, source=source,
+        is_git_repo=is_git_repo,
     )
 
 
@@ -959,3 +960,159 @@ async def test_api_git_cancel_refuses_registered(git_client, tmp_path):
     finally:
         async with async_session() as session:
             await stack_registry.unregister(session, "gitapp")
+
+
+GIT_ENV = {
+    "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@test",
+    "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@test",
+    "PATH": os.environ.get("PATH", ""),
+}
+
+
+def _git_run(path: Path, *args):
+    subprocess.run(
+        ["git", "-C", str(path), *args], check=True,
+        capture_output=True, env=GIT_ENV,
+    )
+
+
+async def _setup_git_pull_stack(client, tmp_path, source="git"):
+    """Clone a repo into the stacks base and register it as a stack."""
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    stack_dir = client.stacks_base / "gitapp"
+    subprocess.run(
+        ["git", "clone", str(repo), str(stack_dir)],
+        check=True, capture_output=True, env=GIT_ENV,
+    )
+    async with async_session() as session:
+        await stack_registry.register(
+            session, "gitapp", str(stack_dir),
+            str(stack_dir / "docker-compose.yml"), source,
+        )
+    return repo, stack_dir
+
+
+async def _run_pull_repo(client, name):
+    resp = await client.post(f"/api/stacks/{name}/pull-repo", headers=AUTH)
+    assert resp.status_code == 200
+    task = client.compose.executor.get_task(resp.json()["task_id"])
+    for _ in range(50):
+        if task.status != "running":
+            break
+        await asyncio.sleep(0.1)
+    return task
+
+
+@GIT_REQUIRED
+async def test_api_git_pull_repo(git_client, tmp_path):
+    repo, stack_dir = await _setup_git_pull_stack(git_client, tmp_path)
+    try:
+        task = await _run_pull_repo(git_client, "gitapp")
+        assert task.status == "done"
+
+        (repo / "new.txt").write_text("v2")
+        _git_run(repo, "add", "-A")
+        _git_run(repo, "commit", "-m", "v2")
+
+        task = await _run_pull_repo(git_client, "gitapp")
+        assert task.status == "done"
+        assert (stack_dir / "new.txt").read_text() == "v2"
+
+        resp = await git_client.get("/api/stacks/gitapp", headers=AUTH)
+        assert resp.status_code == 200
+        assert resp.json()["is_git_repo"] is True
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "gitapp")
+
+
+@GIT_REQUIRED
+async def test_api_git_pull_repo_legacy_registered_source(git_client, tmp_path):
+    """Stacks registered before this feature (source != "git") can pull too,
+    as long as the working directory holds a .git directory."""
+    repo, stack_dir = await _setup_git_pull_stack(
+        git_client, tmp_path, source="registered",
+    )
+    try:
+        (repo / "legacy.txt").write_text("v2")
+        _git_run(repo, "add", "-A")
+        _git_run(repo, "commit", "-m", "v2")
+
+        task = await _run_pull_repo(git_client, "gitapp")
+        assert task.status == "done"
+        assert (stack_dir / "legacy.txt").read_text() == "v2"
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "gitapp")
+
+
+@GIT_REQUIRED
+async def test_api_git_pull_repo_compose_in_subdir(git_client, tmp_path):
+    """Registering a repo subdirectory: registration-time rev-parse detects
+    the enclosing repo, and pull runs from the subdirectory."""
+    repo = tmp_path / "repo"
+    _init_git_repo(repo)
+    stack_dir = git_client.stacks_base / "subapp"
+    subprocess.run(
+        ["git", "clone", str(repo), str(stack_dir)],
+        check=True, capture_output=True, env=GIT_ENV,
+    )
+    resp = await git_client.post("/api/stacks/register", headers=AUTH, json={
+        "name": "subapp", "path": str(stack_dir / "deploy"),
+    })
+    assert resp.status_code == 200
+    try:
+        async with async_session() as session:
+            reg = await stack_registry.get(session, "subapp")
+        assert reg is not None and reg.is_git_repo is True
+
+        resp = await git_client.get("/api/stacks/subapp", headers=AUTH)
+        assert resp.status_code == 200
+        assert resp.json()["is_git_repo"] is True
+
+        (repo / "deploy" / "new.txt").write_text("v2")
+        _git_run(repo, "add", "-A")
+        _git_run(repo, "commit", "-m", "v2")
+
+        task = await _run_pull_repo(git_client, "subapp")
+        assert task.status == "done"
+        assert (stack_dir / "deploy" / "new.txt").read_text() == "v2"
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "subapp")
+
+
+@GIT_REQUIRED
+async def test_api_git_pull_repo_conflict_errors(git_client, tmp_path):
+    repo, stack_dir = await _setup_git_pull_stack(git_client, tmp_path)
+    try:
+        (stack_dir / "docker-compose.yml").write_text("local change\n")
+        (repo / "docker-compose.yml").write_text("remote change\n")
+        _git_run(repo, "add", "-A")
+        _git_run(repo, "commit", "-m", "conflict")
+
+        task = await _run_pull_repo(git_client, "gitapp")
+        assert task.status == "error"
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "gitapp")
+
+
+async def test_api_git_pull_repo_rejects_non_git(git_client, tmp_path):
+    stack_dir = git_client.stacks_base / "plainapp"
+    stack_dir.mkdir()
+    compose_file = stack_dir / "compose.yml"
+    compose_file.write_text("services: {}")
+    async with async_session() as session:
+        await stack_registry.register(
+            session, "plainapp", str(stack_dir), str(compose_file), "created",
+        )
+    try:
+        resp = await git_client.post(
+            "/api/stacks/plainapp/pull-repo", headers=AUTH,
+        )
+        assert resp.status_code == 400
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "plainapp")

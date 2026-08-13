@@ -24,6 +24,7 @@ class StackItem(BaseModel):
     registered: bool = False
     source: str = "discovered"
     file_accessible: bool = False
+    is_git_repo: bool = False
 
 
 class StackMeta(BaseModel):

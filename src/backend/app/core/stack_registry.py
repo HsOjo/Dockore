@@ -24,9 +24,11 @@ async def register(
     path: str,
     config_files: str,
     source: str,
+    is_git_repo: Optional[bool] = None,
 ) -> StackRegistration:
     entry = StackRegistration(
         name=name, path=path, config_files=config_files, source=source,
+        is_git_repo=is_git_repo,
     )
     session.add(entry)
     await session.commit()

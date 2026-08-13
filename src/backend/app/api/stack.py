@@ -65,6 +65,12 @@ def _item_cwd(item: dict) -> str:
     return item["working_dir"] or str(Path(item["config_files"][0]).parent)
 
 
+async def _detect_git(ctx: StackContext, path: Path) -> Optional[bool]:
+    if ctx.compose is None:
+        return None
+    return await git_service.detect_git_repo(ctx.compose.executor, path)
+
+
 async def _launch(ctx: StackContext, kind: str, name: str, launch) -> TaskCreated:
     compose = _require_compose(ctx)
     task = await stack_tasks.start(compose.executor, kind, name, launch)
@@ -135,6 +141,7 @@ async def create_stack(body: StackCreate, ctx: StackContext = Depends(get_stack_
 
     await stack_registry.register(
         ctx.session, body.name, str(stack_dir), str(compose_file), "created",
+        is_git_repo=await _detect_git(ctx, stack_dir),
     )
     return await _launch(ctx, "up", body.name, lambda on_data, on_done: compose.up(
         body.name, [str(compose_file)], str(stack_dir), on_data, on_done=on_done,
@@ -262,6 +269,7 @@ async def git_create_stack(
 
     await stack_registry.register(
         ctx.session, body.name, str(stack_dir), str(compose_file), "git",
+        is_git_repo=True,
     )
     return await _launch(ctx, "up", body.name, lambda on_data, on_done: compose.up(
         body.name, [str(compose_file)], str(compose_file.parent),
@@ -298,6 +306,7 @@ async def register_stack(
     await stack_registry.register(
         ctx.session, body.name, str(stack_dir),
         ",".join(str(f) for f in files), "registered",
+        is_git_repo=await _detect_git(ctx, stack_dir),
     )
     return StatusResponse()
 
@@ -322,6 +331,7 @@ async def import_stack(body: StackImport, ctx: StackContext = Depends(get_stack_
     await stack_registry.register(
         ctx.session, body.name, item["working_dir"],
         ",".join(item["config_files"]), "imported",
+        is_git_repo=await _detect_git(ctx, Path(item["working_dir"])),
     )
     return StatusResponse()
 
@@ -420,6 +430,23 @@ async def pull_stack(name: str, ctx: StackContext = Depends(get_stack_ctx)):
     return await _launch(ctx, "pull", name, lambda on_data, on_done: compose.pull(
         name, item["config_files"], cwd, on_data, on_done=on_done,
     ))
+
+
+@router.post("/{name}/pull-repo", response_model=TaskCreated)
+async def pull_repo(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    compose = _require_compose(ctx)
+    item = await _get_item(ctx, name)
+    workdir = Path(item["working_dir"])
+    if not item["is_git_repo"]:
+        raise HTTPException(status_code=400, detail="Not a git repository")
+    if not git_service.git_available():
+        raise HTTPException(status_code=503, detail="git CLI not available")
+    return await _launch(
+        ctx, "pull-repo", name,
+        lambda on_data, on_done: git_service.pull_stream(
+            compose.executor, workdir, on_data, on_done=on_done,
+        ),
+    )
 
 
 @router.post("/{name}/up", response_model=TaskCreated)

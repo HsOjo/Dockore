@@ -98,6 +98,17 @@ class StackService:
         items = await self.list(registrations)
         return next((i for i in items if i["name"] == name), None)
 
+    @staticmethod
+    def _is_git_repo(working_dir: str) -> bool:
+        return bool(working_dir) and (Path(working_dir) / ".git").is_dir()
+
+    def _resolve_is_git_repo(
+        self, stored: Optional[bool], working_dir: str,
+    ) -> bool:
+        if stored is not None:
+            return stored
+        return self._is_git_repo(working_dir)
+
     def _to_item(self, data: dict, reg: Optional[StackRegistration]) -> dict:
         files_str = (
             reg.config_files
@@ -122,6 +133,9 @@ class StackService:
             registered=reg is not None,
             source=(reg.source if reg else "discovered"),
             file_accessible=self.file_accessible(config_files, reg is not None),
+            is_git_repo=self._resolve_is_git_repo(
+                reg.is_git_repo if reg else None, working_dir,
+            ),
         )
 
     async def _registration_item(self, reg: StackRegistration) -> dict:
@@ -138,6 +152,9 @@ class StackService:
             registered=True,
             source=reg.source,
             file_accessible=exists and self.file_accessible(config_files, True),
+            is_git_repo=exists and self._resolve_is_git_repo(
+                reg.is_git_repo, reg.path,
+            ),
         )
 
     def resolve_create_target(

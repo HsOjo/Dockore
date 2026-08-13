@@ -763,6 +763,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stacks/{name}/pull-repo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pull Repo */
+        post: operations["pull_repo_api_stacks__name__pull_repo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stacks/{name}/up": {
         parameters: {
             query?: never;
@@ -1456,6 +1473,11 @@ export interface components {
              * @default false
              */
             file_accessible: boolean;
+            /**
+             * Is Git Repo
+             * @default false
+             */
+            is_git_repo: boolean;
         };
         /** StackMeta */
         StackMeta: {
@@ -3245,6 +3267,37 @@ export interface operations {
         };
     };
     pull_stack_api_stacks__name__pull_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pull_repo_api_stacks__name__pull_repo_post: {
         parameters: {
             query?: never;
             header?: never;
