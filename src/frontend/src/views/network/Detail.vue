@@ -31,8 +31,9 @@
             <a-descriptions-item :label="t('createTime')">
               {{ formatTime(item.create_time, locale) }}
             </a-descriptions-item>
-            <a-descriptions-item :label="t('network.field.attachable')">
-              <a-checkbox :checked="item.attachable ?? false" disabled />
+            <a-descriptions-item :label="t('network.field.features')">
+              <span>{{ t("network.field.attachable") }}</span>
+              <a-checkbox :checked="item.attachable ?? false" disabled style="margin-left: 8px" />
               <span style="margin-left: 16px">{{ t("network.field.internal") }}</span>
               <a-checkbox :checked="item.internal ?? false" disabled style="margin-left: 8px" />
             </a-descriptions-item>

@@ -216,7 +216,8 @@
       "containerNum": "Containers",
       "attachable": "Attachable",
       "internal": "Internal",
-      "ipamDriver": "IPAM Driver"
+      "ipamDriver": "IPAM Driver",
+      "features": "Features"
     },
     "drivers": {
       "bridge": "Bridge",

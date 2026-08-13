@@ -216,7 +216,8 @@
       "containerNum": "连接容器数量",
       "attachable": "开放连接",
       "internal": "内部网络",
-      "ipamDriver": "IPAM驱动"
+      "ipamDriver": "IPAM驱动",
+      "features": "特性"
     },
     "drivers": {
       "bridge": "桥接网络",
