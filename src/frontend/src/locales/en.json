@@ -295,6 +295,8 @@
     "downConfirm": "Bring down stack \"{name}\"? Its containers will be stopped and removed.",
     "destroyConfirm": "Destroy stack \"{name}\"? This will down containers, unregister, and delete local files.",
     "importConfirm": "Import discovered stack \"{name}\" into the registry?",
+    "importBatchConfirm": "Import the {count} selected stacks into the registry?",
+    "importBatchSuccess": "Imported {count} stacks",
     "unregisterConfirm": "Unregister stack \"{name}\"? No containers or files will be deleted.",
     "namePlaceholder": "my-stack",
     "nameInvalid": "Name must start with a lowercase letter or digit and only contain lowercase letters, digits, - and _",

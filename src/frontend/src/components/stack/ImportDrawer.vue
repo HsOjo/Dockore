@@ -10,6 +10,10 @@
       :columns="columns"
       :loading="store.loading"
       :pagination="false"
+      :row-selection="{
+        selectedRowKeys,
+        onChange: (keys: (string | number)[]) => (selectedRowKeys = keys.map(String)),
+      }"
       row-key="name"
       size="middle"
     >
@@ -23,26 +27,31 @@
         <template v-else-if="column.key === 'working_dir'">
           <EllipsisText :text="record.working_dir || t('none')" mono />
         </template>
-        <template v-else-if="column.key === 'actions'">
-          <a-button
-            type="link"
-            size="small"
-            :loading="importingName === record.name"
-            @click="confirmImport(record)"
-          >
-            {{ t("stack.import") }}
-          </a-button>
-        </template>
       </template>
     </DataTable>
+    <template #footer>
+      <div class="footer">
+        <a-popconfirm
+          v-if="selectedRowKeys.length"
+          :title="t('stack.importBatchConfirm', { count: selectedRowKeys.length })"
+          :ok-text="t('ok')"
+          :cancel-text="t('cancel')"
+          @confirm="batchImport"
+        >
+          <a-button type="primary" :loading="importing">
+            {{ t("stack.import") }} ({{ selectedRowKeys.length }})
+          </a-button>
+        </a-popconfirm>
+      </div>
+    </template>
   </a-drawer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { message, Modal } from "ant-design-vue";
-import { useStackStore, errorMessage, type StackItem } from "@/stores";
+import { message } from "ant-design-vue";
+import { useStackStore, errorMessage } from "@/stores";
 import DataTable from "@/components/common/DataTable.vue";
 import EllipsisText from "@/components/common/EllipsisText.vue";
 
@@ -55,7 +64,8 @@ const emit = defineEmits<{
 const { t, te } = useI18n();
 const store = useStackStore();
 
-const importingName = ref("");
+const importing = ref(false);
+const selectedRowKeys = ref<string[]>([]);
 
 const items = computed(() => store.stacks.filter((s) => !s.registered));
 
@@ -69,7 +79,6 @@ const columns = computed(() => [
     dataIndex: "working_dir",
     ellipsis: { showTitle: false },
   },
-  { title: t("actions"), key: "actions", width: 90 },
 ]);
 
 function statusColor(status: string): string {
@@ -97,23 +106,40 @@ watch(
   }
 );
 
-function confirmImport(record: StackItem) {
-  Modal.confirm({
-    title: t("stack.importConfirm", { name: record.name }),
-    okText: t("ok"),
-    cancelText: t("cancel"),
-    onOk: async () => {
-      importingName.value = record.name;
+watch(
+  items,
+  (list) => {
+    if (props.open) selectedRowKeys.value = list.map((s) => s.name);
+  },
+  { immediate: true }
+);
+
+async function batchImport() {
+  const names = [...selectedRowKeys.value];
+  importing.value = true;
+  let ok = 0;
+  try {
+    for (const name of names) {
       try {
-        await store.importStack(record.name);
-        message.success(t("stack.importSuccess", { name: record.name }));
-        emit("imported");
+        await store.importStack(name);
+        ok++;
       } catch (e: any) {
-        message.error(errorMessage(e));
-      } finally {
-        importingName.value = "";
+        message.error(`${name}: ${errorMessage(e)}`);
       }
-    },
-  });
+    }
+    if (ok) {
+      message.success(t("stack.importBatchSuccess", { count: ok }));
+      emit("imported");
+    }
+  } finally {
+    importing.value = false;
+  }
 }
 </script>
+
+<style scoped>
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

@@ -295,6 +295,8 @@
     "downConfirm": "确定下线栈「{name}」吗？将停止并移除其容器。",
     "destroyConfirm": "确定销毁栈「{name}」吗？将下线容器、移除登记并删除本地文件。",
     "importConfirm": "确定将发现的栈「{name}」导入注册表吗？",
+    "importBatchConfirm": "确定将选中的 {count} 个栈导入注册表吗？",
+    "importBatchSuccess": "已导入 {count} 个栈",
     "unregisterConfirm": "确定移除栈「{name}」的登记吗？不会删除任何容器或文件。",
     "namePlaceholder": "my-stack",
     "nameInvalid": "名称需以小写字母或数字开头，仅可包含小写字母、数字、- 和 _",
