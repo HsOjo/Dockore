@@ -84,17 +84,17 @@ class FakeCli:
         self.calls.append(args)
         return self.json_lines_rows
 
-    async def inspect(self, *args):
-        self.calls.append(args)
+    async def inspect(self, kind, *args):
+        self.calls.append((kind, "inspect", *args))
         key = args[-1]
         if key not in self.inspect_map:
             raise DockerNotFound(f"no such object: {key}")
         return self.inspect_map[key]
 
-    async def inspect_list(self, *args):
-        self.calls.append(args)
+    async def inspect_list(self, kind, *args):
+        self.calls.append((kind, "inspect", *args))
         if self.inspect_list_handler:
-            return self.inspect_list_handler(args)
+            return self.inspect_list_handler((kind, *args))
         return [self.inspect_map[a] for a in args]
 
 

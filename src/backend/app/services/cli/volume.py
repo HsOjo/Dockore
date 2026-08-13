@@ -31,12 +31,12 @@ class VolumeService:
         names = [row['Name'] for row in rows if row.get('Name')]
         if not names:
             return []
-        inspects = await self._cli.inspect_list(*names)
+        inspects = await self._cli.inspect_list("volume", *names)
         return [volume_item_from_inspect(a, verbose) for a in inspects]
 
     async def item(self, id: str):
         try:
-            attrs = await self._cli.inspect(id)
+            attrs = await self._cli.inspect("volume", id)
         except DockerNotFound:
             return None
         return volume_item_from_inspect(attrs, verbose=True)

@@ -49,12 +49,12 @@ class DockerCli:
         text = await self.run(*args)
         return [json.loads(line) for line in text.splitlines() if line.strip()]
 
-    async def inspect(self, *args: str) -> dict:
-        """`docker inspect ...` returning the first object."""
-        data = json.loads(await self.run("inspect", *args))
+    async def inspect(self, kind: str, *args: str) -> dict:
+        """`docker <kind> inspect ...` returning the first object."""
+        data = json.loads(await self.run(kind, "inspect", *args))
         if not data:
             raise DockerNotFound(f"inspect returned no object: {' '.join(args)}")
         return data[0]
 
-    async def inspect_list(self, *args: str) -> list[dict]:
-        return json.loads(await self.run("inspect", *args))
+    async def inspect_list(self, kind: str, *args: str) -> list[dict]:
+        return json.loads(await self.run(kind, "inspect", *args))

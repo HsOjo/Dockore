@@ -104,7 +104,7 @@ class ContainerService:
         rows = await self._cli.run_json_lines(*args)
         if not rows:
             return []
-        attrs_list = await self._cli.inspect_list(*[row["ID"] for row in rows])
+        attrs_list = await self._cli.inspect_list("container", *[row["ID"] for row in rows])
         refs: Dict[str, Optional[str]] = {}
         for attrs in attrs_list:
             ref = attrs.get("Image") or ""
@@ -118,7 +118,7 @@ class ContainerService:
 
     async def item(self, id: str):
         try:
-            attrs = await self._cli.inspect(id)
+            attrs = await self._cli.inspect("container", id)
         except DockerNotFound:
             return None
         image = await self._image_item(
@@ -212,7 +212,7 @@ class ContainerService:
         return await self._cli.run(*args, id)
 
     async def get_status(self, id: str):
-        attrs = await self._cli.inspect(id)
+        attrs = await self._cli.inspect("container", id)
         return (attrs.get("State") or {}).get("Status") or ""
 
     async def diff(self, id: str):

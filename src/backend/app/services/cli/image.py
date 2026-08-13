@@ -75,12 +75,12 @@ class ImageService:
                 ids.append(image_id)
         if not ids:
             return []
-        inspects = await self._cli.inspect_list(*ids)
+        inspects = await self._cli.inspect_list("image", *ids)
         return [image_item_from_inspect(a, verbose) for a in inspects]
 
     async def item(self, id: str):
         try:
-            attrs = await self._cli.inspect(id)
+            attrs = await self._cli.inspect("image", id)
         except DockerNotFound:
             return None
         return image_item_from_inspect(attrs, verbose=True)
