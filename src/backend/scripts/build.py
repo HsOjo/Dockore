@@ -44,7 +44,11 @@ def write_spec(backend_dir: Path, spec_path: Path, icon_path: Path) -> None:
     entry = backend_dir / "app" / "main.py"
     spec_path.parent.mkdir(parents=True, exist_ok=True)
     version_file = backend_dir.parent.parent / "VERSION"
-    datas = [(str(version_file), ".")]
+    datas = [
+        (str(version_file), "."),
+        (str(backend_dir / "alembic.ini"), "."),
+        (str(backend_dir / "alembic"), "alembic"),
+    ]
 
     spec = f'''# -*- mode: python ; coding: utf-8 -*-
 

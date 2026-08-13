@@ -20,10 +20,9 @@ logger = logging.getLogger(__name__)
 from app.api import router
 from app.api.ws import router as ws_router
 from app.core.config import settings
-from app.core.database import engine
+from app.core.migrations import run_migrations
 from app.core.process import monitor_parent
 from app.core.version import APP_VERSION
-from app.models import Base
 from app.services.cli import DockerApiError, DockerError, DockerNotFound
 
 
@@ -36,8 +35,9 @@ async def lifespan(app: FastAPI):
             monitor_task = asyncio.create_task(monitor_parent(int(parent_pid)))
         except ValueError:
             pass
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Run in a worker thread: alembic/env.py uses asyncio.run(), which
+    # cannot be called from this lifespan's running event loop.
+    await asyncio.to_thread(run_migrations)
     yield
     if monitor_task:
         monitor_task.cancel()
