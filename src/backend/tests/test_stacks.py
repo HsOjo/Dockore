@@ -439,6 +439,58 @@ async def test_api_register_outside_stacks_dir_rejected(register_client, tmp_pat
     assert "outside stacks_dir" in resp.json()["detail"]
 
 
+@pytest.fixture
+async def import_client(tmp_path):
+    stacks_dir = tmp_path / "stacks"
+    stack_dir = stacks_dir / "rel"
+    stack_dir.mkdir(parents=True)
+    (stack_dir / "compose.yml").write_text("services: {}")
+    scan_data = {
+        "rel": {
+            "name": "rel",
+            "working_dir": str(stack_dir),
+            "config_files": "compose.yml",
+            "containers": [
+                {"id": "e", "name": "rel-app-1", "service": "app",
+                 "state": "running", "status": "Up"},
+            ],
+        },
+    }
+    compose = FakeComposeService()
+    session = async_session()
+    app.dependency_overrides[get_stack_ctx] = lambda: StackContext(
+        stack=StackService(fake_docker(scan_data), stacks_dir=str(stacks_dir)),
+        compose=compose,
+        session=session,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
+        c.stack_dir = stack_dir
+        yield c
+    app.dependency_overrides.pop(get_stack_ctx, None)
+    async with async_session() as cleanup:
+        await stack_registry.unregister(cleanup, "rel")
+    await compose.close()
+    await session.close()
+
+
+async def test_api_import_relative_config_files(import_client):
+    resp = await import_client.get("/api/stacks/rel", headers=AUTH)
+    assert resp.status_code == 200
+    item = resp.json()
+    assert item["config_files"] == [str(import_client.stack_dir / "compose.yml")]
+    assert item["file_accessible"]
+
+    resp = await import_client.post(
+        "/api/stacks/import", headers=AUTH, json={"name": "rel"},
+    )
+    assert resp.status_code == 200
+    resp = await import_client.get("/api/stacks/rel", headers=AUTH)
+    item = resp.json()
+    assert item["registered"] and item["source"] == "imported"
+
+
 async def test_api_register_desktop_mode(stack_client, tmp_path):
     stack_dir = tmp_path / "anywhere" / "beta"
     stack_dir.mkdir(parents=True)

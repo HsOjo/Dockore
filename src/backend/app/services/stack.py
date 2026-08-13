@@ -66,6 +66,13 @@ class StackService:
         return all(self._is_under(root, Path(p)) for p in paths)
 
     @staticmethod
+    def _absolutize(working_dir: str, path: str) -> str:
+        """Compose labels may carry config files relative to working_dir."""
+        if not working_dir or Path(path).is_absolute():
+            return path
+        return str(Path(working_dir) / path)
+
+    @staticmethod
     def _is_under(root: Path, path: Path) -> bool:
         try:
             path.resolve().relative_to(root)
@@ -97,7 +104,12 @@ class StackService:
             if reg and reg.config_files
             else data["config_files"]
         )
-        config_files = [f for f in files_str.split(",") if f]
+        working_dir = reg.path if reg else data["working_dir"]
+        config_files = [
+            self._absolutize(working_dir, f)
+            for f in files_str.split(",")
+            if f
+        ]
         containers = data["containers"]
         return dict(
             name=data["name"],
@@ -105,7 +117,7 @@ class StackService:
             running=sum(1 for c in containers if c["state"] == "running"),
             total=len(containers),
             containers=containers,
-            working_dir=(reg.path if reg else data["working_dir"]),
+            working_dir=working_dir,
             config_files=config_files,
             registered=reg is not None,
             source=(reg.source if reg else "discovered"),
