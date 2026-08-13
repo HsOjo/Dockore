@@ -1,6 +1,7 @@
 import asyncio
 import itertools
 
+from app.core.settings_service import ProxyConfig
 from app.services.cli.container import container_item_from_inspect
 from app.services.cli.errors import DockerApiError, DockerNotFound
 from app.services.cli.image import image_item_from_inspect
@@ -313,6 +314,7 @@ class FakeVolumeService:
 
 class FakeDocker:
     def __init__(self, docker_host=""):
+        self.proxy = ProxyConfig()
         self.cli = FakeCli(docker_host)
         self.container = FakeContainerService()
         self.image = FakeImageService()

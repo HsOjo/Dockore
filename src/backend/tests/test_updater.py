@@ -58,7 +58,7 @@ def _fake_assets_html(tag: str = "v9.9.9"):
 </html>"""
 
 
-async def _mock_fetch_page(url: str, timeout: float) -> str:
+async def _mock_fetch_page(url: str, timeout: float, proxy=None) -> str:
     if "expanded_assets" in url:
         return _fake_assets_html()
     return _fake_releases_html()
@@ -84,7 +84,7 @@ async def test_check_update_returns_have_new():
 
 
 async def test_check_update_respects_current_version():
-    async def _mock_fetch_page_local(url: str, timeout: float) -> str:
+    async def _mock_fetch_page_local(url: str, timeout: float, proxy=None) -> str:
         if "expanded_assets" in url:
             return _fake_assets_html(APP_VERSION)
         return _fake_releases_html(APP_VERSION)
@@ -98,7 +98,7 @@ async def test_check_update_respects_current_version():
 async def test_check_update_caches_result():
     call_count = {"value": 0}
 
-    async def _mock_fetch_page_counted(url: str, timeout: float) -> str:
+    async def _mock_fetch_page_counted(url: str, timeout: float, proxy=None) -> str:
         call_count["value"] += 1
         if "expanded_assets" in url:
             return _fake_assets_html()
@@ -114,7 +114,7 @@ async def test_check_update_caches_result():
 async def test_check_update_force_bypasses_cache():
     call_count = {"value": 0}
 
-    async def _mock_fetch_page_counted(url: str, timeout: float) -> str:
+    async def _mock_fetch_page_counted(url: str, timeout: float, proxy=None) -> str:
         call_count["value"] += 1
         if "expanded_assets" in url:
             return _fake_assets_html()

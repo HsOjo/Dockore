@@ -54,21 +54,23 @@ def compare_version(current: str, latest: str) -> bool:
     return b > a
 
 
-async def _fetch_page(url: str, timeout: float) -> str:
-    async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+async def _fetch_page(url: str, timeout: float, proxy: Optional[str] = None) -> str:
+    async with httpx.AsyncClient(
+        timeout=timeout, follow_redirects=True, proxy=proxy
+    ) as client:
         resp = await client.get(url)
     resp.raise_for_status()
     return resp.text
 
 
-async def get_latest_release(timeout: float = 5) -> Release:
+async def get_latest_release(timeout: float = 5, proxy: Optional[str] = None) -> Release:
     """Parse the latest release from the GitHub releases HTML page.
 
     GitHub's REST API has a very low unauthenticated rate limit, so we scrape
     the public releases page instead.
     """
     releases_url = f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/releases"
-    html = await _fetch_page(releases_url, timeout)
+    html = await _fetch_page(releases_url, timeout, proxy)
     soup = BeautifulSoup(html, "html.parser")
 
     tag_link = soup.find(
@@ -98,7 +100,7 @@ async def get_latest_release(timeout: float = 5) -> Release:
     assets: list[dict[str, str]] = []
     assets_url = f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/releases/expanded_assets/{tag_name}"
     try:
-        assets_html = await _fetch_page(assets_url, timeout)
+        assets_html = await _fetch_page(assets_url, timeout, proxy)
         assets_soup = BeautifulSoup(assets_html, "html.parser")
         asset_links = assets_soup.find_all(
             "a",
@@ -128,7 +130,9 @@ async def get_latest_release(timeout: float = 5) -> Release:
     )
 
 
-async def check_update(timeout: float = 5, force: bool = False) -> tuple[Optional[Release], bool]:
+async def check_update(
+    timeout: float = 5, force: bool = False, proxy: Optional[str] = None
+) -> tuple[Optional[Release], bool]:
     """Fetch the latest release and whether it is newer than the running version.
 
     Results are cached for CACHE_TTL seconds to reduce requests to GitHub.
@@ -140,7 +144,7 @@ async def check_update(timeout: float = 5, force: bool = False) -> tuple[Optiona
     if not force and _update_cache is not None and (now - _update_cache[2]) < CACHE_TTL:
         return _update_cache[0], _update_cache[1]
 
-    release = await get_latest_release(timeout=timeout)
+    release = await get_latest_release(timeout=timeout, proxy=proxy)
     have_new = compare_version(APP_VERSION, release.tag_name)
     _update_cache = (release, have_new, now)
     return release, have_new

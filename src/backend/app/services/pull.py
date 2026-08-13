@@ -3,6 +3,7 @@ import base64
 from typing import Optional
 
 from app.core.broadcast import manager
+from app.core.settings_service import ProxyConfig
 from app.services.cli import CliExecutor, CliTask
 
 
@@ -10,15 +11,18 @@ class PullTaskManager:
     """Broadcast image pull pty output to /ws as base64-encoded bytes."""
 
     def __init__(self):
-        self._executors: dict[str, CliExecutor] = {}
+        self._executors: dict[tuple[str, ProxyConfig], CliExecutor] = {}
         self._lock = asyncio.Lock()
         self._image_locks: dict[str, asyncio.Lock] = {}
 
-    def get_executor(self, docker_host: str) -> CliExecutor:
-        executor = self._executors.get(docker_host)
+    def get_executor(
+        self, docker_host: str, proxy: Optional[ProxyConfig] = None
+    ) -> CliExecutor:
+        key = (docker_host, proxy or ProxyConfig())
+        executor = self._executors.get(key)
         if executor is None:
-            executor = CliExecutor(docker_host)
-            self._executors[docker_host] = executor
+            executor = CliExecutor(docker_host, proxy)
+            self._executors[key] = executor
         return executor
 
     async def image_lock(self, image: str) -> asyncio.Lock:
@@ -48,7 +52,11 @@ class PullTaskManager:
         return on_data, on_done
 
     async def start(
-        self, docker_host: str, name: str, tag: Optional[str]
+        self,
+        docker_host: str,
+        name: str,
+        tag: Optional[str],
+        proxy: Optional[ProxyConfig] = None,
     ) -> Optional[CliTask]:
         """Run `docker pull` under a per-image lock; None when busy."""
         image = f"{name}:{tag}" if tag else name
@@ -57,7 +65,7 @@ class PullTaskManager:
             return None
         async with lock:
             on_data, on_done = self._make_callbacks(image)
-            executor = self.get_executor(docker_host)
+            executor = self.get_executor(docker_host, proxy)
             return await executor.stream(
                 "pull", image, ["docker", "pull", image],
                 on_data, on_done=on_done,

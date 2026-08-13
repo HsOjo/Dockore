@@ -12,13 +12,29 @@
         </a-form>
       </a-card>
 
-      <a-card :title="t('settings.backend')" class="section">
+      <a-card :title="t('settings.proxy')" class="section">
         <a-form layout="vertical" style="max-width: 480px">
-          <a-form-item :label="t('settings.dockerHost')">
-            <a-input v-model:value="dockerHost" placeholder="unix:///var/run/docker.sock" />
+          <a-form-item :label="t('settings.httpProxy')">
+            <a-input v-model:value="httpProxy" placeholder="http://127.0.0.1:7890" />
+          </a-form-item>
+          <a-form-item :label="t('settings.httpsProxy')">
+            <a-input v-model:value="httpsProxy" placeholder="http://127.0.0.1:7890" />
+          </a-form-item>
+          <a-form-item :label="t('settings.noProxy')">
+            <a-input v-model:value="noProxy" placeholder="localhost,127.0.0.1" />
+          </a-form-item>
+          <a-form-item :label="t('settings.proxyScope')">
+            <a-space direction="vertical">
+              <a-checkbox v-model:checked="proxyCli">
+                {{ t("settings.proxyCli") }}
+              </a-checkbox>
+              <a-checkbox v-model:checked="proxyOutbound">
+                {{ t("settings.proxyOutbound") }}
+              </a-checkbox>
+            </a-space>
           </a-form-item>
           <a-form-item>
-            <a-button type="primary" :loading="saving" @click="saveBackend">
+            <a-button type="primary" :loading="savingProxy" @click="saveProxy">
               {{ t("save") }}
             </a-button>
           </a-form-item>
@@ -53,6 +69,19 @@
         </a-popconfirm>
       </div>
       </a-card>
+
+      <a-card :title="t('settings.backend')" class="section">
+        <a-form layout="vertical" style="max-width: 480px">
+          <a-form-item :label="t('settings.dockerHost')">
+            <a-input v-model:value="dockerHost" placeholder="unix:///var/run/docker.sock" />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" :loading="saving" @click="saveBackend">
+              {{ t("save") }}
+            </a-button>
+          </a-form-item>
+        </a-form>
+      </a-card>
     </div>
   </div>
 </template>
@@ -74,7 +103,13 @@ const ui = getUISettings();
 const theme = ref(ui.value.theme);
 const localeValue = ref(locale.value);
 const dockerHost = ref("");
+const httpProxy = ref("");
+const httpsProxy = ref("");
+const noProxy = ref("");
+const proxyCli = ref(true);
+const proxyOutbound = ref(true);
 const saving = ref(false);
+const savingProxy = ref(false);
 
 const themeOptions = computed(() => [
   { label: t("themeLight"), value: "light" },
@@ -99,7 +134,13 @@ function handleLocaleChange(val: string | number) {
 onMounted(async () => {
   try {
     await settingsStore.fetch();
-    dockerHost.value = settingsStore.settings?.docker_host || "";
+    const s = settingsStore.settings;
+    dockerHost.value = s?.docker_host || "";
+    httpProxy.value = s?.http_proxy || "";
+    httpsProxy.value = s?.https_proxy || "";
+    noProxy.value = s?.no_proxy || "";
+    proxyCli.value = s?.proxy_cli !== false;
+    proxyOutbound.value = s?.proxy_outbound !== false;
   } catch (e: any) {
     message.error(errorMessage(e));
   }
@@ -108,12 +149,32 @@ onMounted(async () => {
 async function saveBackend() {
   saving.value = true;
   try {
-    await settingsStore.update({ docker_host: dockerHost.value || null });
+    await settingsStore.update({
+      docker_host: dockerHost.value || null,
+    });
     message.success(t("saved"));
   } catch (e: any) {
     message.error(errorMessage(e));
   } finally {
     saving.value = false;
+  }
+}
+
+async function saveProxy() {
+  savingProxy.value = true;
+  try {
+    await settingsStore.update({
+      http_proxy: httpProxy.value,
+      https_proxy: httpsProxy.value,
+      no_proxy: noProxy.value,
+      proxy_cli: proxyCli.value,
+      proxy_outbound: proxyOutbound.value,
+    });
+    message.success(t("saved"));
+  } catch (e: any) {
+    message.error(errorMessage(e));
+  } finally {
+    savingProxy.value = false;
   }
 }
 

@@ -4322,6 +4322,31 @@
             "type": "string",
             "title": "Docker Cli Path",
             "default": "auto"
+          },
+          "http_proxy": {
+            "type": "string",
+            "title": "Http Proxy",
+            "default": ""
+          },
+          "https_proxy": {
+            "type": "string",
+            "title": "Https Proxy",
+            "default": ""
+          },
+          "no_proxy": {
+            "type": "string",
+            "title": "No Proxy",
+            "default": ""
+          },
+          "proxy_cli": {
+            "type": "boolean",
+            "title": "Proxy Cli",
+            "default": true
+          },
+          "proxy_outbound": {
+            "type": "boolean",
+            "title": "Proxy Outbound",
+            "default": true
           }
         },
         "additionalProperties": true,
@@ -4351,6 +4376,61 @@
               }
             ],
             "title": "Docker Cli Path"
+          },
+          "http_proxy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Proxy"
+          },
+          "https_proxy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Https Proxy"
+          },
+          "no_proxy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "No Proxy"
+          },
+          "proxy_cli": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proxy Cli"
+          },
+          "proxy_outbound": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proxy Outbound"
           }
         },
         "type": "object",

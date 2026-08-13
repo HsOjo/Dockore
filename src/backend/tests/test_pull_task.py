@@ -32,7 +32,7 @@ def _manager(monkeypatch, executor=None):
     monkeypatch.setattr("app.services.pull.manager", recorder)
     manager = PullTaskManager()
     if executor is not None:
-        monkeypatch.setattr(manager, "get_executor", lambda host: executor)
+        monkeypatch.setattr(manager, "get_executor", lambda host, proxy=None: executor)
     return manager, recorder
 
 

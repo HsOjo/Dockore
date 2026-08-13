@@ -23,15 +23,16 @@ test.describe("Settings", () => {
     await page.goto("/settings");
     await expect(page.locator("text=界面设置")).toBeVisible();
     await expect(page.locator("text=后端设置")).toBeVisible();
+    await expect(page.locator("text=代理设置")).toBeVisible();
     await expect(page.locator("text=服务器信息")).toBeVisible();
     await expect(page.getByPlaceholder("unix:///var/run/docker.sock")).toHaveValue(
       "unix:///var/run/docker.sock"
     );
-    await expect(page.getByRole("button", { name: /^保\s*存$/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^保\s*存$/ }).first()).toBeVisible();
   });
 
   test("saves backend settings", async ({ page }) => {
-    let putBody: { docker_host?: string | null } | null = null;
+    let putBody: Record<string, unknown> | null = null;
     await page.route("**/api/settings", async (route, request) => {
       if (request.method() === "PUT") {
         putBody = request.postDataJSON();
@@ -43,9 +44,49 @@ test.describe("Settings", () => {
     await page.goto("/settings");
     const input = page.getByPlaceholder("unix:///var/run/docker.sock");
     await input.fill("tcp://docker-proxy:2375");
-    await page.getByRole("button", { name: /^保\s*存$/ }).click();
+    await page
+      .locator(".ant-card", { hasText: "后端设置" })
+      .getByRole("button", { name: /^保\s*存$/ })
+      .click();
 
     await expect(page.locator("text=已保存")).toBeVisible();
     expect(putBody).toEqual({ docker_host: "tcp://docker-proxy:2375" });
+  });
+
+  test("saves proxy settings", async ({ page }) => {
+    let putBody: Record<string, unknown> | null = null;
+    await page.route("**/api/settings", async (route, request) => {
+      if (request.method() === "PUT") {
+        putBody = request.postDataJSON();
+        return route.fulfill({ json: putBody });
+      }
+      await route.fulfill({
+        json: {
+          docker_host: "unix:///var/run/docker.sock",
+          http_proxy: "",
+          https_proxy: "",
+          no_proxy: "",
+          proxy_cli: true,
+          proxy_outbound: true,
+        },
+      });
+    });
+
+    await page.goto("/settings");
+    await page.getByPlaceholder("localhost,127.0.0.1").fill("localhost");
+    await page.getByRole("checkbox", { name: "后端出站请求" }).uncheck();
+    await page
+      .locator(".ant-card", { hasText: "代理设置" })
+      .getByRole("button", { name: /^保\s*存$/ })
+      .click();
+
+    await expect(page.locator("text=已保存")).toBeVisible();
+    expect(putBody).toEqual({
+      http_proxy: "",
+      https_proxy: "",
+      no_proxy: "localhost",
+      proxy_cli: true,
+      proxy_outbound: false,
+    });
   });
 });

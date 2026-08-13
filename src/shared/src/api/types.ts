@@ -1372,6 +1372,31 @@ export interface components {
              * @default auto
              */
             docker_cli_path: string;
+            /**
+             * Http Proxy
+             * @default
+             */
+            http_proxy: string;
+            /**
+             * Https Proxy
+             * @default
+             */
+            https_proxy: string;
+            /**
+             * No Proxy
+             * @default
+             */
+            no_proxy: string;
+            /**
+             * Proxy Cli
+             * @default true
+             */
+            proxy_cli: boolean;
+            /**
+             * Proxy Outbound
+             * @default true
+             */
+            proxy_outbound: boolean;
         } & {
             [key: string]: unknown;
         };
@@ -1381,6 +1406,16 @@ export interface components {
             docker_host?: string | null;
             /** Docker Cli Path */
             docker_cli_path?: string | null;
+            /** Http Proxy */
+            http_proxy?: string | null;
+            /** Https Proxy */
+            https_proxy?: string | null;
+            /** No Proxy */
+            no_proxy?: string | null;
+            /** Proxy Cli */
+            proxy_cli?: boolean | null;
+            /** Proxy Outbound */
+            proxy_outbound?: boolean | null;
         };
         /** StackContainerItem */
         StackContainerItem: {

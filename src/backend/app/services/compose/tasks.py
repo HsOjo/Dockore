@@ -4,6 +4,7 @@ import json
 from typing import Optional
 
 from app.core.broadcast import manager
+from app.core.settings_service import ProxyConfig
 from app.services.cli import CliExecutor, CliTask
 
 
@@ -11,15 +12,18 @@ class StackTaskManager:
     """Broadcast stack task pty output to /ws as base64-encoded bytes."""
 
     def __init__(self):
-        self._executors: dict[str, CliExecutor] = {}
+        self._executors: dict[tuple[str, ProxyConfig], CliExecutor] = {}
         self._lock = asyncio.Lock()
         self._stack_locks: dict[str, asyncio.Lock] = {}
 
-    def get_executor(self, docker_host: str) -> CliExecutor:
-        executor = self._executors.get(docker_host)
+    def get_executor(
+        self, docker_host: str, proxy: Optional[ProxyConfig] = None
+    ) -> CliExecutor:
+        key = (docker_host, proxy or ProxyConfig())
+        executor = self._executors.get(key)
         if executor is None:
-            executor = CliExecutor(docker_host)
-            self._executors[docker_host] = executor
+            executor = CliExecutor(docker_host, proxy)
+            self._executors[key] = executor
         return executor
 
     def resize(self, task_id: str, rows: int, cols: int) -> None:

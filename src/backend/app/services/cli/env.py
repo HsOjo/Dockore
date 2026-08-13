@@ -1,6 +1,9 @@
 import os
 import sys
 from pathlib import Path
+from typing import Optional
+
+from app.core.settings_service import ProxyConfig
 
 EXTRA_BIN_DIRS = {
     "darwin": ["/usr/local/bin", "/opt/homebrew/bin", "/usr/bin"],
@@ -30,9 +33,11 @@ def augmented_path() -> str:
     return os.pathsep.join(p for p in parts if p)
 
 
-def build_env(docker_host: str) -> dict[str, str]:
+def build_env(docker_host: str, proxy: Optional[ProxyConfig] = None) -> dict[str, str]:
     env = dict(os.environ)
     env["PATH"] = augmented_path()
     if docker_host:
         env["DOCKER_HOST"] = docker_host
+    if proxy:
+        proxy.apply(env)
     return env

@@ -389,6 +389,13 @@
     "backend": "后端设置",
     "server": "服务器信息",
     "dockerHost": "Docker 服务地址",
+    "proxy": "代理设置",
+    "httpProxy": "HTTP 代理",
+    "httpsProxy": "HTTPS 代理",
+    "noProxy": "不使用代理的地址",
+    "proxyScope": "代理应用范围",
+    "proxyCli": "CLI 子进程（拉取镜像、Compose 等）",
+    "proxyOutbound": "后端出站请求（检查更新等）",
     "currentServer": "当前服务器",
     "disconnect": "断开连接",
     "disconnectConfirm": "确定断开当前服务器连接吗？"

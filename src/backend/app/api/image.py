@@ -52,7 +52,7 @@ async def delete_images(body: DeleteImagesRequest, docker: Docker = Depends(get_
 
 @router.post("/pull", response_model=PullCreated)
 async def pull_image(body: PullRequest, docker: Docker = Depends(get_docker)):
-    task = await pull_tasks.start(docker.cli.docker_host, body.name, body.tag)
+    task = await pull_tasks.start(docker.cli.docker_host, body.name, body.tag, proxy=docker.proxy)
     if task is None:
         raise HTTPException(status_code=409, detail="Pull already in progress")
     return PullCreated(pull_id=task.id)

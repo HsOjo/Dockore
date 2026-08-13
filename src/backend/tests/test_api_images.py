@@ -40,7 +40,7 @@ async def test_pull_image(client, monkeypatch):
     started = []
 
     class _PullTasks:
-        async def start(self, docker_host, name, tag):
+        async def start(self, docker_host, name, tag, proxy=None):
             started.append((docker_host, name, tag))
             return SimpleNamespace(id="pull-1")
 
@@ -55,7 +55,7 @@ async def test_pull_image(client, monkeypatch):
 
 async def test_pull_image_conflict_when_busy(client, monkeypatch):
     class _BusyPullTasks:
-        async def start(self, docker_host, name, tag):
+        async def start(self, docker_host, name, tag, proxy=None):
             return None
 
     monkeypatch.setattr("app.api.image.pull_tasks", _BusyPullTasks())

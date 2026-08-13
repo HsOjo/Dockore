@@ -8,6 +8,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Optional
 
+from app.core.settings_service import ProxyConfig
+
 from .env import build_env
 
 CANCEL_GRACE_SECONDS = 5
@@ -73,8 +75,8 @@ class CliExecutor:
     the real terminal behaviour (\r overwrite, ANSI colours, etc.).
     """
 
-    def __init__(self, docker_host: str = ""):
-        self._env = build_env(docker_host)
+    def __init__(self, docker_host: str = "", proxy: Optional[ProxyConfig] = None):
+        self._env = build_env(docker_host, proxy)
         self.tasks: dict[str, CliTask] = {}
 
     async def run(self, args: list[str], cwd: Optional[str] = None) -> str:

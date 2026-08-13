@@ -1,3 +1,7 @@
+from typing import Optional
+
+from app.core.settings_service import ProxyConfig
+
 from .container import ContainerService
 from .convertors import dict_to_lower, remove_empty_obj
 from .docker_cli import DockerCli
@@ -10,8 +14,9 @@ from .volume import VolumeService
 class Docker:
     """Facade grouping the per-resource CLI services for one docker_host."""
 
-    def __init__(self, docker_host: str = ""):
-        self.cli = DockerCli(docker_host)
+    def __init__(self, docker_host: str = "", proxy: Optional[ProxyConfig] = None):
+        self.proxy = proxy or ProxyConfig()
+        self.cli = DockerCli(docker_host, proxy)
         self.container = ContainerService(self.cli)
         self.image = ImageService(self.cli)
         self.network = NetworkService(self.cli)

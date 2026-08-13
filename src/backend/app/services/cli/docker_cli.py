@@ -1,6 +1,8 @@
 import json
 from typing import Optional
 
+from app.core.settings_service import ProxyConfig
+
 from .errors import DockerApiError, DockerError, DockerNotFound
 from .executor import CliError, CliExecutor
 
@@ -34,9 +36,9 @@ def map_cli_error(error: CliError) -> DockerError:
 class DockerCli:
     """Runs `docker` CLI commands for one docker_host and maps failures to DockerError."""
 
-    def __init__(self, docker_host: str = ""):
+    def __init__(self, docker_host: str = "", proxy: Optional[ProxyConfig] = None):
         self.docker_host = docker_host
-        self.executor = CliExecutor(docker_host)
+        self.executor = CliExecutor(docker_host, proxy)
 
     async def run(self, *args: str, cwd: Optional[str] = None) -> str:
         try:

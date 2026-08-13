@@ -734,7 +734,14 @@ export const useSettingsStore = defineStore("settings", () => {
     settings.value = await must(api.GET("/api/settings"));
   }
 
-  async function update(vals: { docker_host?: string | null }) {
+  async function update(vals: {
+    docker_host?: string | null;
+    http_proxy?: string | null;
+    https_proxy?: string | null;
+    no_proxy?: string | null;
+    proxy_cli?: boolean;
+    proxy_outbound?: boolean;
+  }) {
     settings.value = await must(api.PUT("/api/settings", { body: vals }));
   }
 

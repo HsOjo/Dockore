@@ -389,6 +389,13 @@
     "backend": "Backend Settings",
     "server": "Server Info",
     "dockerHost": "Docker Host",
+    "proxy": "Proxy Settings",
+    "httpProxy": "HTTP Proxy",
+    "httpsProxy": "HTTPS Proxy",
+    "noProxy": "No Proxy",
+    "proxyScope": "Proxy Scope",
+    "proxyCli": "CLI subprocesses (image pull, Compose, etc.)",
+    "proxyOutbound": "Backend outbound requests (update check, etc.)",
     "currentServer": "Current Server",
     "disconnect": "Disconnect",
     "disconnectConfirm": "Disconnect from the current server?"
