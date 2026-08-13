@@ -154,6 +154,7 @@ async def stack_logs_ws(
 
     registrations = await stack_registry.list_all(ctx.session)
     stack = await ctx.stack.get(name, registrations)
+    await stack_registry.commit_dirty(ctx.session)
     if not stack:
         await websocket.close(code=1008, reason="stack not found")
         return

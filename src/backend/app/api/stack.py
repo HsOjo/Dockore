@@ -56,6 +56,7 @@ def _task_item(t: CliTask) -> StackTaskItem:
 async def _get_item(ctx: StackContext, name: str) -> dict:
     registrations = await stack_registry.list_all(ctx.session)
     item = await ctx.stack.get(name, registrations)
+    await stack_registry.commit_dirty(ctx.session)
     if not item:
         raise HTTPException(status_code=404, detail="Stack not found")
     return item
@@ -110,7 +111,9 @@ async def cancel_task(task_id: str, ctx: StackContext = Depends(get_stack_ctx)):
 @router.get("", response_model=List[StackItem])
 async def list_stacks(ctx: StackContext = Depends(get_stack_ctx)):
     registrations = await stack_registry.list_all(ctx.session)
-    return await ctx.stack.list(registrations)
+    items = await ctx.stack.list(registrations)
+    await stack_registry.commit_dirty(ctx.session)
+    return items
 
 
 @router.post("", response_model=TaskCreated, status_code=201)

@@ -145,6 +145,81 @@ async def test_stack_service_merges_discovery_and_registry(tmp_path):
     assert not items["gone"]["file_accessible"]
 
 
+def _scan_entry(stack_dir: Path, config_files: str) -> dict:
+    return {
+        "name": stack_dir.name,
+        "working_dir": str(stack_dir),
+        "config_files": config_files,
+        "containers": [
+            {"id": "a", "name": "app-1", "service": "app",
+             "state": "running", "status": "Up"},
+        ],
+    }
+
+
+async def test_stack_service_heals_renamed_compose_file(tmp_path):
+    """Registered and label paths both stale after a rename: heal by scanning
+    the working directory and write the repair back to the registration."""
+    stack_dir = tmp_path / "dockore"
+    stack_dir.mkdir()
+    healed = stack_dir / "compose.yml"
+    healed.write_text("services: {}")
+    stale = str(stack_dir / "docker-compose.yml")
+    scan = {"dockore": _scan_entry(stack_dir, stale)}
+    service = StackService(fake_docker(scan))
+    reg = make_reg("dockore", str(stack_dir), stale, "imported")
+
+    item = (await service.list([reg]))[0]
+    assert item["config_files"] == [str(healed)]
+    assert item["file_accessible"]
+    assert reg.config_files == str(healed)
+
+
+async def test_stack_service_heals_from_discovery(tmp_path):
+    """Registry stale but running containers carry the fresh label path."""
+    stack_dir = tmp_path / "app"
+    stack_dir.mkdir()
+    fresh = stack_dir / "compose.yaml"
+    fresh.write_text("services: {}")
+    scan = {"app": _scan_entry(stack_dir, str(fresh))}
+    service = StackService(fake_docker(scan))
+    reg = make_reg("app", str(stack_dir), str(stack_dir / "compose.yml"))
+
+    item = (await service.list([reg]))[0]
+    assert item["config_files"] == [str(fresh)]
+    assert reg.config_files == str(fresh)
+
+
+async def test_stack_service_keeps_unhealable_paths(tmp_path):
+    """Nothing exists on disk and the directory has no compose file: keep the
+    registered paths untouched."""
+    stack_dir = tmp_path / "empty"
+    stack_dir.mkdir()
+    stale = str(stack_dir / "docker-compose.yml")
+    scan = {"empty": _scan_entry(stack_dir, stale)}
+    service = StackService(fake_docker(scan))
+    reg = make_reg("empty", str(stack_dir), stale)
+
+    item = (await service.list([reg]))[0]
+    assert item["config_files"] == [stale]
+    assert reg.config_files == stale
+
+
+async def test_stack_service_heals_undiscovered_registration(tmp_path):
+    """Stopped stacks have no labels; heal purely from the directory scan."""
+    stack_dir = tmp_path / "stopped"
+    stack_dir.mkdir()
+    healed = stack_dir / "compose.yml"
+    healed.write_text("services: {}")
+    service = StackService(fake_docker({}))
+    reg = make_reg("stopped", str(stack_dir), str(stack_dir / "docker-compose.yml"))
+
+    item = (await service.list([reg]))[0]
+    assert item["config_files"] == [str(healed)]
+    assert item["file_accessible"]
+    assert reg.config_files == str(healed)
+
+
 async def test_stack_service_container_mode_file_matrix(tmp_path):
     stacks_dir = tmp_path / "stacks"
     stacks_dir.mkdir()
@@ -356,6 +431,28 @@ async def test_api_list_stacks(stack_client):
         assert len(items) == 1
         assert items[0]["name"] == "webapp"
         assert items[0]["registered"] and items[0]["source"] == "imported"
+    finally:
+        async with async_session() as session:
+            await stack_registry.unregister(session, "webapp")
+
+
+async def test_api_list_heals_stale_registration(stack_client, tmp_path):
+    stack_dir = tmp_path / "dockore"
+    stack_dir.mkdir()
+    (stack_dir / "compose.yml").write_text("services: {}")
+    async with async_session() as session:
+        await stack_registry.register(
+            session, "webapp", str(stack_dir),
+            str(stack_dir / "docker-compose.yml"), "imported",
+        )
+    try:
+        resp = await stack_client.get("/api/stacks", headers=AUTH)
+        assert resp.status_code == 200
+        item = next(i for i in resp.json() if i["name"] == "webapp")
+        assert item["config_files"] == [str(stack_dir / "compose.yml")]
+        async with async_session() as session:
+            reg = await stack_registry.get(session, "webapp")
+            assert reg.config_files == str(stack_dir / "compose.yml")
     finally:
         async with async_session() as session:
             await stack_registry.unregister(session, "webapp")

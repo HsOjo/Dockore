@@ -73,6 +73,55 @@ class StackService:
         return str(Path(working_dir) / path)
 
     @staticmethod
+    def _scan_compose_files(stack_dir: Path) -> list[Path]:
+        try:
+            return sorted(
+                f for f in stack_dir.iterdir()
+                if f.is_file() and f.name.lower() in COMPOSE_FILE_NAMES
+            )
+        except OSError:
+            return []
+
+    @staticmethod
+    def _files_exist(files: list[str]) -> bool:
+        return bool(files) and all(Path(f).is_file() for f in files)
+
+    def _can_inspect(self, paths: list[str]) -> bool:
+        """Existence checks are only meaningful for reachable files; in
+        container mode host paths outside stacks_dir cannot be inspected."""
+        if not self.container_mode:
+            return True
+        return bool(paths) and self._under_stacks_dir(paths)
+
+    def _resolve_files(
+        self,
+        reg: StackRegistration,
+        working_dir: str,
+        reg_files: list[str],
+        discovered_files: list[str],
+    ) -> list[str]:
+        """Registered paths win, but self-heal when they vanished (rename/
+        move of the compose file): fall back to discovery labels, then to a
+        directory scan. Repairs are written back to the registration; the
+        caller commits the session."""
+        if not reg_files:
+            return discovered_files
+        if self._files_exist(reg_files):
+            return reg_files
+        if not self._can_inspect([working_dir, *reg_files]):
+            return reg_files
+        healed = discovered_files
+        if not self._files_exist(healed):
+            healed = (
+                [str(f) for f in self._scan_compose_files(Path(working_dir))]
+                if working_dir else []
+            )
+        if healed:
+            reg.config_files = ",".join(healed)
+            return healed
+        return reg_files
+
+    @staticmethod
     def _is_under(root: Path, path: Path) -> bool:
         try:
             path.resolve().relative_to(root)
@@ -110,17 +159,26 @@ class StackService:
         return self._is_git_repo(working_dir)
 
     def _to_item(self, data: dict, reg: Optional[StackRegistration]) -> dict:
-        files_str = (
-            reg.config_files
-            if reg and reg.config_files
-            else data["config_files"]
-        )
-        working_dir = reg.path if reg else data["working_dir"]
-        config_files = [
-            self._absolutize(working_dir, f)
-            for f in files_str.split(",")
+        discovered_files = [
+            self._absolutize(data["working_dir"], f)
+            for f in data["config_files"].split(",")
             if f
         ]
+        if reg:
+            working_dir = reg.path
+            config_files = self._resolve_files(
+                reg,
+                working_dir,
+                [
+                    self._absolutize(working_dir, f)
+                    for f in reg.config_files.split(",")
+                    if f
+                ],
+                discovered_files,
+            )
+        else:
+            working_dir = data["working_dir"]
+            config_files = discovered_files
         containers = data["containers"]
         return dict(
             name=data["name"],
@@ -139,8 +197,10 @@ class StackService:
         )
 
     async def _registration_item(self, reg: StackRegistration) -> dict:
-        config_files = [f for f in reg.config_files.split(",") if f]
         exists = await asyncio.to_thread(Path(reg.path).exists)
+        config_files = [f for f in reg.config_files.split(",") if f]
+        if exists:
+            config_files = self._resolve_files(reg, reg.path, config_files, [])
         return dict(
             name=reg.name,
             status="inactive" if exists else "missing",
@@ -181,10 +241,7 @@ class StackService:
                 raise ValueError("stack directory is outside stacks_dir")
         if not stack_dir.is_dir():
             raise ValueError(f"Directory not found: {path}")
-        files = sorted(
-            f for f in stack_dir.iterdir()
-            if f.is_file() and f.name.lower() in COMPOSE_FILE_NAMES
-        )
+        files = self._scan_compose_files(stack_dir)
         if not files:
             raise ValueError(f"No compose file found in: {path}")
         return stack_dir, files

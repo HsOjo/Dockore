@@ -35,6 +35,13 @@ async def register(
     return entry
 
 
+async def commit_dirty(session: AsyncSession) -> None:
+    """Persist self-healed registration paths: StackService repairs stale
+    compose locations in-place on the ORM objects during list/get."""
+    if session.dirty:
+        await session.commit()
+
+
 async def unregister(session: AsyncSession, name: str) -> bool:
     entry = await get(session, name)
     if not entry:
