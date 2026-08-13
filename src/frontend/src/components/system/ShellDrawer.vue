@@ -1,15 +1,14 @@
 <template>
-  <a-modal
+  <a-drawer
     :open="open"
     :title="t('terminal.hostTitle')"
-    :footer="null"
-    width="800px"
-    @cancel="emit('update:open', false)"
+    width="860"
+    @close="emit('update:open', false)"
   >
     <div v-if="open" class="shell-terminal">
       <TerminalView host />
     </div>
-  </a-modal>
+  </a-drawer>
 </template>
 
 <script setup lang="ts">
@@ -25,6 +24,6 @@ const { t } = useI18n();
 <style scoped>
 .shell-terminal {
   display: flex;
-  height: 420px;
+  height: 100%;
 }
 </style>

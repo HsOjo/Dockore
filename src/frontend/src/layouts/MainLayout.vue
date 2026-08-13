@@ -80,7 +80,7 @@
         <img class="logo-watermark" :src="logoUrl" alt="" draggable="false" />
       </a-layout-content>
     </a-layout>
-    <ShellModal v-model:open="shellOpen" />
+    <ShellDrawer v-model:open="shellOpen" />
   </a-layout>
 </template>
 
@@ -89,7 +89,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined, DashboardOutlined, BlockOutlined, ContainerOutlined, FileImageOutlined, NodeIndexOutlined, DatabaseOutlined, SettingOutlined } from "@ant-design/icons-vue";
-import ShellModal from "@/components/system/ShellModal.vue";
+import ShellDrawer from "@/components/system/ShellDrawer.vue";
 import { useConnectionStore } from "@/stores";
 import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
 import logoUrl from "@/assets/logo.png";
