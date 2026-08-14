@@ -1,6 +1,7 @@
 import os
 import platform
 import subprocess
+from pathlib import Path
 
 import psutil
 from fastapi import APIRouter, Depends
@@ -46,6 +47,17 @@ def _cpu_model() -> str:
     return platform.processor()
 
 
+def _hostname(fallback: str) -> str:
+    if config.settings.dockore_hostname:
+        return config.settings.dockore_hostname
+    # 容器模式：读宿主 /etc/hostname 的挂载副本。注意 /proc/sys/kernel/hostname
+    # 是 UTS namespace 虚拟化的，即使挂载宿主 /proc 也只能读到容器主机名。
+    try:
+        return Path("/etc/host_hostname").read_text().strip() or fallback
+    except OSError:
+        return fallback
+
+
 @router.get("/version", response_model=SystemVersion)
 async def system_version(docker: Docker = Depends(get_docker)):
     uname = platform.uname()
@@ -53,7 +65,7 @@ async def system_version(docker: Docker = Depends(get_docker)):
     cpu_model = _cpu_model()
     project = ProjectInfo(
         version=APP_VERSION,
-        hostname=config.settings.dockore_hostname or uname.node,
+        hostname=_hostname(uname.node),
         python=platform.python_version(),
         os=uname.system,
         arch=uname.machine,
