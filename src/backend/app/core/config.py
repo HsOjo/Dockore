@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     dockore_cors_origins: str = ""
     dockore_docker_host: str = ""
     dockore_stacks_dir: str = ""
+    dockore_hostname: str = ""
     dockore_terminal_expires: int = 3600
 
     @property

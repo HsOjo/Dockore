@@ -17,6 +17,8 @@ services:
       - DOCKORE_STACKS_DIR=${DOCKORE_STACKS_DIR:-/app/stacks}
       # 系统监控：backend 通过 /host/proc 读取宿主机指标（psutil）
       - DOCKORE_HOST_PROC=/host/proc
+      # 主机名透传：容器内 hostname 是容器 ID，取 compose 宿主环境的 HOSTNAME
+      - DOCKORE_HOSTNAME=${HOSTNAME:-}
     volumes:
       - ./data:/app/data
       # Dockore 是 Docker 管理工具，需要访问宿主机容器 daemon

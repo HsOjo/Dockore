@@ -123,14 +123,14 @@
             <div class="metric-item">
               <div class="metric-line">
                 <span class="metric-label"><DashboardOutlined /> CPU(s)</span>
-                <span class="metric-value">{{ store.version?.project.cpu || "-" }}</span>
+                <span class="metric-value wrap">{{ store.version?.project.cpu || "-" }}</span>
               </div>
               <div class="bar-spacer" />
             </div>
             <div class="metric-item">
               <div class="metric-line">
                 <span class="metric-label"><CodeOutlined /> {{ t("metrics.kernel") }}</span>
-                <span class="metric-value">{{ store.version?.project.kernel || "-" }}</span>
+                <span class="metric-value wrap">{{ store.version?.project.kernel || "-" }}</span>
               </div>
               <div class="bar-spacer" />
             </div>
@@ -264,7 +264,7 @@ onUnmounted(() => {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 16px;
 }
 
@@ -307,6 +307,14 @@ onUnmounted(() => {
 .metric-value {
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.metric-value.wrap {
+  white-space: normal;
+  word-break: break-all;
+  text-align: right;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .bar-spacer {

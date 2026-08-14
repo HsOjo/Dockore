@@ -27,9 +27,13 @@ def _cpu_model() -> str:
         proc = os.environ.get(HOST_PROC_ENV, "/proc")
         try:
             with open(f"{proc}/cpuinfo") as f:
+                fields = {}
                 for line in f:
-                    if line.startswith("model name"):
-                        return line.split(":", 1)[1].strip()
+                    if ":" in line:
+                        key, _, value = line.partition(":")
+                        fields.setdefault(key.strip(), value.strip())
+                # x86 用 model name，ARM 通常只有 Hardware
+                return fields.get("model name") or fields.get("Hardware") or ""
         except OSError:
             pass
     elif system == "Darwin":
@@ -49,7 +53,7 @@ async def system_version(docker: Docker = Depends(get_docker)):
     cpu_model = _cpu_model()
     project = ProjectInfo(
         version=APP_VERSION,
-        hostname=uname.node,
+        hostname=config.settings.dockore_hostname or uname.node,
         python=platform.python_version(),
         os=uname.system,
         arch=uname.machine,
