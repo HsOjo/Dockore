@@ -5,7 +5,7 @@
         <a-tab-pane key="project" :tab="t('system.project')">
           <a-descriptions :column="1" bordered style="max-width: 720px">
             <a-descriptions-item
-              v-for="(value, key) in store.version.project"
+              v-for="(value, key) in projectFields"
               :key="key"
               :label="fieldLabel(String(key))"
             >
@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { message } from "ant-design-vue";
 import { useSystemStore, errorMessage } from "@/stores";
@@ -50,6 +50,14 @@ const store = useSystemStore();
 
 const tab = ref("project");
 const loading = ref(false);
+
+// cpu 型号信息只在资源监控页展示，系统信息页保持 docker 相关内容
+const projectFields = computed(() => {
+  const project = store.version?.project;
+  if (!project) return project;
+  const { cpu: _cpu, ...rest } = project;
+  return rest;
+});
 
 const fieldKeyMap: Record<string, string> = {
   version: "version",

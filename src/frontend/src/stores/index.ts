@@ -741,6 +741,7 @@ export const useSettingsStore = defineStore("settings", () => {
     no_proxy?: string | null;
     proxy_cli?: boolean;
     proxy_outbound?: boolean;
+    metrics_interval?: number;
   }) {
     settings.value = await must(api.PUT("/api/settings", { body: vals }));
   }

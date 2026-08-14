@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.settings_service import DEFAULT_SETTINGS
 
@@ -15,6 +15,7 @@ class SettingsData(BaseModel):
     no_proxy: str = DEFAULT_SETTINGS["no_proxy"]
     proxy_cli: bool = True
     proxy_outbound: bool = True
+    metrics_interval: int = int(DEFAULT_SETTINGS["metrics_interval"])
 
 
 class SettingsUpdate(BaseModel):
@@ -25,3 +26,4 @@ class SettingsUpdate(BaseModel):
     no_proxy: Optional[str] = None
     proxy_cli: Optional[bool] = None
     proxy_outbound: Optional[bool] = None
+    metrics_interval: Optional[int] = Field(default=None, ge=1, le=60)

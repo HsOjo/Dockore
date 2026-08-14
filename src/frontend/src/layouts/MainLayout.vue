@@ -3,6 +3,10 @@
     <a-layout-sider :width="200" theme="light" class="sider">
       <div class="logo" :class="{ 'mac-inset': macInset }" data-tauri-drag-region>{{ t("appName") }}</div>
       <a-menu v-model:selectedKeys="selectedKeys" mode="inline" class="menu">
+        <a-menu-item key="/metrics">
+          <template #icon><FundOutlined /></template>
+          <router-link to="/metrics">{{ t("menu.metrics") }}</router-link>
+        </a-menu-item>
         <a-menu-item key="/system">
           <template #icon><DashboardOutlined /></template>
           <router-link to="/system">{{ t("menu.system") }}</router-link>
@@ -88,7 +92,7 @@
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined, DashboardOutlined, BlockOutlined, ContainerOutlined, FileImageOutlined, NodeIndexOutlined, DatabaseOutlined, SettingOutlined } from "@ant-design/icons-vue";
+import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined, FundOutlined, DashboardOutlined, BlockOutlined, ContainerOutlined, FileImageOutlined, NodeIndexOutlined, DatabaseOutlined, SettingOutlined } from "@ant-design/icons-vue";
 import ShellDrawer from "@/components/system/ShellDrawer.vue";
 import { useConnectionStore } from "@/stores";
 import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
@@ -107,7 +111,7 @@ const settingsKey = computed(() => (route.path.startsWith("/settings") ? ["/sett
 watch(
   () => route.path,
   (path) => {
-    const seg = "/" + (path.split("/")[1] || "containers");
+    const seg = "/" + (path.split("/")[1] || "metrics");
     selectedKeys.value = [seg];
   },
   { immediate: true }

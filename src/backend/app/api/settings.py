@@ -23,7 +23,7 @@ async def update_settings(
     body: SettingsUpdate, session: AsyncSession = Depends(get_db),
 ):
     data = {
-        k: str(v).lower() if isinstance(v, bool) else v
+        k: str(v).lower() if isinstance(v, bool) else str(v)
         for k, v in body.model_dump().items()
         if v is not None
     }

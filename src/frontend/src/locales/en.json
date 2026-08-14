@@ -50,6 +50,7 @@
     "networks": "Networks",
     "volumes": "Volumes",
     "system": "System Info",
+    "metrics": "Metrics",
     "settings": "Settings"
   },
   "connection": {
@@ -386,6 +387,28 @@
     "component": "Component",
     "componentVersion": "Version"
   },
+  "metrics": {
+    "hostProcMissing": "Host metrics unavailable: update compose.yml to mount the host /proc at /host/proc and set DOCKORE_HOST_PROC for the backend.",
+    "groupCpu": "CPU",
+    "groupMemory": "Memory",
+    "groupDisk": "Disk",
+    "groupNet": "Network",
+    "groupHost": "Host",
+    "cpu": "CPU usage",
+    "memory": "RAM usage",
+    "swap": "SWAP usage",
+    "disk": "Disk",
+    "hdSpace": "HD space",
+    "ioDelay": "IO delay",
+    "diskRead": "Disk read",
+    "diskWrite": "Disk write",
+    "loadAvg": "Load average",
+    "netIn": "Network In",
+    "netOut": "Network Out",
+    "uptime": "Uptime",
+    "uptimeValue": "{days} days {time}",
+    "kernel": "Kernel Version"
+  },
   "settings": {
     "ui": "UI Settings",
     "backend": "Backend Settings",
@@ -400,7 +423,8 @@
     "proxyOutbound": "Backend outbound requests (update check, etc.)",
     "currentServer": "Current Server",
     "disconnect": "Disconnect",
-    "disconnectConfirm": "Disconnect from the current server?"
+    "disconnectConfirm": "Disconnect from the current server?",
+    "metricsInterval": "Metrics interval (seconds)"
   },
   "terminal": {
     "title": "Container Terminal",

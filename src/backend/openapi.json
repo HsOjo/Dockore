@@ -4248,6 +4248,10 @@
           "kernel": {
             "type": "string",
             "title": "Kernel"
+          },
+          "cpu": {
+            "type": "string",
+            "title": "Cpu"
           }
         },
         "type": "object",
@@ -4257,7 +4261,8 @@
           "python",
           "os",
           "arch",
-          "kernel"
+          "kernel",
+          "cpu"
         ],
         "title": "ProjectInfo"
       },
@@ -4347,6 +4352,11 @@
             "type": "boolean",
             "title": "Proxy Outbound",
             "default": true
+          },
+          "metrics_interval": {
+            "type": "integer",
+            "title": "Metrics Interval",
+            "default": 2
           }
         },
         "additionalProperties": true,
@@ -4431,6 +4441,19 @@
               }
             ],
             "title": "Proxy Outbound"
+          },
+          "metrics_interval": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 60.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metrics Interval"
           }
         },
         "type": "object",

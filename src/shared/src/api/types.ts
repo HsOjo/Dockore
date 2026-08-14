@@ -1342,6 +1342,8 @@ export interface components {
             arch: string;
             /** Kernel */
             kernel: string;
+            /** Cpu */
+            cpu: string;
         };
         /** PullCreated */
         PullCreated: {
@@ -1397,6 +1399,11 @@ export interface components {
              * @default true
              */
             proxy_outbound: boolean;
+            /**
+             * Metrics Interval
+             * @default 2
+             */
+            metrics_interval: number;
         } & {
             [key: string]: unknown;
         };
@@ -1416,6 +1423,8 @@ export interface components {
             proxy_cli?: boolean | null;
             /** Proxy Outbound */
             proxy_outbound?: boolean | null;
+            /** Metrics Interval */
+            metrics_interval?: number | null;
         };
         /** StackContainerItem */
         StackContainerItem: {

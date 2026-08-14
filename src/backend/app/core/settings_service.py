@@ -15,6 +15,7 @@ DEFAULT_SETTINGS = {
     "no_proxy": "",
     "proxy_cli": "true",
     "proxy_outbound": "true",
+    "metrics_interval": "2",
 }
 
 _TRUTHY = {"1", "true", "yes", "on"}

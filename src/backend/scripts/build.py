@@ -79,6 +79,7 @@ a = Analysis(
         "httptools",
         "watchfiles",
         "uvloop",
+        "psutil",
     ],
     hookspath=[],
     hooksconfig={{}},

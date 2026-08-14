@@ -15,6 +15,7 @@ from app.core.security import verify_terminal_ticket, verify_token
 from app.core.validators import validate_since_until
 from app.services.cli import CliExecutor, Docker, DockerNotFound
 from app.services.compose import stack_tasks
+from app.services.metrics import sampler as metrics_sampler
 
 router = APIRouter()
 
@@ -41,13 +42,19 @@ async def events_ws(websocket: WebSocket):
                 msg_type = msg.get("type")
                 if msg_type == "stack.resize":
                     await _handle_stack_resize(msg)
+                elif msg_type == "metrics.subscribe":
+                    await metrics_sampler.subscribe(websocket)
+                elif msg_type == "metrics.unsubscribe":
+                    metrics_sampler.unsubscribe(websocket)
                 await websocket.send_json({"type": "pong"})
             except json.JSONDecodeError:
                 pass
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+        metrics_sampler.unsubscribe(websocket)
     except Exception:
         manager.disconnect(websocket)
+        metrics_sampler.unsubscribe(websocket)
 
 
 async def _handle_stack_resize(msg: dict) -> None:

@@ -50,6 +50,7 @@
     "networks": "网络",
     "volumes": "存储卷",
     "system": "系统信息",
+    "metrics": "资源监控",
     "settings": "设置"
   },
   "connection": {
@@ -386,6 +387,28 @@
     "component": "组件",
     "componentVersion": "版本"
   },
+  "metrics": {
+    "hostProcMissing": "无法读取宿主机指标：请更新 compose 配置，为 backend 挂载宿主机 /proc 到 /host/proc 并设置 DOCKORE_HOST_PROC 环境变量。",
+    "groupCpu": "CPU",
+    "groupMemory": "内存",
+    "groupDisk": "磁盘",
+    "groupNet": "网络",
+    "groupHost": "主机",
+    "cpu": "CPU 使用率",
+    "memory": "内存",
+    "swap": "交换分区",
+    "disk": "磁盘",
+    "hdSpace": "磁盘空间",
+    "ioDelay": "IO 延迟",
+    "diskRead": "磁盘读取",
+    "diskWrite": "磁盘写入",
+    "loadAvg": "系统负载",
+    "netIn": "网络下行",
+    "netOut": "网络上行",
+    "uptime": "运行时长",
+    "uptimeValue": "{days} 天 {time}",
+    "kernel": "内核版本"
+  },
   "settings": {
     "ui": "界面设置",
     "backend": "后端设置",
@@ -400,7 +423,8 @@
     "proxyOutbound": "后端出站请求（检查更新等）",
     "currentServer": "当前服务器",
     "disconnect": "断开连接",
-    "disconnectConfirm": "确定断开当前服务器连接吗？"
+    "disconnectConfirm": "确定断开当前服务器连接吗？",
+    "metricsInterval": "监控采样间隔（秒）"
   },
   "terminal": {
     "title": "容器终端",

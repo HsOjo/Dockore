@@ -75,6 +75,9 @@
           <a-form-item :label="t('settings.dockerHost')">
             <a-input v-model:value="dockerHost" placeholder="unix:///var/run/docker.sock" />
           </a-form-item>
+          <a-form-item :label="t('settings.metricsInterval')">
+            <a-input-number v-model:value="metricsInterval" :min="1" :max="60" style="width: 120px" />
+          </a-form-item>
           <a-form-item>
             <a-button type="primary" :loading="saving" @click="saveBackend">
               {{ t("save") }}
@@ -103,6 +106,7 @@ const ui = getUISettings();
 const theme = ref(ui.value.theme);
 const localeValue = ref(locale.value);
 const dockerHost = ref("");
+const metricsInterval = ref(2);
 const httpProxy = ref("");
 const httpsProxy = ref("");
 const noProxy = ref("");
@@ -136,6 +140,7 @@ onMounted(async () => {
     await settingsStore.fetch();
     const s = settingsStore.settings;
     dockerHost.value = s?.docker_host || "";
+    metricsInterval.value = s?.metrics_interval ?? 2;
     httpProxy.value = s?.http_proxy || "";
     httpsProxy.value = s?.https_proxy || "";
     noProxy.value = s?.no_proxy || "";
@@ -151,6 +156,7 @@ async function saveBackend() {
   try {
     await settingsStore.update({
       docker_host: dockerHost.value || null,
+      metrics_interval: metricsInterval.value,
     });
     message.success(t("saved"));
   } catch (e: any) {

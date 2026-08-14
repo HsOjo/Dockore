@@ -15,12 +15,16 @@ services:
       # Stack 管理：宿主机与容器内路径必须一致（DOCKORE_STACKS_DIR 两侧同值），
       # 否则 stack compose 文件中的相对 bind 路径无法解析
       - DOCKORE_STACKS_DIR=${DOCKORE_STACKS_DIR:-/app/stacks}
+      # 系统监控：backend 通过 /host/proc 读取宿主机指标（psutil）
+      - DOCKORE_HOST_PROC=/host/proc
     volumes:
       - ./data:/app/data
       # Dockore 是 Docker 管理工具，需要访问宿主机容器 daemon
       # Podman 用户改为 podman socket 路径，如 /run/user/1000/podman/podman.sock
       - ${DOCKORE_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
       - ${DOCKORE_STACKS_DIR:-/app/stacks}:${DOCKORE_STACKS_DIR:-/app/stacks}
+      # 系统监控：只读挂载宿主机 /proc（Docker Desktop 下为 VM 指标）
+      - /proc:/host/proc:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]

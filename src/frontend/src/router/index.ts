@@ -7,7 +7,7 @@ const routes = [
     path: "/",
     component: () => import("@/layouts/MainLayout.vue"),
     meta: { requiresAuth: true },
-    redirect: "/containers",
+    redirect: "/metrics",
     children: [
       { path: "containers", component: () => import("@/views/container/Index.vue") },
       { path: "containers/:id", component: () => import("@/views/container/Detail.vue") },
@@ -20,6 +20,7 @@ const routes = [
       { path: "volumes", component: () => import("@/views/volume/Index.vue") },
       { path: "volumes/:id", component: () => import("@/views/volume/Detail.vue") },
       { path: "system", component: () => import("@/views/system/Version.vue") },
+      { path: "metrics", component: () => import("@/views/system/Metrics.vue") },
       { path: "settings", component: () => import("@/views/Settings.vue") },
     ],
   },
