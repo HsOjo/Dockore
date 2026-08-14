@@ -36,7 +36,7 @@
     "openapi-fetch": "^0.13.0",
     "openapi-typescript": "^7.4.0",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.0"
+    "vitest": "^3.2.6"
   },
   "dependencies": {
     "js-sha256": "^0.11.1"
