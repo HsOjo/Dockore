@@ -123,16 +123,14 @@
             <div class="metric-item">
               <div class="metric-line">
                 <span class="metric-label"><DashboardOutlined /> CPU(s)</span>
-                <span class="metric-value wrap">{{ store.version?.project.cpu || "-" }}</span>
               </div>
-              <div class="bar-spacer" />
+              <div class="metric-block-value">{{ store.version?.project.cpu || "-" }}</div>
             </div>
             <div class="metric-item">
               <div class="metric-line">
                 <span class="metric-label"><CodeOutlined /> {{ t("metrics.kernel") }}</span>
-                <span class="metric-value wrap">{{ store.version?.project.kernel || "-" }}</span>
               </div>
-              <div class="bar-spacer" />
+              <div class="metric-block-value">{{ store.version?.project.kernel || "-" }}</div>
             </div>
           </a-card>
       </div>
@@ -309,12 +307,11 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.metric-value.wrap {
-  white-space: normal;
+.metric-block-value {
   word-break: break-all;
-  text-align: right;
-  flex-shrink: 1;
-  min-width: 0;
+  font-family: monospace;
+  font-size: 13px;
+  margin: 2px 0 6px 22px;
 }
 
 .bar-spacer {
