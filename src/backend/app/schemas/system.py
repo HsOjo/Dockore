@@ -33,6 +33,11 @@ class NetRates(BaseModel):
     out_rate: Optional[float] = None
 
 
+class CpuFreq(BaseModel):
+    current: float
+    max: float
+
+
 class DiskIORates(BaseModel):
     read_rate: Optional[float] = None
     write_rate: Optional[float] = None
@@ -44,6 +49,7 @@ class SystemMetrics(BaseModel):
     cpu_percent: float = 0
     cpu_count: int = 0
     io_delay: Optional[float] = None
+    cpu_freq: Optional[CpuFreq] = None
     memory: Optional[UsageGauge] = None
     swap: Optional[UsageGauge] = None
     disk: Optional[DiskGauge] = None

@@ -395,6 +395,7 @@
     "groupNet": "网络",
     "groupHost": "主机",
     "cpu": "CPU 使用率",
+    "cpuFreq": "CPU 频率",
     "memory": "内存",
     "swap": "交换分区",
     "disk": "磁盘",

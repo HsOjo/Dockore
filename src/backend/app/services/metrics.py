@@ -11,7 +11,7 @@ from fastapi import WebSocket
 
 from app.core import config, settings_service
 from app.core.database import async_session
-from app.schemas.system import DiskGauge, DiskIORates, NetRates, SystemMetrics, UsageGauge
+from app.schemas.system import CpuFreq, DiskGauge, DiskIORates, NetRates, SystemMetrics, UsageGauge
 
 HOST_PROC_ENV = "DOCKORE_HOST_PROC"
 METRICS_EVENT = "system.metrics"
@@ -114,12 +114,21 @@ class MetricsSampler:
         load: Optional[list[float]] = None
         if hasattr(os, "getloadavg"):
             load = [round(v, 2) for v in os.getloadavg()]
+        cpu_freq: Optional[CpuFreq] = None
+        try:
+            # 读 /sys/devices/system/cpu/*/cpufreq，container 模式未挂载 /sys 时为 None
+            freq = psutil.cpu_freq()
+            if freq is not None:
+                cpu_freq = CpuFreq(current=freq.current, max=freq.max)
+        except Exception:
+            pass
 
         return SystemMetrics(
             timestamp=time.time(),
             cpu_percent=psutil.cpu_percent(),
             cpu_count=psutil.cpu_count() or 0,
             io_delay=io_delay,
+            cpu_freq=cpu_freq,
             memory=UsageGauge(total=mem.total, used=mem.used, percent=mem.percent),
             swap=UsageGauge(total=swap.total, used=swap.used, percent=swap.percent),
             disk=DiskGauge(

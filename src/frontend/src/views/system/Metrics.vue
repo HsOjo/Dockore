@@ -40,6 +40,13 @@
             </div>
             <div class="metric-item">
               <div class="metric-line">
+                <span class="metric-label"><ThunderboltOutlined /> {{ t("metrics.cpuFreq") }}</span>
+                <span class="metric-value">{{ freqText }}</span>
+              </div>
+              <div class="bar-spacer" />
+            </div>
+            <div class="metric-item">
+              <div class="metric-line">
                 <span class="metric-label"><BarChartOutlined /> {{ t("metrics.loadAvg") }}</span>
                 <span class="metric-value">{{ metrics.load_avg ? metrics.load_avg.join(", ") : "-" }}</span>
               </div>
@@ -152,6 +159,7 @@ import {
   FieldTimeOutlined,
   HddOutlined,
   SwapOutlined,
+  ThunderboltOutlined,
   UploadOutlined,
 } from "@ant-design/icons-vue";
 import { formatBytes, wsClient } from "@dockore/shared";
@@ -169,6 +177,7 @@ interface Metrics {
   cpu_percent: number;
   cpu_count: number;
   io_delay?: number | null;
+  cpu_freq?: { current: number; max: number } | null;
   memory?: UsageGauge | null;
   swap?: UsageGauge | null;
   disk?: (UsageGauge & { path: string }) | null;
@@ -186,6 +195,14 @@ const metrics = ref<Metrics | null>(null);
 const hostname = computed(() => store.version?.project.hostname || "");
 
 const uptimeText = computed(() => formatUptime(metrics.value?.uptime ?? 0));
+
+const freqText = computed(() => {
+  const f = metrics.value?.cpu_freq;
+  if (!f) return "-";
+  return f.max > 0
+    ? `${f.current.toFixed(0)} / ${f.max.toFixed(0)} MHz`
+    : `${f.current.toFixed(0)} MHz`;
+});
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");

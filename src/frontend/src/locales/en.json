@@ -395,6 +395,7 @@
     "groupNet": "Network",
     "groupHost": "Host",
     "cpu": "CPU usage",
+    "cpuFreq": "CPU frequency",
     "memory": "RAM usage",
     "swap": "SWAP usage",
     "disk": "Disk",
