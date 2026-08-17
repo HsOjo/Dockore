@@ -63,6 +63,18 @@ class ComposeService:
         """Raise CliError when the compose files are invalid."""
         await self._exec.run(self._args("config", "-q", files=files), cwd=cwd)
 
+    async def config_json(
+        self, project: str, files: list[str], cwd: str,
+    ) -> dict[str, Any]:
+        """Normalized, interpolated compose config (v2 only) as a dict."""
+        out = await self._exec.run(
+            self._args(
+                "config", "--format", "json", project=project, files=files,
+            ),
+            cwd=cwd,
+        )
+        return json.loads(out)
+
     async def lifecycle(
         self, project: str, action: str, files: Optional[list[str]] = None,
         cwd: Optional[str] = None,

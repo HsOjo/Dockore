@@ -797,6 +797,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stacks/{name}/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Backups */
+        get: operations["list_backups_api_stacks__name__backups_get"];
+        put?: never;
+        /**
+         * Backup Stack
+         * @description Tar up every declared volume (named and bind) plus compose/env files.
+         *
+         *     A running stack is stopped first and stays stopped afterwards; the stack
+         *     lock is held for the whole run so concurrent operations get a 409.
+         */
+        post: operations["backup_stack_api_stacks__name__backups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stacks/{name}/backups/{backup_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Backup */
+        get: operations["download_backup_api_stacks__name__backups__backup_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stacks/{name}/backups/{backup_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Backup */
+        delete: operations["delete_backup_api_stacks__name__backups__backup_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stacks/{name}/file": {
         parameters: {
             query?: never;
@@ -906,6 +964,83 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BackupBindItem */
+        BackupBindItem: {
+            /** Source */
+            source: string;
+            /** Archive */
+            archive: string;
+            /**
+             * Size
+             * @default 0
+             */
+            size: number;
+        };
+        /** BackupItem */
+        BackupItem: {
+            /** Id */
+            id: string;
+            /** Created At */
+            created_at: string;
+            /**
+             * Size
+             * @default 0
+             */
+            size: number;
+            /**
+             * Was Running
+             * @default false
+             */
+            was_running: boolean;
+            /**
+             * Compose Files
+             * @default []
+             */
+            compose_files: string[];
+            /**
+             * Env Files
+             * @default []
+             */
+            env_files: string[];
+            /**
+             * Volumes
+             * @default []
+             */
+            volumes: components["schemas"]["BackupVolumeItem"][];
+            /**
+             * Binds
+             * @default []
+             */
+            binds: components["schemas"]["BackupBindItem"][];
+            /**
+             * Skipped
+             * @default []
+             */
+            skipped: components["schemas"]["BackupSkippedItem"][];
+        };
+        /** BackupSkippedItem */
+        BackupSkippedItem: {
+            /** Type */
+            type: string;
+            /** Ref */
+            ref: string;
+            /** Reason */
+            reason: string;
+        };
+        /** BackupVolumeItem */
+        BackupVolumeItem: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Archive */
+            archive: string;
+            /**
+             * Size
+             * @default 0
+             */
+            size: number;
+        };
         /** CommitRequest */
         CommitRequest: {
             /** Name */
@@ -3390,6 +3525,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_backups_api_stacks__name__backups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backup_stack_api_stacks__name__backups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_backup_api_stacks__name__backups__backup_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+                backup_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_backup_api_stacks__name__backups__backup_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+                backup_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusResponse"];
                 };
             };
             /** @description Validation Error */

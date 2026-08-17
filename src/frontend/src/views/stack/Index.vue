@@ -102,18 +102,25 @@
                   <a-menu-item key="restart" :disabled="!cliAvailable">
                     {{ t("stack.restart") }}
                   </a-menu-item>
+                  <a-menu-divider />
                   <a-menu-item key="pull" :disabled="fileActionDisabled(record)">
                     {{ t("stack.pull") }}
                   </a-menu-item>
                   <a-menu-item v-if="record.is_git_repo" key="pullRepo">
                     {{ t("stack.pullRepo") }}
                   </a-menu-item>
+                  <a-menu-divider />
+                  <a-menu-item key="backups">
+                    {{ t("stack.backups") }}
+                  </a-menu-item>
+                  <a-menu-divider />
                   <a-menu-item v-if="!record.registered" key="import">
                     {{ t("stack.import") }}
                   </a-menu-item>
                   <a-menu-item v-else key="unregister">
                     {{ t("stack.unregister") }}
                   </a-menu-item>
+                  <a-menu-divider />
                   <a-menu-item key="down" :disabled="!cliAvailable" danger>
                     {{ t("stack.down") }}
                   </a-menu-item>
@@ -170,6 +177,13 @@
     />
     <FileEditorDrawer v-model:open="editorOpen" :stack-name="activeName" />
     <LogsDrawer v-model:open="logsOpen" :stack-name="activeName" />
+    <BackupDrawer
+      ref="backupDrawer"
+      v-model:open="backupListOpen"
+      :stack-name="activeName"
+      :backup-disabled="!activeRecord || fileActionDisabled(activeRecord)"
+      @started="onBackupStarted"
+    />
   </div>
 </template>
 
@@ -185,6 +199,7 @@ import ImportDrawer from "@/components/stack/ImportDrawer.vue";
 import ProgressDrawer from "@/components/stack/ProgressDrawer.vue";
 import FileEditorDrawer from "@/components/stack/FileEditorDrawer.vue";
 import LogsDrawer from "@/components/stack/LogsDrawer.vue";
+import BackupDrawer from "@/components/stack/BackupDrawer.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import EllipsisText from "@/components/common/EllipsisText.vue";
 
@@ -207,6 +222,8 @@ const destroyRemoveVolumes = ref(false);
 const destroyDeleteFiles = ref(true);
 const destroyCanDeleteFiles = ref(false);
 const destroyStarting = ref(false);
+const backupListOpen = ref(false);
+const backupDrawer = ref<InstanceType<typeof BackupDrawer> | null>(null);
 const activeName = ref("");
 
 const progressTaskId = ref("");
@@ -214,6 +231,10 @@ const progressStack = ref("");
 const progressKind = ref("");
 
 const cliAvailable = computed(() => store.meta?.cli_available ?? false);
+
+const activeRecord = computed(() =>
+  store.stacks.find((s) => s.name === activeName.value)
+);
 
 const unregisteredCount = computed(
   () => store.stacks.filter((s) => !s.registered).length
@@ -325,6 +346,14 @@ function onProgressFinished(status: string) {
   if (progressKind.value === "pull-repo" && status === "done") {
     message.success(t("stack.pullRepoDone"));
   }
+  if (progressKind.value === "backup" && status === "done") {
+    message.success(t("stack.backupDone"));
+    backupDrawer.value?.load();
+  }
+}
+
+function onBackupStarted(taskId: string) {
+  openProgress(taskId, activeName.value, "backup");
 }
 
 function onCreated(payload: { taskId: string; stack: string }) {
@@ -401,6 +430,9 @@ async function handleAction(record: StackItem, cmd: string) {
       break;
     case "pull":
       await triggerTask(record, "pull");
+      break;
+    case "backups":
+      backupListOpen.value = true;
       break;
     case "pullRepo":
       await triggerPullRepo(record);

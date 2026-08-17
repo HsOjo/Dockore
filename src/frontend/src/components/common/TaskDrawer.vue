@@ -96,7 +96,6 @@ function handleClose() {
 
 async function onDrawerOpenChange(open: boolean) {
   if (open && props.taskId) {
-    termView.value?.clear();
     termView.value?.fit();
 
     if (props.initialStatus) {
@@ -121,6 +120,7 @@ watch(
     cleanup();
     if (open && props.taskId) {
       status.value = "running";
+      termView.value?.clear();
       wsClient.on(props.eventName, onTaskEvent);
     }
   }

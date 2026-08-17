@@ -15,6 +15,8 @@ services:
       # Stack 管理：宿主机与容器内路径必须一致（DOCKORE_STACKS_DIR 两侧同值），
       # 否则 stack compose 文件中的相对 bind 路径无法解析
       - DOCKORE_STACKS_DIR=${DOCKORE_STACKS_DIR:-/app/stacks}
+      # 栈备份：容器模式必须设置（两侧同路径挂载，原因同上）；不设置则备份功能禁用
+      # - DOCKORE_BACKUPS_DIR=${DOCKORE_BACKUPS_DIR}
       # 系统监控：backend 通过 /host/proc 读取宿主机指标（psutil）
       - DOCKORE_HOST_PROC=/host/proc
     volumes:
@@ -23,6 +25,8 @@ services:
       # Podman 用户改为 podman socket 路径，如 /run/user/1000/podman/podman.sock
       - ${DOCKORE_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
       - ${DOCKORE_STACKS_DIR:-/app/stacks}:${DOCKORE_STACKS_DIR:-/app/stacks}
+      # 栈备份目录：与 DOCKORE_BACKUPS_DIR 配套，宿主机与容器内路径保持一致
+      # - ${DOCKORE_BACKUPS_DIR}:${DOCKORE_BACKUPS_DIR}
       # 系统监控：只读挂载宿主机 /proc（Docker Desktop 下为 VM 指标）
       - /proc:/host/proc:ro
       # 主机名透传：/proc/sys/kernel/hostname 是 UTS namespace 虚拟化的，只能挂 /etc/hostname

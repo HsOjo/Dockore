@@ -141,6 +141,37 @@ class TaskCreated(BaseModel):
     task_id: str
 
 
+class BackupVolumeItem(BaseModel):
+    key: str
+    name: str
+    archive: str
+    size: int = 0
+
+
+class BackupBindItem(BaseModel):
+    source: str
+    archive: str
+    size: int = 0
+
+
+class BackupSkippedItem(BaseModel):
+    type: str
+    ref: str
+    reason: str
+
+
+class BackupItem(BaseModel):
+    id: str
+    created_at: str
+    size: int = 0
+    was_running: bool = False
+    compose_files: List[str] = []
+    env_files: List[str] = []
+    volumes: List[BackupVolumeItem] = []
+    binds: List[BackupBindItem] = []
+    skipped: List[BackupSkippedItem] = []
+
+
 class StackTaskItem(BaseModel):
     id: str
     kind: str

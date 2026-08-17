@@ -2613,6 +2613,213 @@
         }
       }
     },
+    "/api/stacks/{name}/backups": {
+      "post": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Backup Stack",
+        "description": "Tar up every declared volume (named and bind) plus compose/env files.\n\nA running stack is stopped first and stays stopped afterwards; the stack\nlock is held for the whole run so concurrent operations get a 409.",
+        "operationId": "backup_stack_api_stacks__name__backups_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "List Backups",
+        "operationId": "list_backups_api_stacks__name__backups_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BackupItem"
+                  },
+                  "title": "Response List Backups Api Stacks  Name  Backups Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/backups/{backup_id}/download": {
+      "get": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Download Backup",
+        "operationId": "download_backup_api_stacks__name__backups__backup_id__download_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Backup Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stacks/{name}/backups/{backup_id}": {
+      "delete": {
+        "tags": [
+          "stacks"
+        ],
+        "summary": "Delete Backup",
+        "operationId": "delete_backup_api_stacks__name__backups__backup_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Backup Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/stacks/{name}/file": {
       "get": {
         "tags": [
@@ -2990,6 +3197,148 @@
   },
   "components": {
     "schemas": {
+      "BackupBindItem": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "archive": {
+            "type": "string",
+            "title": "Archive"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "archive"
+        ],
+        "title": "BackupBindItem"
+      },
+      "BackupItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size",
+            "default": 0
+          },
+          "was_running": {
+            "type": "boolean",
+            "title": "Was Running",
+            "default": false
+          },
+          "compose_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Compose Files",
+            "default": []
+          },
+          "env_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Env Files",
+            "default": []
+          },
+          "volumes": {
+            "items": {
+              "$ref": "#/components/schemas/BackupVolumeItem"
+            },
+            "type": "array",
+            "title": "Volumes",
+            "default": []
+          },
+          "binds": {
+            "items": {
+              "$ref": "#/components/schemas/BackupBindItem"
+            },
+            "type": "array",
+            "title": "Binds",
+            "default": []
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/BackupSkippedItem"
+            },
+            "type": "array",
+            "title": "Skipped",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at"
+        ],
+        "title": "BackupItem"
+      },
+      "BackupSkippedItem": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "ref": {
+            "type": "string",
+            "title": "Ref"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "ref",
+          "reason"
+        ],
+        "title": "BackupSkippedItem"
+      },
+      "BackupVolumeItem": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "archive": {
+            "type": "string",
+            "title": "Archive"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "archive"
+        ],
+        "title": "BackupVolumeItem"
+      },
       "CommitRequest": {
         "properties": {
           "name": {

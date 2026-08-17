@@ -23,6 +23,7 @@ export type NetworkCreate = components["schemas"]["NetworkCreate"];
 export type VolumeItem = components["schemas"]["VolumeItem"];
 export type VolumeCreate = components["schemas"]["VolumeCreate"];
 export type StackItem = components["schemas"]["StackItem"];
+export type BackupItem = components["schemas"]["BackupItem"];
 export type StackMeta = components["schemas"]["StackMeta"];
 export type StackTaskItem = components["schemas"]["StackTaskItem"];
 export type StackCreate = components["schemas"]["StackCreate"];
@@ -663,6 +664,41 @@ export const useStackStore = defineStore("stack", () => {
     return await must(api.GET("/api/stacks/tasks"));
   }
 
+  async function backup(name: string) {
+    return await must(
+      api.POST("/api/stacks/{name}/backups", { params: { path: { name } } })
+    );
+  }
+
+  async function listBackups(name: string) {
+    return await must(
+      api.GET("/api/stacks/{name}/backups", { params: { path: { name } } })
+    );
+  }
+
+  async function deleteBackup(name: string, backupId: string) {
+    await must(
+      api.DELETE("/api/stacks/{name}/backups/{backup_id}", {
+        params: { path: { name, backup_id: backupId } },
+      })
+    );
+  }
+
+  async function downloadBackup(name: string, backupId: string) {
+    const blob = await must(
+      api.GET("/api/stacks/{name}/backups/{backup_id}/download", {
+        params: { path: { name, backup_id: backupId } },
+        parseAs: "blob",
+      })
+    );
+    const url = URL.createObjectURL(blob as Blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name}-${backupId}.tar.gz`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function cancelTask(taskId: string) {
     await must(
       api.POST("/api/stacks/tasks/{task_id}/cancel", { params: { path: { task_id: taskId } } })
@@ -705,6 +741,10 @@ export const useStackStore = defineStore("stack", () => {
     writeEnv,
     listTasks,
     cancelTask,
+    backup,
+    listBackups,
+    deleteBackup,
+    downloadBackup,
     reset,
   };
 });

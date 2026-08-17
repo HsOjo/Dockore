@@ -285,6 +285,18 @@
     "pull": "拉取镜像",
     "pullRepo": "拉取仓库",
     "pullRepoDone": "仓库已更新，如需生效请重新部署（up）。",
+    "backup": "备份",
+    "backups": "备份管理",
+    "backupConfirm": "确定备份栈「{name}」吗？若栈正在运行将先停止，备份完成后保持停止状态。",
+    "backupDone": "备份完成。",
+    "backupsTitle": "备份管理 · {name}",
+    "backupsTime": "时间",
+    "backupsSize": "大小",
+    "backupsContentsTitle": "内容",
+    "backupsVolume": "卷",
+    "backupsBind": "目录",
+    "backupsDownload": "下载",
+    "backupsDeleteConfirm": "确定删除备份 {id} 吗？",
     "up": "部署",
     "editFile": "编辑文件",
     "tabCompose": "compose 文件",
@@ -349,7 +361,8 @@
       "up": "部署",
       "pull": "拉取镜像",
       "pull-repo": "拉取仓库",
-      "down": "下线"
+      "down": "下线",
+      "backup": "备份"
     },
     "task": {
       "running": "执行中",

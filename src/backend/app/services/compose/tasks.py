@@ -37,6 +37,10 @@ class StackTaskManager:
         async with self._lock:
             return self._stack_locks.setdefault(name, asyncio.Lock())
 
+    def callbacks(self, kind: str, stack: str):
+        """Broadcast pair (on_data, on_done) for tasks launched outside start()."""
+        return self._make_callbacks(kind, stack)
+
     def _make_callbacks(self, kind: str, stack: str):
         async def on_data(task: CliTask, data: bytes) -> None:
             payload = {

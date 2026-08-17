@@ -285,6 +285,18 @@
     "pull": "Pull Images",
     "pullRepo": "Pull Repository",
     "pullRepoDone": "Repository updated. Redeploy (up) the stack to apply the changes.",
+    "backup": "Backup",
+    "backups": "Backups",
+    "backupConfirm": "Back up stack \"{name}\"? A running stack will be stopped first and stays stopped after the backup finishes.",
+    "backupDone": "Backup completed.",
+    "backupsTitle": "Backups · {name}",
+    "backupsTime": "Time",
+    "backupsSize": "Size",
+    "backupsContentsTitle": "Contents",
+    "backupsVolume": "Volume",
+    "backupsBind": "Bind",
+    "backupsDownload": "Download",
+    "backupsDeleteConfirm": "Delete backup {id}?",
     "up": "Apply Changes",
     "editFile": "Edit File",
     "tabCompose": "Compose File",
@@ -349,7 +361,8 @@
       "up": "Apply Changes",
       "pull": "Pull Images",
       "pull-repo": "Pull Repository",
-      "down": "Down"
+      "down": "Down",
+      "backup": "Backup"
     },
     "task": {
       "running": "Running",

@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
+from starlette.background import BackgroundTask
 
 from app.api.deps import StackContext, get_stack_ctx
 from app.core import stack_registry
@@ -11,6 +13,7 @@ from app.core.database import async_session
 from app.core.security import get_current_token
 from app.schemas.common import StatusResponse
 from app.schemas.stack import (
+    BackupItem,
     DestroyRequest,
     DownRequest,
     FileContent,
@@ -29,6 +32,7 @@ from app.schemas.stack import (
     TaskCreated,
 )
 from app.services import git as git_service
+from app.services.backup import BackupService, extract_env_files, parse_mounts
 from app.services.cli import CliError, CliTask
 from app.services.compose import stack_tasks
 
@@ -468,6 +472,157 @@ def _guard_files(ctx: StackContext, item: dict) -> None:
         ctx.stack.check_file_allowed(item["config_files"], item["registered"])
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
+
+
+def _backup_service(ctx: StackContext) -> BackupService:
+    service = BackupService(ctx.stack.container_mode, docker=ctx.stack.docker)
+    if service.root is None:
+        raise HTTPException(
+            status_code=503,
+            detail="backups are not configured: set DOCKORE_BACKUPS_DIR",
+        )
+    return service
+
+
+@router.post("/{name}/backups", response_model=TaskCreated, status_code=201)
+async def backup_stack(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    """Tar up every declared volume (named and bind) plus compose/env files.
+
+    A running stack is stopped first and stays stopped afterwards; the stack
+    lock is held for the whole run so concurrent operations get a 409.
+    """
+    compose = _require_compose(ctx)
+    if not compose.cli.is_v2:
+        raise HTTPException(status_code=400, detail="compose v2 is required")
+    service = _backup_service(ctx)
+    item = await _get_item(ctx, name)
+    _guard_files(ctx, item)
+
+    lock = await stack_tasks.stack_lock(name)
+    if lock.locked():
+        raise HTTPException(status_code=409, detail="Operation already in progress")
+    await lock.acquire()
+
+    backup_dir: Optional[Path] = None
+    try:
+        cwd = _item_cwd(item)
+        try:
+            config = await compose.config_json(name, item["config_files"], cwd)
+        except CliError as e:
+            raise HTTPException(status_code=400, detail=e.output.strip() or str(e))
+        skipped: list[dict] = []
+        plan = parse_mounts(config, name)
+        plan = await service.filter_existing_volumes(plan, skipped)
+        try:
+            env_refs = extract_env_files(item["config_files"])
+        except (OSError, ValueError) as e:
+            raise HTTPException(status_code=400, detail=f"Invalid compose file: {e}")
+        for ref in env_refs:
+            if not ctx.stack.file_accessible([ref.path], registered=True):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"env_file is not accessible: {ref.path}",
+                )
+        try:
+            env_files = service.stage_env_files(env_refs, skipped)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        backup_id, backup_dir = service.new_backup_dir(name)
+        try:
+            files = await service.stage_files(
+                backup_dir, item["config_files"], _env_path(item), env_files,
+            )
+        except OSError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        was_running = item["running"] > 0
+        if was_running:
+            try:
+                await compose.lifecycle(name, "stop")
+            except CliError as e:
+                raise HTTPException(
+                    status_code=400, detail=e.output.strip() or str(e),
+                )
+    except BaseException:
+        lock.release()
+        if backup_dir is not None:
+            await service.cleanup(backup_dir)
+        raise
+
+    on_data, broadcast_done = stack_tasks.callbacks("backup", name)
+    tail = bytearray()
+
+    async def _on_data(task: CliTask, data: bytes) -> None:
+        # Keep the output tail: on failure the terminal may have lost the
+        # error to docker's TTY repainting, so it is re-shown via task.error.
+        tail.extend(data)
+        if len(tail) > 8192:
+            del tail[:-8192]
+        await on_data(task, data)
+
+    async def _done(task: CliTask) -> None:
+        try:
+            if task.status == "done":
+                await service.finalize(
+                    backup_dir, backup_id, name, was_running, plan, files, skipped,
+                )
+            else:
+                if not task.error and tail:
+                    task.error = tail.decode(errors="ignore")[-4000:]
+                await service.cleanup(backup_dir)
+        except Exception as e:
+            task.status = "error"
+            task.error = f"failed to finalize backup: {e}"
+        finally:
+            lock.release()
+        await broadcast_done(task)
+
+    try:
+        task = await compose.executor.stream(
+            "backup", name,
+            service.helper_args(plan, backup_dir, name, backup_id),
+            _on_data, on_done=_done,
+        )
+    except Exception:
+        lock.release()
+        await service.cleanup(backup_dir)
+        raise
+    return TaskCreated(task_id=task.id)
+
+
+@router.get("/{name}/backups", response_model=List[BackupItem])
+async def list_backups(name: str, ctx: StackContext = Depends(get_stack_ctx)):
+    return _backup_service(ctx).list(name)
+
+
+@router.get("/{name}/backups/{backup_id}/download")
+async def download_backup(
+    name: str, backup_id: str, ctx: StackContext = Depends(get_stack_ctx),
+):
+    service = _backup_service(ctx)
+    try:
+        archive = await service.pack(name, backup_id)
+    except (KeyError, ValueError):
+        raise HTTPException(status_code=404, detail="Backup not found")
+    return FileResponse(
+        archive,
+        media_type="application/gzip",
+        filename=f"{name}-{backup_id}.tar.gz",
+        background=BackgroundTask(archive.unlink, missing_ok=True),
+    )
+
+
+@router.delete("/{name}/backups/{backup_id}", response_model=StatusResponse)
+async def delete_backup(
+    name: str, backup_id: str, ctx: StackContext = Depends(get_stack_ctx),
+):
+    service = _backup_service(ctx)
+    try:
+        await service.delete(name, backup_id)
+    except (KeyError, ValueError):
+        raise HTTPException(status_code=404, detail="Backup not found")
+    return StatusResponse()
 
 
 def _env_path(item: dict) -> Path:

@@ -44,6 +44,10 @@ class StackService:
         return bool(self._stacks_dir)
 
     @property
+    def docker(self) -> Docker:
+        return self._docker
+
+    @property
     def stacks_dir(self) -> str:
         return self._stacks_dir
 
