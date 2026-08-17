@@ -3,28 +3,31 @@
     :open="open"
     :title="`${t('stack.editFile')}: ${stackName}`"
     width="860"
+    root-class-name="file-editor-drawer"
+    :body-style="{ display: 'flex', flexDirection: 'column' }"
     @close="handleClose"
   >
     <a-tabs v-model:activeKey="tab" @change="handleTabChange">
       <a-tab-pane key="compose" :tab="t('stack.tabCompose')" />
       <a-tab-pane key="env" :tab="t('stack.tabEnv')" />
     </a-tabs>
-    <a-spin :spinning="loading">
-      <div class="path mono">{{ current.path }}</div>
-      <a-textarea
-        v-model:value="current.content"
-        class="compose-editor"
-        :rows="20"
-        :placeholder="tab === 'env' ? envPlaceholder : ''"
-      />
-      <a-alert
-        v-if="current.error"
-        type="error"
-        show-icon
-        style="margin-top: 12px"
-        :message="t('stack.fileInvalid')"
-        :description="current.error"
-      />
+    <a-spin :spinning="loading" wrapper-class-name="editor-spin">
+      <div class="editor-panel">
+        <div class="path mono">{{ current.path }}</div>
+        <a-textarea
+          v-model:value="current.content"
+          class="compose-editor"
+          :placeholder="tab === 'env' ? envPlaceholder : ''"
+        />
+        <a-alert
+          v-if="current.error"
+          type="error"
+          show-icon
+          style="margin-top: 12px"
+          :message="t('stack.fileInvalid')"
+          :description="current.error"
+        />
+      </div>
     </a-spin>
     <template #footer>
       <div class="footer">
@@ -166,5 +169,34 @@ body.dockore-theme-dark .path {
 
 body.dockore-theme-dark .hint {
   color: rgba(255, 255, 255, 0.45);
+}
+</style>
+
+<style>
+.file-editor-drawer .editor-spin {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-editor-drawer .editor-spin > .ant-spin-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-editor-drawer .editor-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-editor-drawer .compose-editor {
+  flex: 1;
+  min-height: 0;
+  resize: none;
 }
 </style>
