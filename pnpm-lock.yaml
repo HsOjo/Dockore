@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  js-yaml: '>=4.3.1'
+  js-yaml: ^4.3.1
 
 importers:
 
@@ -1066,8 +1066,8 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
-  js-yaml@5.2.3:
-    resolution: {integrity: sha512-n+mUVyUX5bVv7G/G2zyIHOhdxfuU1dY2NOFzTQUWiMUbFss8b57NFlgCCaggU78wSw5KVS9cllzeLyzyR+n5nw==}
+  js-yaml@4.3.1:
+    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
   jsdom@29.1.1:
@@ -1789,7 +1789,7 @@ snapshots:
       colorette: 1.4.0
       https-proxy-agent: 7.0.6(supports-color@10.2.2)
       js-levenshtein: 1.1.6
-      js-yaml: 5.2.3
+      js-yaml: 4.3.1
       minimatch: 5.1.9
       pluralize: 8.0.0
       yaml-ast-parser: 0.0.43
@@ -2398,7 +2398,7 @@ snapshots:
 
   js-tokens@9.0.1: {}
 
-  js-yaml@5.2.3:
+  js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
 
