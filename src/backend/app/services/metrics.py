@@ -60,9 +60,11 @@ class MetricsSampler:
             else:
                 self._host_proc_missing = True
         self._disk_path = _resolve_disk_path()
+        self._prev_cpu: Optional[dict[int, tuple[int, int]]] = None
+        self._cpu_cores = 0
         if not self._host_proc_missing:
-            psutil.cpu_percent()
             psutil.cpu_times_percent()
+            self._cpu_percent()
 
     async def subscribe(self, websocket: WebSocket) -> None:
         self._subscribers.add(websocket)
@@ -125,7 +127,7 @@ class MetricsSampler:
 
         return SystemMetrics(
             timestamp=time.time(),
-            cpu_percent=psutil.cpu_percent(),
+            cpu_percent=self._cpu_percent(),
             cpu_count=psutil.cpu_count() or 0,
             io_delay=io_delay,
             cpu_freq=cpu_freq,
@@ -142,6 +144,58 @@ class MetricsSampler:
             disk_io=DiskIORates(read_rate=disk_read, write_rate=disk_write),
             uptime=max(0.0, time.time() - psutil.boot_time()),
         )
+
+    def _read_cpu_ticks(self) -> dict[int, tuple[int, int]]:
+        """Per-core (busy, total) jiffies from /proc/stat.
+
+        Uses psutil.PROCFS_PATH so container mode reads the host's /proc.
+        """
+        cores: dict[int, tuple[int, int]] = {}
+        for line in Path(psutil.PROCFS_PATH, "stat").read_text().splitlines():
+            if not line.startswith("cpu") or line[3] == " ":
+                continue
+            parts = line.split()
+            try:
+                idx = int(parts[0][3:])
+                fields = [int(x) for x in parts[1:]]
+            except ValueError:
+                continue
+            idle = fields[3] + (fields[4] if len(fields) > 4 else 0)
+            total = sum(fields)
+            cores[idx] = (total - idle, total)
+        return cores
+
+    def _cpu_percent(self) -> float:
+        """Machine-wide CPU % with offline (hot-unplugged) cores as idle.
+
+        psutil.cpu_percent() divides busy ticks only by cores that accrued
+        ticks; on devices with CPU hotplug (Android) most cores sleep and
+        record nothing, inflating the result. Here cores with no tick growth
+        in the window add idle ticks to the denominator instead.
+        Falls back to psutil when /proc/stat is unreadable.
+        """
+        try:
+            cores = self._read_cpu_ticks()
+        except Exception:
+            return psutil.cpu_percent()
+        self._cpu_cores = max(self._cpu_cores, len(cores))
+        prev, self._prev_cpu = self._prev_cpu, cores
+        if not prev or not cores:
+            return 0.0
+        window = 0
+        busy = 0
+        for idx, (cur_busy, cur_total) in cores.items():
+            p = prev.get(idx)
+            if p is None:
+                continue
+            d_total = cur_total - p[1]
+            if d_total <= 0:
+                continue  # 离线核：窗口内无 tick 增长，按 idle 计入分母
+            window = max(window, d_total)
+            busy += max(cur_busy - p[0], 0)
+        if window <= 0 or self._cpu_cores <= 0:
+            return 0.0
+        return round(min(busy / (self._cpu_cores * window) * 100, 100.0), 1)
 
     def _net_rates(self) -> tuple[Optional[float], Optional[float]]:
         now = time.monotonic()
