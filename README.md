@@ -76,6 +76,19 @@ docker compose up -d --build
 | DOCKORE_DOCKER_SOCK | /var/run/docker.sock | Container daemon socket on the host (point to the podman socket for Podman) |
 | DOCKORE_STACKS_DIR | /app/stacks | Stacks directory, bind-mounted at the same path on host and container |
 
+Optional build-time mirrors for network-restricted environments (empty = upstream defaults):
+
+| Variable (build arg) | Affects | Example |
+|---|---|---|
+| APT_MIRROR_HOST | backend Debian apt mirror | mirrors.aliyun.com |
+| PIP_INDEX_URL | backend pip (installs uv) | https://pypi.tuna.tsinghua.edu.cn/simple |
+| UV_DEFAULT_INDEX | backend uv sync | https://pypi.tuna.tsinghua.edu.cn/simple |
+| NPM_REGISTRY | frontend corepack/pnpm | https://registry.npmmirror.com |
+
+```bash
+APT_MIRROR_HOST=mirrors.aliyun.com NPM_REGISTRY=https://registry.npmmirror.com docker compose up -d --build
+```
+
 - Data is persisted in `./data` (SQLite settings); the backend container mounts the host `/var/run/docker.sock` read-only
 - Via the proxy (8002), API/WS share the page origin; when hitting the frontend directly (8001), enter the backend address + token on the onboarding page
 

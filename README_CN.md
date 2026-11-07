@@ -76,6 +76,19 @@ docker compose up -d --build
 | DOCKORE_DOCKER_SOCK | /var/run/docker.sock | 宿主机容器 daemon socket（Podman 用户指向 podman socket） |
 | DOCKORE_STACKS_DIR | /app/stacks | 栈目录，宿主机与容器内以相同路径挂载 |
 
+构建期镜像源（可选，网络受限环境使用；留空则全部走上游默认）：
+
+| 环境变量（构建参数） | 作用于 | 示例 |
+|---|---|---|
+| APT_MIRROR_HOST | backend 的 Debian apt 源 | mirrors.aliyun.com |
+| PIP_INDEX_URL | backend 的 pip（安装 uv） | https://pypi.tuna.tsinghua.edu.cn/simple |
+| UV_DEFAULT_INDEX | backend 的 uv sync | https://pypi.tuna.tsinghua.edu.cn/simple |
+| NPM_REGISTRY | frontend 的 corepack/pnpm | https://registry.npmmirror.com |
+
+```bash
+APT_MIRROR_HOST=mirrors.aliyun.com NPM_REGISTRY=https://registry.npmmirror.com docker compose up -d --build
+```
+
 - 数据持久化在 `./data`（SQLite 设置）；backend 容器只读挂载宿主机 `/var/run/docker.sock`
 - 通过 proxy（8002）访问时 API/WS 与页面同源；直连 frontend（8001）时在引导页填写后端地址 + Token
 

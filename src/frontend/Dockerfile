@@ -1,7 +1,15 @@
 FROM node:20-slim AS builder
 
+# Optional npm registry override for network-restricted environments (e.g. China).
+# Leave empty to use the default registry.npmjs.org.
+#   NPM_REGISTRY=https://registry.npmmirror.com
+ARG NPM_REGISTRY=""
+
+
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
+ENV COREPACK_NPM_REGISTRY=${NPM_REGISTRY:-https://registry.npmjs.org}
+ENV npm_config_registry=${NPM_REGISTRY:-https://registry.npmjs.org}
 RUN corepack enable
 
 WORKDIR /app

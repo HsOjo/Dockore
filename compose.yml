@@ -3,6 +3,11 @@ services:
     build:
       context: .
       dockerfile: ./src/backend/Dockerfile
+      args:
+        # 可选镜像源加速（留空用上游默认），如 APT_MIRROR_HOST=mirrors.aliyun.com
+        APT_MIRROR_HOST: ${APT_MIRROR_HOST:-}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-}
+        UV_DEFAULT_INDEX: ${UV_DEFAULT_INDEX:-}
     container_name: dockore-backend
     ports:
       - "${DOCKORE_PORT:-8000}:8000"
@@ -43,6 +48,9 @@ services:
     build:
       context: .
       dockerfile: ./src/frontend/Dockerfile
+      args:
+        # 可选 npm registry（留空用默认），如 NPM_REGISTRY=https://registry.npmmirror.com
+        NPM_REGISTRY: ${NPM_REGISTRY:-}
     container_name: dockore-frontend
     ports:
       - "${DOCKORE_FRONTEND_PORT:-8001}:80"
@@ -51,7 +59,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:80/index.html"]
+      # 不用 busybox wget：个别内核上它在容器内会挂起（实测 postmarketOS msm8956 mainline）
+      test: ["CMD", "sh", "-c", "printf 'GET /index.html HTTP/1.0\\r\\n\\r\\n' | nc -w 3 127.0.0.1 80 | grep -q '200 OK'"]
       interval: 30s
       timeout: 5s
       retries: 3

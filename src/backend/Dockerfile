@@ -1,6 +1,20 @@
 FROM python:3.12-slim
 
+# Optional mirror overrides for network-restricted environments (e.g. China).
+# Leave empty to use upstream defaults.
+#   APT_MIRROR_HOST=mirrors.aliyun.com
+#   PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+#   UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG APT_MIRROR_HOST=""
+ARG PIP_INDEX_URL=""
+ARG UV_DEFAULT_INDEX=""
+
+
 WORKDIR /app
+
+RUN if [ -n "$APT_MIRROR_HOST" ]; then \
+      sed -i "s|deb\.debian\.org|$APT_MIRROR_HOST|g" /etc/apt/sources.list.d/debian.sources; \
+    fi
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl && \
@@ -14,7 +28,11 @@ RUN apt-get update && \
 
 COPY src/backend/pyproject.toml src/backend/uv.lock ./
 RUN touch README.md && \
-    pip install uv && \
+    pip install ${PIP_INDEX_URL:+--index-url=$PIP_INDEX_URL} uv && \
+    if [ -n "$UV_DEFAULT_INDEX" ]; then \
+      export UV_DEFAULT_INDEX && \
+      uv lock; \
+    fi && \
     uv sync --no-dev
 
 COPY src/backend/app ./app
