@@ -5,7 +5,7 @@
         <a-input
           v-model:value="keyword"
           :placeholder="t('searchPlaceholder')"
-          style="width: 256px"
+          class="toolbar-search"
           allow-clear
         />
       </div>
@@ -162,6 +162,23 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.toolbar-search {
+  width: 256px;
+}
+
+@media (max-width: 767px) {
+  .toolbar,
+  .toolbar-left,
+  .toolbar-right {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .toolbar-search {
+    width: 100%;
+  }
 }
 
 .mono {

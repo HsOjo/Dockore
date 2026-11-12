@@ -2,38 +2,7 @@
   <a-layout class="main-layout">
     <a-layout-sider :width="200" theme="light" class="sider">
       <div class="logo" :class="{ 'mac-inset': macInset }" data-tauri-drag-region>{{ t("appName") }}</div>
-      <a-menu v-model:selectedKeys="selectedKeys" mode="inline" class="menu">
-        <a-menu-item key="/metrics">
-          <template #icon><FundOutlined /></template>
-          <router-link to="/metrics">{{ t("menu.metrics") }}</router-link>
-        </a-menu-item>
-        <a-menu-item key="/system">
-          <template #icon><DashboardOutlined /></template>
-          <router-link to="/system">{{ t("menu.system") }}</router-link>
-        </a-menu-item>
-        <a-menu-divider />
-        <a-menu-item key="/stacks">
-          <template #icon><BlockOutlined /></template>
-          <router-link to="/stacks">{{ t("menu.stacks") }}</router-link>
-        </a-menu-item>
-        <a-menu-divider />
-        <a-menu-item key="/containers">
-          <template #icon><ContainerOutlined /></template>
-          <router-link to="/containers">{{ t("menu.containers") }}</router-link>
-        </a-menu-item>
-        <a-menu-item key="/images">
-          <template #icon><FileImageOutlined /></template>
-          <router-link to="/images">{{ t("menu.images") }}</router-link>
-        </a-menu-item>
-        <a-menu-item key="/networks">
-          <template #icon><NodeIndexOutlined /></template>
-          <router-link to="/networks">{{ t("menu.networks") }}</router-link>
-        </a-menu-item>
-        <a-menu-item key="/volumes">
-          <template #icon><DatabaseOutlined /></template>
-          <router-link to="/volumes">{{ t("menu.volumes") }}</router-link>
-        </a-menu-item>
-      </a-menu>
+      <a-menu v-model:selectedKeys="selectedKeys" :items="menuItems" mode="inline" class="menu" />
       <div class="sider-footer">
         <a-menu :selectedKeys="settingsKey" mode="inline">
           <a-menu-item key="/settings">
@@ -50,6 +19,14 @@
         @mousedown="startDraggingWindow"
       >
         <div class="header-left" data-tauri-drag-region="no-drag">
+          <a-button
+            class="nav-toggle"
+            type="text"
+            :aria-label="t('menu.navigation')"
+            @click="mobileNavOpen = true"
+          >
+            <MenuOutlined />
+          </a-button>
           <a-badge :status="conn.isReady ? 'success' : 'error'" />
           <span class="server-url">{{ conn.baseURL }}</span>
           <a-tag v-if="conn.isBuiltIn" color="blue">{{ t("connection.builtInTag") }}</a-tag>
@@ -68,7 +45,7 @@
           </a-tooltip>
           <a-dropdown>
             <a-button type="text">
-              <GlobalOutlined /> {{ localeLabel }}
+              <GlobalOutlined /> <span class="locale-label">{{ localeLabel }}</span>
             </a-button>
             <template #overlay>
               <a-menu @click="handleLocaleChange">
@@ -84,15 +61,40 @@
         <img class="logo-watermark" :src="logoUrl" alt="" draggable="false" />
       </a-layout-content>
     </a-layout>
+    <a-drawer
+      v-model:open="mobileNavOpen"
+      placement="left"
+      :title="t('appName')"
+      :width="200"
+      :body-style="{ padding: 0 }"
+    >
+      <div class="drawer-sider">
+        <a-menu
+          v-model:selectedKeys="selectedKeys"
+          :items="menuItems"
+          mode="inline"
+          class="menu"
+          @click="closeMobileNav"
+        />
+        <div class="sider-footer">
+          <a-menu :selectedKeys="settingsKey" mode="inline" @click="closeMobileNav">
+            <a-menu-item key="/settings">
+              <template #icon><SettingOutlined /></template>
+              <router-link to="/settings">{{ t("menu.settings") }}</router-link>
+            </a-menu-item>
+          </a-menu>
+        </div>
+      </div>
+    </a-drawer>
     <ShellDrawer v-model:open="shellOpen" />
   </a-layout>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { computed, h, onUnmounted, ref, watch, type Component } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined, FundOutlined, DashboardOutlined, BlockOutlined, ContainerOutlined, FileImageOutlined, NodeIndexOutlined, DatabaseOutlined, SettingOutlined } from "@ant-design/icons-vue";
+import { BulbFilled, BulbOutlined, CodeOutlined, GlobalOutlined, FundOutlined, DashboardOutlined, BlockOutlined, ContainerOutlined, FileImageOutlined, NodeIndexOutlined, DatabaseOutlined, SettingOutlined, MenuOutlined } from "@ant-design/icons-vue";
 import ShellDrawer from "@/components/system/ShellDrawer.vue";
 import { useConnectionStore } from "@/stores";
 import { getUISettings, saveUISettings, startDraggingWindow, needsMacTitleInset } from "@/platform";
@@ -106,16 +108,59 @@ const macInset = needsMacTitleInset();
 
 const selectedKeys = ref<string[]>([]);
 const shellOpen = ref(false);
+const mobileNavOpen = ref(false);
 const settingsKey = computed(() => (route.path.startsWith("/settings") ? ["/settings"] : []));
+
+interface NavItem {
+  key: string;
+  icon: Component;
+  divider?: boolean;
+  label: () => string;
+}
+
+const navItems: NavItem[] = [
+  { key: "/metrics", icon: FundOutlined, label: () => t("menu.metrics") },
+  { key: "/system", icon: DashboardOutlined, divider: true, label: () => t("menu.system") },
+  { key: "/stacks", icon: BlockOutlined, divider: true, label: () => t("menu.stacks") },
+  { key: "/containers", icon: ContainerOutlined, label: () => t("menu.containers") },
+  { key: "/images", icon: FileImageOutlined, label: () => t("menu.images") },
+  { key: "/networks", icon: NodeIndexOutlined, label: () => t("menu.networks") },
+  { key: "/volumes", icon: DatabaseOutlined, label: () => t("menu.volumes") },
+];
+
+const menuItems = computed(() =>
+  navItems.flatMap((item) => [
+    {
+      key: item.key,
+      icon: h(item.icon),
+      label: h(RouterLink, { to: item.key }, { default: () => item.label() }),
+    },
+    ...(item.divider ? [{ key: `${item.key}-divider`, type: "divider" as const }] : []),
+  ])
+);
 
 watch(
   () => route.path,
   (path) => {
     const seg = "/" + (path.split("/")[1] || "metrics");
     selectedKeys.value = [seg];
+    mobileNavOpen.value = false;
   },
   { immediate: true }
 );
+
+const breakpoint = window.matchMedia("(max-width: 767.98px)");
+
+function onBreakpointChange(event: MediaQueryListEvent) {
+  if (!event.matches) mobileNavOpen.value = false;
+}
+
+breakpoint.addEventListener("change", onBreakpointChange);
+onUnmounted(() => breakpoint.removeEventListener("change", onBreakpointChange));
+
+function closeMobileNav() {
+  mobileNavOpen.value = false;
+}
 
 const localeLabel = computed(() => (locale.value === "zh-CN" ? "中文" : "EN"));
 
@@ -179,22 +224,44 @@ function handleLocaleChange({ key }: { key: string | number }) {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.header-left :deep(.ant-badge),
+.header-left :deep(.ant-tag) {
+  flex-shrink: 0;
+}
+
+.nav-toggle {
+  display: none;
+  flex-shrink: 0;
 }
 
 .server-url {
   font-family: monospace;
   font-size: 13px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+}
+
+.main-layout :deep(.ant-layout) {
+  min-width: 0;
 }
 
 .content {
   padding: 16px;
   overflow-y: auto;
+  min-width: 0;
 }
 
 .logo-watermark {
@@ -206,6 +273,30 @@ function handleLocaleChange({ key }: { key: string | number }) {
   user-select: none;
   pointer-events: none;
   z-index: 0;
+}
+
+.drawer-sider {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .sider {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .locale-label {
+    display: none;
+  }
+
+  .logo-watermark {
+    display: none;
+  }
 }
 
 body.dockore-theme-dark .sider,

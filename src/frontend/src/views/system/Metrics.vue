@@ -361,4 +361,21 @@ body.dockore-theme-dark .metric-line :deep(.anticon) {
 body.dockore-theme-dark .disk-path {
   color: rgba(255, 255, 255, 0.45);
 }
+
+@media (max-width: 767px) {
+  .cards-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .group-card {
+    min-width: 0;
+  }
+
+  .metric-value {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 </style>

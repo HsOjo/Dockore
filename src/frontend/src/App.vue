@@ -113,4 +113,17 @@ body {
   justify-content: center;
   gap: 16px;
 }
+
+/* Mobile (<768px): keep business drawers/modals inside the viewport.
+   max-width clamps fixed drawer widths instead of forcing width:100%,
+   so narrow drawers (e.g. the nav drawer) keep their own width. */
+@media (max-width: 767.98px) {
+  .ant-drawer .ant-drawer-content-wrapper {
+    max-width: 100vw;
+  }
+
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+  }
+}
 </style>

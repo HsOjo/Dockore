@@ -5,13 +5,14 @@
         <a-input
           v-model:value="keyword"
           :placeholder="t('searchPlaceholder')"
-          style="width: 256px"
+          class="toolbar-search"
           allow-clear
         />
         <a-alert
           v-if="store.meta && !store.meta.cli_available"
           type="warning"
           show-icon
+          class="toolbar-alert"
           :message="t('stack.cliUnavailable')"
           style="padding: 2px 12px"
         />
@@ -477,5 +478,27 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.toolbar-search {
+  width: 256px;
+}
+
+@media (max-width: 767px) {
+  .toolbar,
+  .toolbar-left,
+  .toolbar-right {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .toolbar-search {
+    width: 100%;
+  }
+
+  .toolbar-alert {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 </style>

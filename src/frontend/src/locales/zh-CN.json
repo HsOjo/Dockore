@@ -51,7 +51,8 @@
     "volumes": "存储卷",
     "system": "系统信息",
     "metrics": "资源监控",
-    "settings": "设置"
+    "settings": "设置",
+    "navigation": "导航菜单"
   },
   "connection": {
     "connected": "已连接",

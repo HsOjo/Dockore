@@ -201,4 +201,10 @@ async function handleDisconnect() {
 .section {
   margin-bottom: 16px;
 }
+
+@media (max-width: 767px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

@@ -51,7 +51,8 @@
     "volumes": "Volumes",
     "system": "System Info",
     "metrics": "Metrics",
-    "settings": "Settings"
+    "settings": "Settings",
+    "navigation": "Navigation"
   },
   "connection": {
     "connected": "Connected",
