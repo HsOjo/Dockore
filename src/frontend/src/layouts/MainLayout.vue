@@ -178,6 +178,10 @@ function handleLocaleChange({ key }: { key: string | number }) {
 <style scoped>
 .main-layout {
   height: 100vh;
+  /* Mobile browsers size 100vh to the "large viewport" (incl. address bar),
+     which makes the window scroll alongside .content. Use dvh so the layout
+     exactly fills the visible viewport, leaving .content as the only scroller. */
+  height: 100dvh;
 }
 
 .sider {

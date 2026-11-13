@@ -1,5 +1,5 @@
 <template>
-  <a-table :scroll="{ x: 'max-content' }" v-bind="$attrs" :columns="resolvedColumns">
+  <a-table :scroll="tableScroll" v-bind="$attrs" :columns="resolvedColumns">
     <template v-for="(_, name) in $slots" #[name]="slotProps">
       <slot :name="name" v-bind="slotProps ?? {}" />
     </template>
@@ -28,7 +28,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   mql?.removeEventListener("change", syncMobile);
 });
-
 const resolvedColumns = computed(() => {
   const raw = attrs.columns;
   if (!isMobile.value || !Array.isArray(raw)) return raw;
@@ -39,6 +38,12 @@ const resolvedColumns = computed(() => {
     return resolved;
   });
 });
+
+// Mobile: keep only horizontal scroll so the table flows with the page's
+// single scroll region; desktop keeps the 240px body with sticky header.
+const tableScroll = computed(() =>
+  isMobile.value ? { x: "max-content" as const } : { x: "max-content" as const, height: 240 }
+);
 </script>
 
 <style scoped>

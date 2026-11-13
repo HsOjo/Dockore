@@ -86,5 +86,6 @@ onMounted(loadItem);
   display: flex;
   flex-direction: column;
   height: calc(100vh - 88px);
+  height: calc(100dvh - 88px);
 }
 </style>

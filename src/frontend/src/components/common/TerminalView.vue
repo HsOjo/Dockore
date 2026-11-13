@@ -77,6 +77,7 @@ defineExpose({ write, fit, clear, scrollToBottom, cols: () => term.cols, rows: (
 <style scoped>
 .xterm-wrapper {
   height: calc(100vh - 220px);
+  height: calc(100dvh - 220px);
   min-height: 320px;
   overflow-x: hidden;
   overflow-y: hidden;
